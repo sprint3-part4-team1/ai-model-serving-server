@@ -2,9 +2,11 @@
 
 ### 임시 ERD
 ```
-Stores (매장) 1 ── N Menus (메뉴판)
-Menus (메뉴판) 1 ── N Menu_Items (메뉴 아이템)
-Menu_Items (메뉴 아이템) 1 ── N Item_Ingredients (메뉴 재료)
+Stores (매장)
+   └── Menus (메뉴판)
+         └── Menu_Items (메뉴 아이템)
+               ├── Item_Ingredients (메뉴 재료) → AI 계산에 활용
+               └── Nutrition_Estimates (영양 성분 추정치) → 결과 저장
 ```
 
 1. **stores** (매장)
@@ -41,6 +43,18 @@ Menu_Items (메뉴 아이템) 1 ── N Item_Ingredients (메뉴 재료)
   - quantity_unit : 단위 (ml, g 등)
   - quantity_value : 수량 값
   - notes : 추가 설명 (예: 원산지, 특징)
+
+5. **nutrition_estimates** (영양 성분 추정치)
+  - id (PK)
+  - item_id (FK → Menu_Items.id)
+  - calories (칼로리)
+  - sugar_g (당분 g)
+  - caffeine_mg (카페인 mg)
+  - protein_g (단백질 g)
+  - fat_g (지방 g)
+  - carbs_g (탄수화물 g)
+  - confidence (AI 추정 신뢰도 0~1)
+  - last_computed_at (계산 시점)
 
 
 ### 샘플데이터
