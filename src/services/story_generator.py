@@ -79,6 +79,46 @@ class StoryGeneratorService:
             logger.error(f"Failed to generate story with GPT: {e}")
             return self._generate_mock_story(context, store_type)
 
+    def generate_multiple_stories(
+        self,
+        context: Dict,
+        store_name: Optional[str] = None,
+        store_type: Optional[str] = "카페",
+        menu_categories: Optional[List[str]] = None,
+        count: int = 3
+    ) -> List[str]:
+        """
+        여러 버전의 스토리 생성 (A/B 테스트용)
+
+        Args:
+            context: Context Collector에서 수집한 정보
+            store_name: 매장 이름
+            store_type: 매장 타입
+            menu_categories: 메뉴 카테고리
+            count: 생성할 스토리 개수
+
+        Returns:
+            스토리 리스트
+        """
+        stories = []
+
+        for i in range(count):
+            try:
+                story = self.generate_story(
+                    context=context,
+                    store_name=store_name,
+                    store_type=store_type,
+                    menu_categories=menu_categories
+                )
+                stories.append(story)
+                logger.info(f"Generated story variant {i+1}/{count}")
+
+            except Exception as e:
+                logger.error(f"Failed to generate story variant {i+1}: {e}")
+                stories.append(self._generate_mock_story(context, store_type))
+
+        return stories
+
     def _build_prompt(
         self,
         context: Dict,
@@ -126,30 +166,52 @@ class StoryGeneratorService:
         # 메뉴 카테고리
         menu_str = ", ".join(menu_categories) if menu_categories else "음료"
 
+        # 브랜드 톤앤매너 (매장 타입별 차별화)
+        tone_guide = {
+            "카페": "친근하고 따뜻한 톤 (예: ~어떠세요?, ~해보세요)",
+            "레스토랑": "품격있고 전문적인 톤 (예: ~어떻습니까?, ~만들어보세요)",
+            "디저트": "발랄하고 달콤한 톤 (예: ~즐겨봐요!, ~느껴보세요)",
+            "술집": "편안하고 캐주얼한 톤 (예: ~어때요?, ~함께해요)"
+        }.get(store_type, "친근하고 자연스러운 톤")
+
+        # 트렌드가 있을 경우 강조
+        trend_instruction = ""
+        if trend_str:
+            trend_instruction = f"""
+**🔥 트렌드 활용 (필수):**
+- 현재 인기 키워드: {trend_str}
+- 위 트렌드 중 1-2개를 자연스럽게 문구에 녹여내세요
+- 억지로 끼워넣지 말고, 맥락에 맞게 활용
+- 예: "요즘 인기인 {trends[0]}와 함께 {menu_str} 어떠세요?"
+"""
+
         prompt = f"""다음 정보를 바탕으로 고객의 마음을 사로잡는 감성적인 추천 문구를 1-2문장으로 작성해주세요.
 
 **매장 정보:**
 - 매장 이름: {store_name or store_type}
 - 매장 타입: {store_type}
 - 주요 메뉴: {menu_str}
+- 브랜드 톤: {tone_guide}
 
 **현재 상황:**
 - 날씨: {weather_desc}, 온도 {temperature}도
 - 계절: {season_kr}
 - 시간대: {period_kr} ({time_str})
-{f'- 인기 트렌드: {trend_str}' if trend_str else ''}
+{trend_instruction}
 
 **작성 가이드:**
-1. 자연스럽고 친근한 톤으로 작성
+1. {tone_guide}로 작성
 2. 현재 날씨, 계절, 시간대를 자연스럽게 녹여내기
-3. 구체적인 메뉴를 언급하여 구매 욕구 자극
-4. 1-2문장으로 간결하게 (최대 50자)
-5. 이모지는 사용하지 말 것
+3. 트렌드 키워드가 있다면 1-2개 반드시 활용 (자연스럽게)
+4. 구체적인 메뉴를 언급하여 구매 욕구 자극
+5. 1-2문장으로 간결하게 (최대 60자)
+6. 이모지는 사용하지 말 것
 
 예시:
 - "비 오는 가을 오후, 따뜻한 아메리카노 한 잔과 함께 여유를 느껴보세요."
 - "쌀쌀한 겨울 아침, 달콤한 카페모카로 하루를 시작하는 건 어떠세요?"
 - "더운 여름 점심, 시원한 아이스 음료로 더위를 날려보세요."
+- "요즘 핫한 딸기 시즌, 신선한 딸기 디저트로 달콤한 오후 시간 만들어보세요."
 
 문구:"""
 

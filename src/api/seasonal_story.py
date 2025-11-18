@@ -46,11 +46,12 @@ async def generate_seasonal_story(request: SeasonalStoryRequest):
     try:
         logger.info(f"Seasonal story generation requested: {request}")
 
-        # 1. 컨텍스트 정보 수집
+        # 1. 컨텍스트 정보 수집 (메뉴 카테고리 포함)
         context = context_collector_service.get_full_context(
             location=request.location,
             lat=request.latitude,
-            lon=request.longitude
+            lon=request.longitude,
+            menu_categories=request.menu_categories
         )
 
         # 2. 스토리 생성
@@ -96,6 +97,87 @@ async def generate_seasonal_story(request: SeasonalStoryRequest):
                 "error": {
                     "code": 500,
                     "message": "스토리 생성 중 오류가 발생했습니다.",
+                    "details": str(e)
+                }
+            }
+        )
+
+
+@router.post(
+    "/generate-variants",
+    response_model=SeasonalStoryResponse,
+    summary="시즈널 스토리 다중 생성 (A/B 테스트)",
+    description="동일한 컨텍스트로 여러 버전의 스토리를 생성합니다 (A/B 테스트용).",
+    tags=["Seasonal Story"]
+)
+async def generate_seasonal_story_variants(request: SeasonalStoryRequest):
+    """
+    시즈널 스토리 다중 버전 생성 (A/B 테스트)
+
+    동일한 컨텍스트로 3가지 버전의 스토리를 생성하여
+    가장 효과적인 문구를 선택할 수 있습니다.
+    """
+    try:
+        logger.info(f"Multi-variant story generation requested: {request}")
+
+        # 1. 컨텍스트 정보 수집
+        context = context_collector_service.get_full_context(
+            location=request.location,
+            lat=request.latitude,
+            lon=request.longitude,
+            menu_categories=request.menu_categories
+        )
+
+        # 2. 다중 스토리 생성
+        stories = story_generator_service.generate_multiple_stories(
+            context=context,
+            store_name=request.store_name,
+            store_type=request.store_type,
+            menu_categories=request.menu_categories,
+            count=3
+        )
+
+        # 3. 응답 생성
+        korea_tz = pytz.timezone('Asia/Seoul')
+        response_data = {
+            "stories": [
+                {
+                    "variant": f"Version {i+1}",
+                    "story": story
+                }
+                for i, story in enumerate(stories)
+            ],
+            "context": {
+                "weather": context.get("weather"),
+                "season": context.get("season"),
+                "time_info": context.get("time_info"),
+                "trends": context.get("trends", [])
+            },
+            "store_info": {
+                "store_id": request.store_id,
+                "store_name": request.store_name,
+                "store_type": request.store_type,
+                "location": request.location
+            },
+            "generated_at": datetime.now(korea_tz).isoformat()
+        }
+
+        logger.info("Multi-variant stories generated successfully")
+
+        return SeasonalStoryResponse(
+            success=True,
+            data=response_data
+        )
+
+    except Exception as e:
+        logger.error(f"Failed to generate multi-variant stories: {e}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail={
+                "success": False,
+                "error": {
+                    "code": 500,
+                    "message": "다중 스토리 생성 중 오류가 발생했습니다.",
                     "details": str(e)
                 }
             }

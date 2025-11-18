@@ -12,6 +12,7 @@ import sys
 sys.path.append(os.path.dirname(os.path.dirname(__file__)))
 from logger import app_logger as logger
 from config import settings
+from services.trend_collector import trend_collector_service
 
 
 class ContextCollectorService:
@@ -29,7 +30,8 @@ class ContextCollectorService:
         self,
         location: str = "Seoul",
         lat: Optional[float] = None,
-        lon: Optional[float] = None
+        lon: Optional[float] = None,
+        menu_categories: Optional[List[str]] = None
     ) -> Dict:
         """
         전체 컨텍스트 정보 수집
@@ -38,11 +40,12 @@ class ContextCollectorService:
             location: 위치 이름 (예: "Seoul", "Busan")
             lat: 위도 (선택)
             lon: 경도 (선택)
+            menu_categories: 메뉴 카테고리 (트렌드 필터링용)
 
         Returns:
             전체 컨텍스트 정보
         """
-        logger.info(f"Collecting context for location: {location}")
+        logger.info(f"Collecting context for location: {location}, categories: {menu_categories}")
 
         # 날씨 정보 수집
         weather = self.get_weather(location, lat, lon)
@@ -53,8 +56,8 @@ class ContextCollectorService:
         # 시간대 판단
         time_info = self.get_time_info()
 
-        # 트렌드 수집 (선택)
-        trends = self.get_trends()
+        # 트렌드 수집 (실시간 + 메뉴 카테고리 기반)
+        trends = self.get_trends(menu_categories=menu_categories)
 
         context = {
             "weather": weather,
@@ -65,7 +68,7 @@ class ContextCollectorService:
             "timestamp": datetime.now(self.korea_tz).isoformat()
         }
 
-        logger.info(f"Context collected successfully: {context}")
+        logger.info(f"Context collected successfully (trends: {trends})")
         return context
 
     def get_weather(
@@ -212,29 +215,34 @@ class ContextCollectorService:
         weekdays = ["월요일", "화요일", "수요일", "목요일", "금요일", "토요일", "일요일"]
         return weekdays[weekday]
 
-    def get_trends(self, limit: int = 5) -> List[str]:
+    def get_trends(self, limit: int = 5, menu_categories: List[str] = None) -> List[str]:
         """
-        SNS 트렌드 수집 (선택 기능)
+        SNS 트렌드 수집 (실시간 + Mock 백업)
 
         Args:
             limit: 가져올 트렌드 개수
+            menu_categories: 메뉴 카테고리 (트렌드 필터링용)
 
         Returns:
             트렌드 키워드 리스트
         """
-        if not self.naver_client_id or not self.naver_client_secret:
-            logger.warning("Naver API credentials not configured, returning empty trends")
-            return []
-
         try:
-            # TODO: 네이버 검색 트렌드 API 또는 크롤링 구현
-            # 현재는 Mock 데이터 반환
-            logger.warning("Trend collection not implemented yet, returning mock data")
-            return self._get_mock_trends(limit)
+            # 실시간 트렌드 수집 (TrendCollectorService 사용)
+            if menu_categories:
+                trends = trend_collector_service.get_trending_keywords_for_menu(menu_categories)
+            else:
+                trends = trend_collector_service.get_trends(limit=limit, categories=['food'])
+
+            if trends:
+                logger.info(f"Real-time trends collected: {trends}")
+                return trends[:limit]
+            else:
+                logger.warning("No real-time trends available, using mock data")
+                return self._get_mock_trends(limit)
 
         except Exception as e:
             logger.error(f"Failed to fetch trends: {e}")
-            return []
+            return self._get_mock_trends(limit)
 
     def _get_mock_trends(self, limit: int = 5) -> List[str]:
         """Mock 트렌드 데이터 (테스트용)"""
