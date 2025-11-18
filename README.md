@@ -1,4 +1,4 @@
-# sprint_03_menu-generator
+# ai-model-serving-server
 
 ### 환경설정
 ```
