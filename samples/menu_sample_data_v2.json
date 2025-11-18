@@ -1,0 +1,1037 @@
+{
+  "stores": [
+    {
+      "id": 1,
+      "name": "서울카페",
+      "address": "전북 서울시 노원구 경기로",
+      "phone": "02-123-4567",
+      "created_at": "2025-11-17 16:00:00",
+      "updated_at": "2025-11-17 16:00:00"
+    }
+  ],
+  "menus": [
+    {
+      "id": 1,
+      "store_id": 1,
+      "name": "메인 메뉴",
+      "description": "파스타, 스테이크 등 메인 요리",
+      "created_at": "2025-11-17 17:30:00"
+    },
+    {
+      "id": 2,
+      "store_id": 1,
+      "name": "사이드 메뉴",
+      "description": "샐러드와 디저트",
+      "created_at": "2025-11-17 17:30:00"
+    },
+    {
+      "id": 3,
+      "store_id": 1,
+      "name": "음료 메뉴",
+      "description": "커피, 주스, 스무디",
+      "created_at": "2025-11-17 17:30:00"
+    }
+  ],
+  "menu_items": [
+    {
+      "id": 1,
+      "menu_id": 1,
+      "name": "까르보나라",
+      "description": "크림 소스와 베이컨의 조화",
+      "price": 13000,
+      "is_available": true,
+      "image_url": "/img/carbonara.png",
+      "created_at": "2025-11-17 17:30:00",
+      "updated_at": "2025-11-17 17:30:00"
+    },
+    {
+      "id": 2,
+      "menu_id": 1,
+      "name": "알리오 올리오",
+      "description": "마늘과 올리브유의 심플한 맛",
+      "price": 11000,
+      "is_available": true,
+      "image_url": "/img/alio_olio.png",
+      "created_at": "2025-11-17 17:30:00",
+      "updated_at": "2025-11-17 17:30:00"
+    },
+    {
+      "id": 3,
+      "menu_id": 1,
+      "name": "토마토 파스타",
+      "description": "신선한 토마토 소스 파스타",
+      "price": 12000,
+      "is_available": true,
+      "image_url": "/img/tomato_pasta.png",
+      "created_at": "2025-11-17 17:30:00",
+      "updated_at": "2025-11-17 17:30:00"
+    },
+    {
+      "id": 4,
+      "menu_id": 1,
+      "name": "안심 스테이크",
+      "description": "부드러운 소고기 안심",
+      "price": 28000,
+      "is_available": true,
+      "image_url": "/img/tenderloin.png",
+      "created_at": "2025-11-17 17:30:00",
+      "updated_at": "2025-11-17 17:30:00"
+    },
+    {
+      "id": 5,
+      "menu_id": 1,
+      "name": "립아이 스테이크",
+      "description": "육즙 가득한 립아이",
+      "price": 32000,
+      "is_available": true,
+      "image_url": "/img/ribeye.png",
+      "created_at": "2025-11-17 17:30:00",
+      "updated_at": "2025-11-17 17:30:00"
+    },
+    {
+      "id": 6,
+      "menu_id": 1,
+      "name": "버섯 리조또",
+      "description": "크리미한 이탈리안 리조또",
+      "price": 14000,
+      "is_available": true,
+      "image_url": "/img/risotto.png",
+      "created_at": "2025-11-17 17:30:00",
+      "updated_at": "2025-11-17 17:30:00"
+    },
+    {
+      "id": 7,
+      "menu_id": 1,
+      "name": "해산물 그라탕",
+      "description": "새우와 관자가 들어간 그라탕",
+      "price": 16000,
+      "is_available": true,
+      "image_url": "/img/gratin.png",
+      "created_at": "2025-11-17 17:30:00",
+      "updated_at": "2025-11-17 17:30:00"
+    },
+    {
+      "id": 8,
+      "menu_id": 2,
+      "name": "티라미수",
+      "description": "에스프레소 향 가득한 디저트",
+      "price": 7000,
+      "is_available": true,
+      "image_url": "/img/tiramisu.png",
+      "created_at": "2025-11-17 17:30:00",
+      "updated_at": "2025-11-17 17:30:00"
+    },
+    {
+      "id": 9,
+      "menu_id": 2,
+      "name": "초코 브라우니",
+      "description": "진한 초콜릿 케이크",
+      "price": 6000,
+      "is_available": true,
+      "image_url": "/img/brownie.png",
+      "created_at": "2025-11-17 17:30:00",
+      "updated_at": "2025-11-17 17:30:00"
+    },
+    {
+      "id": 10,
+      "menu_id": 2,
+      "name": "치즈케이크",
+      "description": "부드러운 뉴욕 스타일",
+      "price": 6500,
+      "is_available": true,
+      "image_url": "/img/cheesecake.png",
+      "created_at": "2025-11-17 17:30:00",
+      "updated_at": "2025-11-17 17:30:00"
+    },
+    {
+      "id": 11,
+      "menu_id": 2,
+      "name": "시저 샐러드",
+      "description": "신선한 로메인과 파마산 치즈",
+      "price": 9000,
+      "is_available": true,
+      "image_url": "/img/caesar.png",
+      "created_at": "2025-11-17 17:30:00",
+      "updated_at": "2025-11-17 17:30:00"
+    },
+    {
+      "id": 12,
+      "menu_id": 2,
+      "name": "그린 샐러드",
+      "description": "각종 채소와 발사믹 드레싱",
+      "price": 8000,
+      "is_available": true,
+      "image_url": "/img/green_salad.png",
+      "created_at": "2025-11-17 17:30:00",
+      "updated_at": "2025-11-17 17:30:00"
+    },
+    {
+      "id": 13,
+      "menu_id": 2,
+      "name": "닭가슴살 샐러드",
+      "description": "고단백 헬시 샐러드",
+      "price": 11000,
+      "is_available": true,
+      "image_url": "/img/chicken_salad.png",
+      "created_at": "2025-11-17 17:30:00",
+      "updated_at": "2025-11-17 17:30:00"
+    },
+    {
+      "id": 14,
+      "menu_id": 3,
+      "name": "아메리카노",
+      "description": "진한 원두 향의 커피",
+      "price": 4000,
+      "is_available": true,
+      "image_url": "/img/americano.png",
+      "created_at": "2025-11-17 17:30:00",
+      "updated_at": "2025-11-17 17:30:00"
+    },
+    {
+      "id": 15,
+      "menu_id": 3,
+      "name": "카푸치노",
+      "description": "우유 거품이 올라간 커피",
+      "price": 4500,
+      "is_available": true,
+      "image_url": "/img/cappuccino.png",
+      "created_at": "2025-11-17 17:30:00",
+      "updated_at": "2025-11-17 17:30:00"
+    },
+    {
+      "id": 16,
+      "menu_id": 3,
+      "name": "카페라떼",
+      "description": "부드러운 우유와 에스프레소",
+      "price": 4500,
+      "is_available": true,
+      "image_url": "/img/latte.png",
+      "created_at": "2025-11-17 17:30:00",
+      "updated_at": "2025-11-17 17:30:00"
+    },
+    {
+      "id": 17,
+      "menu_id": 3,
+      "name": "오렌지 주스",
+      "description": "갓 짜낸 생과일 주스",
+      "price": 5500,
+      "is_available": true,
+      "image_url": "/img/orange.png",
+      "created_at": "2025-11-17 17:30:00",
+      "updated_at": "2025-11-17 17:30:00"
+    },
+    {
+      "id": 18,
+      "menu_id": 3,
+      "name": "자몽 에이드",
+      "description": "상큼한 자몽 탄산음료",
+      "price": 6000,
+      "is_available": true,
+      "image_url": "/img/grapefruit.png",
+      "created_at": "2025-11-17 17:30:00",
+      "updated_at": "2025-11-17 17:30:00"
+    },
+    {
+      "id": 19,
+      "menu_id": 3,
+      "name": "딸기 스무디",
+      "description": "신선한 딸기와 요거트",
+      "price": 6500,
+      "is_available": true,
+      "image_url": "/img/strawberry_smoothie.png",
+      "created_at": "2025-11-17 17:30:00",
+      "updated_at": "2025-11-17 17:30:00"
+    },
+    {
+      "id": 20,
+      "menu_id": 3,
+      "name": "망고 스무디",
+      "description": "달콤한 망고 스무디",
+      "price": 6500,
+      "is_available": true,
+      "image_url": "/img/mango_smoothie.png",
+      "created_at": "2025-11-17 17:30:00",
+      "updated_at": "2025-11-17 17:30:00"
+    }
+  ],
+  "item_ingredients": [
+    {
+      "id": 1,
+      "item_id": 1,
+      "ingredient_name": "파스타 면",
+      "quantity_unit": "g",
+      "quantity_value": 120,
+      "notes": "스파게티 면"
+    },
+    {
+      "id": 2,
+      "item_id": 1,
+      "ingredient_name": "크림",
+      "quantity_unit": "ml",
+      "quantity_value": 80,
+      "notes": "생크림"
+    },
+    {
+      "id": 3,
+      "item_id": 1,
+      "ingredient_name": "베이컨",
+      "quantity_unit": "g",
+      "quantity_value": 50,
+      "notes": "훈제 베이컨"
+    },
+    {
+      "id": 4,
+      "item_id": 1,
+      "ingredient_name": "파마산 치즈",
+      "quantity_unit": "g",
+      "quantity_value": 30,
+      "notes": "이탈리아산"
+    },
+    {
+      "id": 5,
+      "item_id": 2,
+      "ingredient_name": "파스타 면",
+      "quantity_unit": "g",
+      "quantity_value": 120,
+      "notes": "스파게티 면"
+    },
+    {
+      "id": 6,
+      "item_id": 2,
+      "ingredient_name": "올리브유",
+      "quantity_unit": "ml",
+      "quantity_value": 40,
+      "notes": "엑스트라 버진"
+    },
+    {
+      "id": 7,
+      "item_id": 2,
+      "ingredient_name": "마늘",
+      "quantity_unit": "g",
+      "quantity_value": 20,
+      "notes": "국내산"
+    },
+    {
+      "id": 8,
+      "item_id": 2,
+      "ingredient_name": "페페론치노",
+      "quantity_unit": "g",
+      "quantity_value": 3,
+      "notes": "건고추"
+    },
+    {
+      "id": 9,
+      "item_id": 3,
+      "ingredient_name": "파스타 면",
+      "quantity_unit": "g",
+      "quantity_value": 120,
+      "notes": "펜네 면"
+    },
+    {
+      "id": 10,
+      "item_id": 3,
+      "ingredient_name": "토마토 소스",
+      "quantity_unit": "ml",
+      "quantity_value": 150,
+      "notes": "신선한 토마토"
+    },
+    {
+      "id": 11,
+      "item_id": 3,
+      "ingredient_name": "양파",
+      "quantity_unit": "g",
+      "quantity_value": 30,
+      "notes": "국내산"
+    },
+    {
+      "id": 12,
+      "item_id": 3,
+      "ingredient_name": "바질",
+      "quantity_unit": "g",
+      "quantity_value": 5,
+      "notes": "프레시 바질"
+    },
+    {
+      "id": 13,
+      "item_id": 4,
+      "ingredient_name": "소고기 안심",
+      "quantity_unit": "g",
+      "quantity_value": 200,
+      "notes": "1++ 한우"
+    },
+    {
+      "id": 14,
+      "item_id": 4,
+      "ingredient_name": "버터",
+      "quantity_unit": "g",
+      "quantity_value": 15,
+      "notes": "무염 버터"
+    },
+    {
+      "id": 15,
+      "item_id": 4,
+      "ingredient_name": "마늘",
+      "quantity_unit": "g",
+      "quantity_value": 10,
+      "notes": "통마늘"
+    },
+    {
+      "id": 16,
+      "item_id": 5,
+      "ingredient_name": "소고기 립아이",
+      "quantity_unit": "g",
+      "quantity_value": 250,
+      "notes": "미국산 프라임"
+    },
+    {
+      "id": 17,
+      "item_id": 5,
+      "ingredient_name": "버터",
+      "quantity_unit": "g",
+      "quantity_value": 20,
+      "notes": "무염 버터"
+    },
+    {
+      "id": 18,
+      "item_id": 5,
+      "ingredient_name": "로즈마리",
+      "quantity_unit": "g",
+      "quantity_value": 3,
+      "notes": "생 로즈마리"
+    },
+    {
+      "id": 19,
+      "item_id": 5,
+      "ingredient_name": "소금",
+      "quantity_unit": "g",
+      "quantity_value": 2,
+      "notes": "시솔트"
+    },
+    {
+      "id": 20,
+      "item_id": 6,
+      "ingredient_name": "쌀",
+      "quantity_unit": "g",
+      "quantity_value": 100,
+      "notes": "아르보리오 쌀"
+    },
+    {
+      "id": 21,
+      "item_id": 6,
+      "ingredient_name": "버섯",
+      "quantity_unit": "g",
+      "quantity_value": 80,
+      "notes": "포르치니 버섯"
+    },
+    {
+      "id": 22,
+      "item_id": 6,
+      "ingredient_name": "크림",
+      "quantity_unit": "ml",
+      "quantity_value": 60,
+      "notes": "생크림"
+    },
+    {
+      "id": 23,
+      "item_id": 6,
+      "ingredient_name": "파마산 치즈",
+      "quantity_unit": "g",
+      "quantity_value": 25,
+      "notes": "이탈리아산"
+    },
+    {
+      "id": 24,
+      "item_id": 6,
+      "ingredient_name": "화이트 와인",
+      "quantity_unit": "ml",
+      "quantity_value": 30,
+      "notes": "드라이 와인"
+    },
+    {
+      "id": 25,
+      "item_id": 7,
+      "ingredient_name": "새우",
+      "quantity_unit": "g",
+      "quantity_value": 100,
+      "notes": "흰다리 새우"
+    },
+    {
+      "id": 26,
+      "item_id": 7,
+      "ingredient_name": "관자",
+      "quantity_unit": "g",
+      "quantity_value": 80,
+      "notes": "생관자"
+    },
+    {
+      "id": 27,
+      "item_id": 7,
+      "ingredient_name": "크림",
+      "quantity_unit": "ml",
+      "quantity_value": 100,
+      "notes": "생크림"
+    },
+    {
+      "id": 28,
+      "item_id": 7,
+      "ingredient_name": "모짜렐라 치즈",
+      "quantity_unit": "g",
+      "quantity_value": 50,
+      "notes": "이탈리아산"
+    },
+    {
+      "id": 29,
+      "item_id": 8,
+      "ingredient_name": "마스카포네 치즈",
+      "quantity_unit": "g",
+      "quantity_value": 100,
+      "notes": "이탈리아산"
+    },
+    {
+      "id": 30,
+      "item_id": 8,
+      "ingredient_name": "에스프레소",
+      "quantity_unit": "ml",
+      "quantity_value": 50,
+      "notes": "더블샷"
+    },
+    {
+      "id": 31,
+      "item_id": 8,
+      "ingredient_name": "설탕",
+      "quantity_unit": "g",
+      "quantity_value": 30,
+      "notes": "백설탕"
+    },
+    {
+      "id": 32,
+      "item_id": 8,
+      "ingredient_name": "코코아 파우더",
+      "quantity_unit": "g",
+      "quantity_value": 5,
+      "notes": "다크 코코아"
+    },
+    {
+      "id": 33,
+      "item_id": 9,
+      "ingredient_name": "다크 초콜릿",
+      "quantity_unit": "g",
+      "quantity_value": 80,
+      "notes": "70% 카카오"
+    },
+    {
+      "id": 34,
+      "item_id": 9,
+      "ingredient_name": "버터",
+      "quantity_unit": "g",
+      "quantity_value": 60,
+      "notes": "무염 버터"
+    },
+    {
+      "id": 35,
+      "item_id": 9,
+      "ingredient_name": "설탕",
+      "quantity_unit": "g",
+      "quantity_value": 50,
+      "notes": "백설탕"
+    },
+    {
+      "id": 36,
+      "item_id": 9,
+      "ingredient_name": "밀가루",
+      "quantity_unit": "g",
+      "quantity_value": 40,
+      "notes": "박력분"
+    },
+    {
+      "id": 37,
+      "item_id": 10,
+      "ingredient_name": "크림치즈",
+      "quantity_unit": "g",
+      "quantity_value": 120,
+      "notes": "필라델피아"
+    },
+    {
+      "id": 38,
+      "item_id": 10,
+      "ingredient_name": "설탕",
+      "quantity_unit": "g",
+      "quantity_value": 40,
+      "notes": "백설탕"
+    },
+    {
+      "id": 39,
+      "item_id": 10,
+      "ingredient_name": "생크림",
+      "quantity_unit": "ml",
+      "quantity_value": 50,
+      "notes": "동물성"
+    },
+    {
+      "id": 40,
+      "item_id": 10,
+      "ingredient_name": "비스킷",
+      "quantity_unit": "g",
+      "quantity_value": 30,
+      "notes": "소화용 비스킷"
+    },
+    {
+      "id": 41,
+      "item_id": 11,
+      "ingredient_name": "로메인 상추",
+      "quantity_unit": "g",
+      "quantity_value": 100,
+      "notes": "신선한 채소"
+    },
+    {
+      "id": 42,
+      "item_id": 11,
+      "ingredient_name": "파마산 치즈",
+      "quantity_unit": "g",
+      "quantity_value": 20,
+      "notes": "이탈리아산"
+    },
+    {
+      "id": 43,
+      "item_id": 11,
+      "ingredient_name": "시저 드레싱",
+      "quantity_unit": "ml",
+      "quantity_value": 40,
+      "notes": "자체 제조"
+    },
+    {
+      "id": 44,
+      "item_id": 11,
+      "ingredient_name": "크루통",
+      "quantity_unit": "g",
+      "quantity_value": 15,
+      "notes": "바삭한 빵"
+    },
+    {
+      "id": 45,
+      "item_id": 12,
+      "ingredient_name": "혼합 채소",
+      "quantity_unit": "g",
+      "quantity_value": 120,
+      "notes": "샐러드 믹스"
+    },
+    {
+      "id": 46,
+      "item_id": 12,
+      "ingredient_name": "방울토마토",
+      "quantity_unit": "g",
+      "quantity_value": 30,
+      "notes": "유기농"
+    },
+    {
+      "id": 47,
+      "item_id": 12,
+      "ingredient_name": "발사믹 드레싱",
+      "quantity_unit": "ml",
+      "quantity_value": 25,
+      "notes": "이탈리아산"
+    },
+    {
+      "id": 48,
+      "item_id": 13,
+      "ingredient_name": "닭가슴살",
+      "quantity_unit": "g",
+      "quantity_value": 150,
+      "notes": "국내산 훈제"
+    },
+    {
+      "id": 49,
+      "item_id": 13,
+      "ingredient_name": "혼합 채소",
+      "quantity_unit": "g",
+      "quantity_value": 100,
+      "notes": "샐러드 믹스"
+    },
+    {
+      "id": 50,
+      "item_id": 13,
+      "ingredient_name": "아보카도",
+      "quantity_unit": "g",
+      "quantity_value": 50,
+      "notes": "멕시코산"
+    },
+    {
+      "id": 51,
+      "item_id": 13,
+      "ingredient_name": "발사믹 드레싱",
+      "quantity_unit": "ml",
+      "quantity_value": 30,
+      "notes": "이탈리아산"
+    },
+    {
+      "id": 52,
+      "item_id": 14,
+      "ingredient_name": "원두",
+      "quantity_unit": "g",
+      "quantity_value": 15,
+      "notes": "콜롬비아산"
+    },
+    {
+      "id": 53,
+      "item_id": 14,
+      "ingredient_name": "물",
+      "quantity_unit": "ml",
+      "quantity_value": 200,
+      "notes": "정수기 물"
+    },
+    {
+      "id": 54,
+      "item_id": 15,
+      "ingredient_name": "원두",
+      "quantity_unit": "g",
+      "quantity_value": 15,
+      "notes": "에스프레소 샷"
+    },
+    {
+      "id": 55,
+      "item_id": 15,
+      "ingredient_name": "우유",
+      "quantity_unit": "ml",
+      "quantity_value": 150,
+      "notes": "국내산 우유"
+    },
+    {
+      "id": 56,
+      "item_id": 16,
+      "ingredient_name": "원두",
+      "quantity_unit": "g",
+      "quantity_value": 15,
+      "notes": "브라질산"
+    },
+    {
+      "id": 57,
+      "item_id": 16,
+      "ingredient_name": "우유",
+      "quantity_unit": "ml",
+      "quantity_value": 200,
+      "notes": "스팀 밀크"
+    },
+    {
+      "id": 58,
+      "item_id": 17,
+      "ingredient_name": "오렌지",
+      "quantity_unit": "g",
+      "quantity_value": 300,
+      "notes": "생과일 착즙"
+    },
+    {
+      "id": 59,
+      "item_id": 18,
+      "ingredient_name": "자몽",
+      "quantity_unit": "g",
+      "quantity_value": 150,
+      "notes": "생과일"
+    },
+    {
+      "id": 60,
+      "item_id": 18,
+      "ingredient_name": "탄산수",
+      "quantity_unit": "ml",
+      "quantity_value": 200,
+      "notes": "스파클링"
+    },
+    {
+      "id": 61,
+      "item_id": 18,
+      "ingredient_name": "시럽",
+      "quantity_unit": "ml",
+      "quantity_value": 20,
+      "notes": "자몽 시럽"
+    },
+    {
+      "id": 62,
+      "item_id": 19,
+      "ingredient_name": "딸기",
+      "quantity_unit": "g",
+      "quantity_value": 150,
+      "notes": "냉동 딸기"
+    },
+    {
+      "id": 63,
+      "item_id": 19,
+      "ingredient_name": "요거트",
+      "quantity_unit": "g",
+      "quantity_value": 100,
+      "notes": "플레인 요거트"
+    },
+    {
+      "id": 64,
+      "item_id": 19,
+      "ingredient_name": "꿀",
+      "quantity_unit": "ml",
+      "quantity_value": 20,
+      "notes": "국내산 벌꿀"
+    },
+    {
+      "id": 65,
+      "item_id": 20,
+      "ingredient_name": "망고",
+      "quantity_unit": "g",
+      "quantity_value": 180,
+      "notes": "필리핀산"
+    },
+    {
+      "id": 66,
+      "item_id": 20,
+      "ingredient_name": "요거트",
+      "quantity_unit": "g",
+      "quantity_value": 100,
+      "notes": "플레인 요거트"
+    },
+    {
+      "id": 67,
+      "item_id": 20,
+      "ingredient_name": "우유",
+      "quantity_unit": "ml",
+      "quantity_value": 50,
+      "notes": "국내산"
+    }
+  ],
+  "nutrition_estimates": [
+    {
+      "id": 1,
+      "item_id": 1,
+      "calories": 650,
+      "sugar_g": 8.5,
+      "caffeine_mg": 0,
+      "protein_g": 25.0,
+      "fat_g": 35.0,
+      "carbs_g": 55.0,
+      "confidence": 0.92,
+      "last_computed_at": "2025-11-17 15:30:00"
+    },
+    {
+      "id": 2,
+      "item_id": 2,
+      "calories": 480,
+      "sugar_g": 3.2,
+      "caffeine_mg": 0,
+      "protein_g": 12.0,
+      "fat_g": 22.0,
+      "carbs_g": 58.0,
+      "confidence": 0.88,
+      "last_computed_at": "2025-11-17 15:30:00"
+    },
+    {
+      "id": 3,
+      "item_id": 3,
+      "calories": 420,
+      "sugar_g": 12.0,
+      "caffeine_mg": 0,
+      "protein_g": 14.0,
+      "fat_g": 8.5,
+      "carbs_g": 68.0,
+      "confidence": 0.9,
+      "last_computed_at": "2025-11-17 15:30:00"
+    },
+    {
+      "id": 4,
+      "item_id": 4,
+      "calories": 520,
+      "sugar_g": 1.0,
+      "caffeine_mg": 0,
+      "protein_g": 48.0,
+      "fat_g": 35.0,
+      "carbs_g": 2.0,
+      "confidence": 0.95,
+      "last_computed_at": "2025-11-17 15:30:00"
+    },
+    {
+      "id": 5,
+      "item_id": 5,
+      "calories": 680,
+      "sugar_g": 0.8,
+      "caffeine_mg": 0,
+      "protein_g": 52.0,
+      "fat_g": 50.0,
+      "carbs_g": 1.5,
+      "confidence": 0.93,
+      "last_computed_at": "2025-11-17 15:30:00"
+    },
+    {
+      "id": 6,
+      "item_id": 6,
+      "calories": 580,
+      "sugar_g": 4.5,
+      "caffeine_mg": 0,
+      "protein_g": 18.0,
+      "fat_g": 24.0,
+      "carbs_g": 65.0,
+      "confidence": 0.89,
+      "last_computed_at": "2025-11-17 15:30:00"
+    },
+    {
+      "id": 7,
+      "item_id": 7,
+      "calories": 540,
+      "sugar_g": 6.0,
+      "caffeine_mg": 0,
+      "protein_g": 32.0,
+      "fat_g": 28.0,
+      "carbs_g": 35.0,
+      "confidence": 0.87,
+      "last_computed_at": "2025-11-17 15:30:00"
+    },
+    {
+      "id": 8,
+      "item_id": 8,
+      "calories": 420,
+      "sugar_g": 35.0,
+      "caffeine_mg": 80,
+      "protein_g": 8.0,
+      "fat_g": 22.0,
+      "carbs_g": 45.0,
+      "confidence": 0.91,
+      "last_computed_at": "2025-11-17 15:30:00"
+    },
+    {
+      "id": 9,
+      "item_id": 9,
+      "calories": 380,
+      "sugar_g": 32.0,
+      "caffeine_mg": 25,
+      "protein_g": 5.5,
+      "fat_g": 18.0,
+      "carbs_g": 48.0,
+      "confidence": 0.93,
+      "last_computed_at": "2025-11-17 15:30:00"
+    },
+    {
+      "id": 10,
+      "item_id": 10,
+      "calories": 450,
+      "sugar_g": 28.0,
+      "caffeine_mg": 0,
+      "protein_g": 9.0,
+      "fat_g": 26.0,
+      "carbs_g": 42.0,
+      "confidence": 0.9,
+      "last_computed_at": "2025-11-17 15:30:00"
+    },
+    {
+      "id": 11,
+      "item_id": 11,
+      "calories": 220,
+      "sugar_g": 4.5,
+      "caffeine_mg": 0,
+      "protein_g": 12.0,
+      "fat_g": 15.0,
+      "carbs_g": 12.0,
+      "confidence": 0.88,
+      "last_computed_at": "2025-11-17 15:30:00"
+    },
+    {
+      "id": 12,
+      "item_id": 12,
+      "calories": 150,
+      "sugar_g": 8.0,
+      "caffeine_mg": 0,
+      "protein_g": 3.5,
+      "fat_g": 8.5,
+      "carbs_g": 15.0,
+      "confidence": 0.85,
+      "last_computed_at": "2025-11-17 15:30:00"
+    },
+    {
+      "id": 13,
+      "item_id": 13,
+      "calories": 320,
+      "sugar_g": 6.0,
+      "caffeine_mg": 0,
+      "protein_g": 38.0,
+      "fat_g": 12.0,
+      "carbs_g": 18.0,
+      "confidence": 0.94,
+      "last_computed_at": "2025-11-17 15:30:00"
+    },
+    {
+      "id": 14,
+      "item_id": 14,
+      "calories": 5,
+      "sugar_g": 0,
+      "caffeine_mg": 150,
+      "protein_g": 0.5,
+      "fat_g": 0,
+      "carbs_g": 1.0,
+      "confidence": 0.98,
+      "last_computed_at": "2025-11-17 15:30:00"
+    },
+    {
+      "id": 15,
+      "item_id": 15,
+      "calories": 120,
+      "sugar_g": 9.0,
+      "caffeine_mg": 150,
+      "protein_g": 6.0,
+      "fat_g": 4.5,
+      "carbs_g": 12.0,
+      "confidence": 0.96,
+      "last_computed_at": "2025-11-17 15:30:00"
+    },
+    {
+      "id": 16,
+      "item_id": 16,
+      "calories": 180,
+      "sugar_g": 12.0,
+      "caffeine_mg": 150,
+      "protein_g": 8.0,
+      "fat_g": 7.0,
+      "carbs_g": 18.0,
+      "confidence": 0.95,
+      "last_computed_at": "2025-11-17 15:30:00"
+    },
+    {
+      "id": 17,
+      "item_id": 17,
+      "calories": 165,
+      "sugar_g": 32.0,
+      "caffeine_mg": 0,
+      "protein_g": 2.5,
+      "fat_g": 0.5,
+      "carbs_g": 38.0,
+      "confidence": 0.92,
+      "last_computed_at": "2025-11-17 15:30:00"
+    },
+    {
+      "id": 18,
+      "item_id": 18,
+      "calories": 140,
+      "sugar_g": 28.0,
+      "caffeine_mg": 0,
+      "protein_g": 1.0,
+      "fat_g": 0.2,
+      "carbs_g": 35.0,
+      "confidence": 0.89,
+      "last_computed_at": "2025-11-17 15:30:00"
+    },
+    {
+      "id": 19,
+      "item_id": 19,
+      "calories": 240,
+      "sugar_g": 35.0,
+      "caffeine_mg": 0,
+      "protein_g": 6.0,
+      "fat_g": 3.5,
+      "carbs_g": 48.0,
+      "confidence": 0.9,
+      "last_computed_at": "2025-11-17 15:30:00"
+    },
+    {
+      "id": 20,
+      "item_id": 20,
+      "calories": 280,
+      "sugar_g": 42.0,
+      "caffeine_mg": 0,
+      "protein_g": 7.0,
+      "fat_g": 4.0,
+      "carbs_g": 55.0,
+      "confidence": 0.91,
+      "last_computed_at": "2025-11-17 15:30:00"
+    }
+  ]
+}
