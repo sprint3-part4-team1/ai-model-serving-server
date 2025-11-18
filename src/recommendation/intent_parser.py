@@ -2,7 +2,7 @@
 고객 요청 의도 파싱 모듈
 자연어 요청을 분석하여 필터링/정렬 조건을 추출
 """
-from src.gpt_client import get_gpt_client
+from src.recommendation.gpt_client import get_gpt_client
 
 
 class IntentParser:

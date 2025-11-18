@@ -3,7 +3,7 @@
 필터링, 정렬, 추천 문구 생성을 담당
 """
 
-from src.gpt_client import get_gpt_client
+from src.recommendation.gpt_client import get_gpt_client
 
 
 class MenuRecommender:
