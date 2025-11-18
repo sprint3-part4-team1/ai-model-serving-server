@@ -1,15 +1,11 @@
-# Menu Generator (KJY Branch)
+# sprint_03_menu-generator
 
-이 프로젝트는 메뉴판 이미지를 자동 생성하는 도구입니다.  
-ControlNet, LLM, ESRGAN 등을 활용하여 브랜드 스타일을 유지하면서 다양한 메뉴판을 생성할 수 있습니다.
+### 환경설정
+```
+uv python install 3.12
+uv init -p 3.12 --bare
+uv add langchain langchain-openai
+uv add dotenv sqlalchemy pymysql
 
-## 주요 기능
-- 메뉴 이미지 자동 배치
-- 상품 설명 자동 생성 (LLM 기반)
-- 배경제거 및 고해상도 보정 (ESRGAN)
-- 템플릿 선택 및 스타일 유지 (ControlNet)
-- 다국어 지원, QR 삽입 등 확장 가능
-
-## 브랜치 목적
-이 브랜치는 `kjy` 개인 작업용 브랜치로,  
-메뉴판 생성기 기능을 GCP VM 환경에서 테스트하고 확장하는 데 목적이 있습니다.
+```
+>>>>>>> origin/main
