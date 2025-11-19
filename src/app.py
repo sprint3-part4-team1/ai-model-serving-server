@@ -6,8 +6,8 @@ import uvicorn
 from dotenv import load_dotenv
 from story_service import generate_story_for_item
 from recommendation.recommendation_service import RecommendationService
-from api.seasonal_story import router as seasonal_story_router
 
+from api.seasonal_story import router as seasonal_story_router
 # .env 파일 로드
 load_dotenv()
 
@@ -141,15 +141,15 @@ def get_recommendations_formatted(request: RecommendationRequest):
         service.close()
 
 
+# uvicorn 실행 (개발 환경용)
+if __name__ == "__main__":
+    port = int(os.getenv("PORT", 9090))
+    uvicorn.run("app:app", host="0.0.0.0", port=port, reload=True)
+
+
 # Seasonal Story 라우터 등록
 app.include_router(
     seasonal_story_router,
     prefix="/api/v1/seasonal-story",
     tags=["Seasonal Story"]
 )
-
-
-# uvicorn 실행 (개발 환경용)
-if __name__ == "__main__":
-    port = int(os.getenv("PORT", 9090))
-    uvicorn.run("app:app", host="0.0.0.0", port=port, reload=True)
