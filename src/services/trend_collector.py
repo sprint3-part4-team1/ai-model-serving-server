@@ -216,12 +216,17 @@ class TrendCollectorService:
         cache_time = self.cache[key]['timestamp']
         return (datetime.now() - cache_time).seconds < self.cache_ttl
 
-    def get_trending_keywords_for_menu(self, menu_categories: List[str] = None) -> List[str]:
+    def get_trending_keywords_for_menu(
+        self,
+        menu_categories: List[str] = None,
+        store_type: str = None
+    ) -> List[str]:
         """
-        메뉴 카테고리에 맞는 트렌딩 키워드 반환
+        메뉴 카테고리 및 매장 타입에 맞는 트렌딩 키워드 반환
 
         Args:
             menu_categories: 메뉴 카테고리 (예: ['커피', '디저트'])
+            store_type: 매장 타입 (예: '카페', '레스토랑', '디저트', '술집')
 
         Returns:
             관련 트렌드 키워드
@@ -229,7 +234,11 @@ class TrendCollectorService:
         # 전체 트렌드 가져오기
         all_trends = self.get_trends(limit=20)
 
-        # 메뉴 카테고리와 관련된 트렌드만 필터링
+        # 1. 매장 타입별 부적합 트렌드 제거
+        if store_type:
+            all_trends = self._filter_by_store_type(all_trends, store_type)
+
+        # 2. 메뉴 카테고리와 관련된 트렌드만 필터링
         if menu_categories:
             related_trends = []
             for trend in all_trends:
@@ -241,6 +250,37 @@ class TrendCollectorService:
             return related_trends[:5] if related_trends else all_trends[:5]
 
         return all_trends[:5]
+
+    def _filter_by_store_type(self, trends: List[str], store_type: str) -> List[str]:
+        """
+        매장 타입별 부적합한 트렌드 제거
+
+        Args:
+            trends: 트렌드 키워드 리스트
+            store_type: 매장 타입
+
+        Returns:
+            필터링된 트렌드 리스트
+        """
+        # 매장 타입별 제외 키워드
+        exclude_keywords = {
+            '카페': ['맥주', '소주', '술', '치킨', '삼겹살', '고기', '회', '주류', '양주', '와인'],
+            '디저트': ['맥주', '소주', '술', '치킨', '삼겹살', '고기', '회', '주류', '양주', '와인'],
+            '술집': ['커피', '아메리카노', '라떼', '카페', '케이크', '마카롱'],
+            '레스토랑': []  # 레스토랑은 대부분 OK
+        }
+
+        # 제외 키워드 가져오기
+        excludes = exclude_keywords.get(store_type, [])
+
+        # 필터링
+        filtered = []
+        for trend in trends:
+            # 제외 키워드가 포함되어 있는지 확인
+            if not any(exclude in trend for exclude in excludes):
+                filtered.append(trend)
+
+        return filtered if filtered else trends  # 필터링 결과 없으면 원본 반환
 
 
 # 싱글톤 인스턴스

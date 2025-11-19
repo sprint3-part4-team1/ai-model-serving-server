@@ -31,7 +31,8 @@ class ContextCollectorService:
         location: str = "Seoul",
         lat: Optional[float] = None,
         lon: Optional[float] = None,
-        menu_categories: Optional[List[str]] = None
+        menu_categories: Optional[List[str]] = None,
+        store_type: Optional[str] = None
     ) -> Dict:
         """
         전체 컨텍스트 정보 수집
@@ -41,11 +42,12 @@ class ContextCollectorService:
             lat: 위도 (선택)
             lon: 경도 (선택)
             menu_categories: 메뉴 카테고리 (트렌드 필터링용)
+            store_type: 매장 타입 (트렌드 필터링용, 예: '카페', '레스토랑')
 
         Returns:
             전체 컨텍스트 정보
         """
-        logger.info(f"Collecting context for location: {location}, categories: {menu_categories}")
+        logger.info(f"Collecting context for location: {location}, categories: {menu_categories}, store_type: {store_type}")
 
         # 날씨 정보 수집
         weather = self.get_weather(location, lat, lon)
@@ -56,8 +58,8 @@ class ContextCollectorService:
         # 시간대 판단
         time_info = self.get_time_info()
 
-        # 트렌드 수집 (실시간 + 메뉴 카테고리 기반)
-        trends = self.get_trends(menu_categories=menu_categories)
+        # 트렌드 수집 (실시간 + 메뉴 카테고리 + 매장 타입 기반)
+        trends = self.get_trends(menu_categories=menu_categories, store_type=store_type)
 
         context = {
             "weather": weather,
@@ -215,21 +217,30 @@ class ContextCollectorService:
         weekdays = ["월요일", "화요일", "수요일", "목요일", "금요일", "토요일", "일요일"]
         return weekdays[weekday]
 
-    def get_trends(self, limit: int = 5, menu_categories: List[str] = None) -> List[str]:
+    def get_trends(
+        self,
+        limit: int = 5,
+        menu_categories: List[str] = None,
+        store_type: str = None
+    ) -> List[str]:
         """
         SNS 트렌드 수집 (실시간 + Mock 백업)
 
         Args:
             limit: 가져올 트렌드 개수
             menu_categories: 메뉴 카테고리 (트렌드 필터링용)
+            store_type: 매장 타입 (트렌드 필터링용)
 
         Returns:
             트렌드 키워드 리스트
         """
         try:
             # 실시간 트렌드 수집 (TrendCollectorService 사용)
-            if menu_categories:
-                trends = trend_collector_service.get_trending_keywords_for_menu(menu_categories)
+            if menu_categories or store_type:
+                trends = trend_collector_service.get_trending_keywords_for_menu(
+                    menu_categories=menu_categories,
+                    store_type=store_type
+                )
             else:
                 trends = trend_collector_service.get_trends(limit=limit, categories=['food'])
 

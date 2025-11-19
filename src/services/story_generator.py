@@ -47,31 +47,50 @@ class StoryGeneratorService:
             # Prompt 생성
             prompt = self._build_prompt(context, store_name, store_type, menu_categories)
 
-            logger.info(f"Generating story with prompt: {prompt[:100]}...")
+            # 최대 3회 재시도 (생성 + 검증)
+            max_retries = 3
+            for attempt in range(max_retries):
+                logger.info(f"Generating story (attempt {attempt + 1}/{max_retries})...")
 
-            # GPT API 호출
-            response = self.client.chat.completions.create(
-                model=self.model,
-                messages=[
-                    {
-                        "role": "system",
-                        "content": "당신은 창의적인 카페/레스토랑 마케팅 전문가입니다. "
-                                   "고객의 마음을 사로잡는 감성적이고 자연스러운 추천 문구를 작성합니다."
-                    },
-                    {
-                        "role": "user",
-                        "content": prompt
-                    }
-                ],
-                max_tokens=150,
-                temperature=0.8,  # 창의성을 높임
-                top_p=0.9,
-                presence_penalty=0.6,
-                frequency_penalty=0.3
-            )
+                # GPT API 호출
+                response = self.client.chat.completions.create(
+                    model=self.model,
+                    messages=[
+                        {
+                            "role": "system",
+                            "content": "당신은 창의적인 카페/레스토랑 마케팅 전문가입니다. "
+                                       "고객의 마음을 사로잡는 감성적이고 자연스러운 추천 문구를 작성합니다."
+                        },
+                        {
+                            "role": "user",
+                            "content": prompt
+                        }
+                    ],
+                    max_tokens=150,
+                    temperature=0.8,  # 창의성을 높임
+                    top_p=0.9,
+                    presence_penalty=0.6,
+                    frequency_penalty=0.3
+                )
 
-            story = response.choices[0].message.content.strip()
-            logger.info(f"Story generated successfully: {story}")
+                story = response.choices[0].message.content.strip()
+                logger.info(f"Story generated: {story}")
+
+                # 스토리 검증
+                is_valid, reason = self._validate_story(
+                    story=story,
+                    store_type=store_type,
+                    menu_categories=menu_categories
+                )
+
+                if is_valid:
+                    logger.info(f"Story validation passed: {story}")
+                    return story
+                else:
+                    logger.warning(f"Story validation failed (attempt {attempt + 1}): {reason}")
+                    if attempt == max_retries - 1:
+                        logger.error("Max retries reached, returning last generated story")
+                        return story  # 마지막 시도는 그냥 반환
 
             return story
 
@@ -216,6 +235,106 @@ class StoryGeneratorService:
 문구:"""
 
         return prompt
+
+    def _validate_story(
+        self,
+        story: str,
+        store_type: str,
+        menu_categories: Optional[List[str]] = None
+    ) -> tuple[bool, str]:
+        """
+        생성된 스토리의 적합성 검증
+
+        Args:
+            story: 생성된 스토리 문구
+            store_type: 매장 타입
+            menu_categories: 메뉴 카테고리
+
+        Returns:
+            (검증 통과 여부, 사유)
+        """
+        if not self.client:
+            return (True, "OpenAI client not available, skipping validation")
+
+        try:
+            # 검증 프롬프트
+            validation_prompt = f"""다음 추천 문구가 매장 타입과 메뉴에 적합한지 판단해주세요.
+
+**매장 정보:**
+- 매장 타입: {store_type}
+- 주요 메뉴: {', '.join(menu_categories) if menu_categories else '정보 없음'}
+
+**생성된 문구:**
+"{story}"
+
+**검증 기준 (엄격하게만 적용):**
+다음 경우에만 "부적합" 판정:
+
+1. 매장 타입과 명백히 어울리지 않는 메뉴가 언급된 경우
+   - 카페/디저트샵에서: 맥주, 소주, 술, 치킨, 삼겹살, 회 등 주류/안주가 직접 언급됨
+   - 술집에서: 커피, 아메리카노, 라떼, 카푸치노, 케이크, 마카롱 등 카페 메뉴가 직접 언급됨
+
+2. 문맥이 완전히 모순되는 경우 (예: "더운 겨울", "시원한 온천")
+
+**주의:**
+- "저녁", "아침", "점심" 같은 시간대 표현은 모든 매장에 적합합니다.
+- "가을", "봄" 같은 계절 표현은 모든 매장에 적합합니다.
+- 날씨 표현(비, 추위, 더위 등)은 모든 매장에 적합합니다.
+- 위 검증 기준에 명백히 해당하지 않으면 "적합"으로 판정하세요.
+
+**응답 형식:**
+첫 줄에 "적합" 또는 "부적합"만 작성하고,
+부적합한 경우 두 번째 줄에 구체적인 이유를 작성하세요.
+
+예시:
+적합
+
+또는
+
+부적합
+카페인데 '맥주'가 직접 언급됨"""
+
+            # GPT 검증 API 호출
+            response = self.client.chat.completions.create(
+                model=self.model,
+                messages=[
+                    {
+                        "role": "system",
+                        "content": "당신은 마케팅 문구의 적합성을 판단하는 검수자입니다. "
+                                   "매장 타입과 메뉴에 맞지 않는 내용이 있는지 엄격하게 검증합니다."
+                    },
+                    {
+                        "role": "user",
+                        "content": validation_prompt
+                    }
+                ],
+                max_tokens=100,
+                temperature=0.3  # 낮은 temperature로 일관성 확보
+            )
+
+            validation_result = response.choices[0].message.content.strip()
+            lines = validation_result.split('\n')
+
+            # 첫 줄 분석
+            first_line = lines[0].strip()
+            # "부적합"을 먼저 체크해야 함 (부적합에도 "적합"이 포함되어 있음)
+            if "부적합" in first_line:
+                is_valid = False
+            elif "적합" in first_line:
+                is_valid = True
+            else:
+                is_valid = True  # 명확하지 않으면 통과
+
+            reason = lines[1].strip() if len(lines) > 1 else "검증 완료"
+
+            logger.info(f"Validation result: {'PASS' if is_valid else 'FAIL'} - {validation_result}")
+
+            return (is_valid, reason)
+
+        except Exception as e:
+            logger.error(f"Validation failed: {e}")
+            # 검증 실패 시 통과로 간주 (생성은 진행)
+            return (True, f"Validation error: {e}")
 
     def _generate_mock_story(self, context: Dict, store_type: str = "카페") -> str:
         """

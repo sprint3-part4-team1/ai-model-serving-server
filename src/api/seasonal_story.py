@@ -46,12 +46,13 @@ async def generate_seasonal_story(request: SeasonalStoryRequest):
     try:
         logger.info(f"Seasonal story generation requested: {request}")
 
-        # 1. 컨텍스트 정보 수집 (메뉴 카테고리 포함)
+        # 1. 컨텍스트 정보 수집 (메뉴 카테고리 + 매장 타입 포함)
         context = context_collector_service.get_full_context(
             location=request.location,
             lat=request.latitude,
             lon=request.longitude,
-            menu_categories=request.menu_categories
+            menu_categories=request.menu_categories,
+            store_type=request.store_type
         )
 
         # 2. 스토리 생성
@@ -120,12 +121,13 @@ async def generate_seasonal_story_variants(request: SeasonalStoryRequest):
     try:
         logger.info(f"Multi-variant story generation requested: {request}")
 
-        # 1. 컨텍스트 정보 수집
+        # 1. 컨텍스트 정보 수집 (메뉴 카테고리 + 매장 타입 포함)
         context = context_collector_service.get_full_context(
             location=request.location,
             lat=request.latitude,
             lon=request.longitude,
-            menu_categories=request.menu_categories
+            menu_categories=request.menu_categories,
+            store_type=request.store_type
         )
 
         # 2. 다중 스토리 생성
