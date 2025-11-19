@@ -44,3 +44,13 @@ class NutritionEstimate(Base):
     last_computed_at = Column(DateTime, default=datetime.now)
 
     menu_item = relationship("MenuItem", back_populates="nutrition")
+
+class Story(Base):
+    __tablename__ = "stories"
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    item_id = Column(Integer, ForeignKey("menu_items.id"), unique=True)
+    content = Column(String)
+    confidence = Column(DECIMAL)
+    last_computed_at = Column(DateTime, default=datetime.now)
+
+    menu_item = relationship("MenuItem", back_populates="story")
