@@ -96,7 +96,7 @@ def get_recommendations(request: RecommendationRequest):
     finally:
         service.close()
 
-# 추천 결과 포맷팅 엔드포인트
+# 추천 결과 포맷팅 엔드포인트 
 @app.post("/recommendations/formatted")
 def get_recommendations_formatted(request: RecommendationRequest):
     """
