@@ -54,6 +54,13 @@ Stores (매장)
  - confidence (DECIMAL) : AI 추정 신뢰도 (0~1)
  - last_computed_at (DATETIME) : 계산 시점
 
+6. **stories** (스토리텔링 결과)
+  - id (INT, PK, AUTO_INCREMENT)
+  - item_id (INT, FK → Menu_Items.id)
+  - content (TEXT) : 생성된 스토리 본문
+  - confidence (DECIMAL) : AI 추정 신뢰도 (0~1)
+  - last_computed_at (DATETIME) : 생성/갱신 시점
+
 
 ### 샘플데이터
 ```
