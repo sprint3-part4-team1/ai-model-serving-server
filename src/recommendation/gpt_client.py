@@ -6,10 +6,6 @@ OpenAI API를 통해 GPT-5.1과 통신하는 모듈
 import os
 import json
 from openai import OpenAI
-from dotenv import load_dotenv
-
-# 환경변수 로드
-load_dotenv()
 
 
 class GPTClient:
