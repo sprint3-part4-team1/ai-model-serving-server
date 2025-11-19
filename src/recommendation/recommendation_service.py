@@ -2,13 +2,12 @@
 추천 시스템 서비스 레이어
 팀 프로젝트 main.py에서 호출할 진입점
 """
-
 import sys
 import os
 
-from src.recommendation.intent_parser import IntentParser
-from src.recommendation.recommendation import MenuRecommender
-from src.recommendation.data_loader import DataLoader
+from recommendation.intent_parser import IntentParser
+from recommendation.recommendation import MenuRecommender
+from recommendation.data_loader import DataLoader
 
 
 class RecommendationService:
@@ -131,31 +130,3 @@ class RecommendationService:
         """리소스 정리"""
         if self.loader:
             self.loader.close()
-
-
-# 간단한 테스트 함수
-def test_service():
-    """서비스 테스트"""
-    service = RecommendationService()
-
-    print("🧪 추천 서비스 테스트\n")
-
-    # 테스트 케이스 1
-    print("=" * 60)
-    print("테스트 1: 칼로리 낮은 음료")
-    print("=" * 60)
-    result = service.get_recommendations("칼로리 낮은 음료 추천해줘", source='json')
-    print(service.format_output(result))
-
-    # 테스트 케이스 2
-    print("\n\n" + "=" * 60)
-    print("테스트 2: 고단백 메뉴")
-    print("=" * 60)
-    result = service.get_recommendations("고단백 메뉴 찾아줘", source='json')
-    print(service.format_output(result))
-
-    service.close()
-
-
-if __name__ == "__main__":
-    test_service()

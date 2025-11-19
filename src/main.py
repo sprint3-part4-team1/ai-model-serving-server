@@ -3,7 +3,7 @@ AI 메뉴 추천 시스템 - 메인 실행 파일
 """
 
 import sys
-from src.recommendation.recommendation_cli import run_recommendation_demo
+from recommendation.recommendation_cli import run_recommendation_demo
 
 def main():
     """메인 메뉴 (라우터 역할만)"""

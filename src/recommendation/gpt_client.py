@@ -92,33 +92,3 @@ def get_gpt_client():
     if _gpt_client_instance is None:
         _gpt_client_instance = GPTClient()
     return _gpt_client_instance
-
-
-if __name__ == "__main__":
-    # 테스트 코드
-    client = get_gpt_client()
-    test_input = "당신은 유용한 AI 어시스턴트입니다. 사용자에게 '안녕하세요! GPT-5.1 테스트 중입니다.'라는 인사에 대해 답변해 주세요."
-
-    print("--- 1. 기본 응답 테스트 (effort: low, verbosity: low) ---")
-    try:
-        response_text = client.create_response(input_text=test_input)
-        print(f"**GPT-5.1 응답**: {response_text}")
-    except Exception as e:
-        print(f"에러 발생: {e}")
-
-    # JSON 응답 테스트
-    print("\n--- 2. JSON 응답 테스트 ---")
-    json_input = "간단한 JSON 객체를 만들어줘. 키는 'status' 값은 'ok'. 오직 JSON만 출력해."
-    try:
-        response_text_json = client.create_response(
-            input_text=json_input,
-            reasoning={"effort": "high"}, 
-            text={"verbosity": "high"}
-        )
-
-        print(f"**GPT-5.1 JSON 원본 응답**: {response_text_json}")
-
-        parsed = client.parse_json_response(response_text_json)
-        print(f"**파싱된 JSON 객체**: {parsed}")
-    except Exception as e:
-        print(f"JSON 응답 테스트 에러 발생: {e}")

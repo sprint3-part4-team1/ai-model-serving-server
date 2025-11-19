@@ -2,7 +2,7 @@
 고객 요청 의도 파싱 모듈
 자연어 요청을 분석하여 필터링/정렬 조건을 추출
 """
-from src.recommendation.gpt_client import get_gpt_client
+from recommendation.gpt_client import get_gpt_client
 
 
 class IntentParser:
@@ -84,29 +84,3 @@ class IntentParser:
         parsed_intent = self.gpt_client.parse_json_response(response)
 
         return parsed_intent
-
-
-# 테스트 함수
-def test_intent_parser():
-    """의도 파싱 테스트"""
-    parser = IntentParser()
-
-    test_cases = [
-        "칼로리 낮은 음료 추천해줘",
-        "고단백 메인 메뉴 찾아줘",
-        "카페인 없는 디저트 뭐있어?",
-        "다이어트 중인데 뭐 먹을까",
-        "단백질 많고 칼로리 낮은 샐러드"
-    ]
-
-    for test_case in test_cases:
-        print(f"\n[요청] {test_case}")
-        try:
-            result = parser.parse_customer_request(test_case)
-            print(f"[결과] {result}")
-        except Exception as e:
-            print(f"[에러] {e}")
-
-
-if __name__ == "__main__":
-    test_intent_parser()

@@ -2,8 +2,7 @@
 메뉴 추천 엔진
 필터링, 정렬, 추천 문구 생성을 담당
 """
-
-from src.recommendation.gpt_client import get_gpt_client
+from recommendation.gpt_client import get_gpt_client
 
 
 class MenuRecommender:

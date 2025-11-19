@@ -4,7 +4,7 @@ main.py에서 호출할 대화형 인터페이스
 """
 
 import sys
-from src.recommendation.recommendation_service import RecommendationService
+from recommendation.recommendation_service import RecommendationService
 
 
 def run_recommendation_demo():
@@ -75,8 +75,3 @@ def run_recommendation_demo():
 
     # 종료
     service.close()
-
-
-# 간단한 테스트 실행
-if __name__ == "__main__":
-    run_recommendation_demo()
