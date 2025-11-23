@@ -61,9 +61,6 @@ backend/test_openai_key.py
 credentials.json
 secrets.json
 
-# Streamlit
-.streamlit/secrets.toml
-
 # Test files
 test_*.py
 *_test.py
