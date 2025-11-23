@@ -56,9 +56,44 @@ nul
 
 # Sensitive data
 .env
+backend/test_openai_key.py
 *.key
 credentials.json
 secrets.json
 
 # Streamlit
 .streamlit/secrets.toml
+
+# Test files
+test_*.py
+*_test.py
+
+# Documentation and planning files
+*.md
+!README.md
+!DEPLOYMENT_GUIDE.md
+
+# Archive folders
+_archive/
+_archive_old_project/
+
+# Temporary project folders
+251117/
+251117_2/
+251121/
+
+# Output files
+outputs/
+
+# External repositories
+DeepSeek-VL/
+
+# Claude settings
+.claude/
+
+# Model files (large binary files)
+backend/data/models/
+*.safetensors
+*.bin
+*.ckpt
+*.pth
