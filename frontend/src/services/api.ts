@@ -22,7 +22,7 @@ import type {
 
 // Axios 인스턴스 생성
 const api: AxiosInstance = axios.create({
-  baseURL: import.meta.env.VITE_API_URL || 'http://localhost:8000',
+  baseURL: import.meta.env.VITE_API_URL || 'http://localhost:9090',
   timeout: 300000, // 5분 (이미지 생성은 시간이 오래 걸릴 수 있음)
   headers: {
     'Content-Type': 'application/json',
