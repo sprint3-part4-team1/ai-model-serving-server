@@ -316,7 +316,7 @@ export default function SeasonalStoryPage() {
                         })
                       ) : (
                         <Typography variant="body2" color="text.secondary">
-                          데이터 없음
+                          {result.context.google_trends_status?.message || '데이터 없음'}
                         </Typography>
                       )}
                     </Box>
@@ -377,7 +377,7 @@ export default function SeasonalStoryPage() {
                         })
                       ) : (
                         <Typography variant="body2" color="text.secondary">
-                          데이터 없음
+                          {result.context.instagram_trends_status?.message || '데이터 없음'}
                         </Typography>
                       )}
                     </Box>
