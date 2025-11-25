@@ -410,8 +410,8 @@ class ContextCollectorService:
                 "koreanfood", "kfood", "서울맛집", "강남맛집"
             ]
 
-            # 매장 타입 키워드 + 일반 해시태그 조합 (rate limit 방지를 위해 개수 제한)
-            candidate_hashtags = store_keywords[:5] + general_hashtags[:3]
+            # 매장 타입 키워드 + 일반 해시태그 조합 (15개로 통일)
+            candidate_hashtags = store_keywords[:10] + general_hashtags[:5]
 
             hashtag_scores = []
 
