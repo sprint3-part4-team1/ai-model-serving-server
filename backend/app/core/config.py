@@ -80,7 +80,7 @@ class Settings(BaseSettings):
     DEFAULT_IMAGE_HEIGHT: int = 1024
     MAX_IMAGE_WIDTH: int = 2048
     MAX_IMAGE_HEIGHT: int = 2048
-    DEFAULT_NUM_INFERENCE_STEPS: int = 50
+    DEFAULT_NUM_INFERENCE_STEPS: int = 15  # CPU 환경 고려 (원래: 50)
     MAX_NUM_INFERENCE_STEPS: int = 100
     DEFAULT_GUIDANCE_SCALE: float = 7.5
 
