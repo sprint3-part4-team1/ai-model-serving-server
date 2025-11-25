@@ -5,6 +5,7 @@ Context Collector Service
 
 import os
 import requests
+import time
 from datetime import datetime
 from typing import Dict, Optional, List
 import pytz
@@ -26,10 +27,15 @@ class ContextCollectorService:
         # 한국 시간대
         self.korea_tz = pytz.timezone('Asia/Seoul')
 
-        # 트렌드 캐시 (10분 유지)
-        self._trends_cache = None
-        self._trends_cache_time = None
-        self._trends_cache_ttl = 600  # 10분 (초 단위)
+        # Google Trends 독립 캐시 (10분 유지)
+        self._google_trends_cache = {}
+        self._google_trends_cache_time = {}
+        self._google_trends_cache_ttl = 600  # 10분 (초 단위)
+
+        # Instagram Trends 독립 캐시 (30분 유지 - API 제한 고려)
+        self._instagram_trends_cache = {}
+        self._instagram_trends_cache_time = {}
+        self._instagram_trends_cache_ttl = 1800  # 30분 (초 단위)
 
     def get_full_context(
         self,
@@ -249,33 +255,52 @@ class ContextCollectorService:
                 "primary": [...]  # 우선순위가 가장 높은 트렌드
             }
         """
-        import time
-
-        # 캐시 확인 (매장 타입별 별도 캐시)
         current_time = time.time()
-        cache_key = f"_all_trends_cache_{store_type}"
-        cache_time_key = f"_all_trends_cache_time_{store_type}"
-
-        if not hasattr(self, cache_key):
-            setattr(self, cache_key, None)
-            setattr(self, cache_time_key, None)
-
-        cached_data = getattr(self, cache_key)
-        cached_time = getattr(self, cache_time_key)
-
-        if (cached_data is not None and
-            cached_time is not None and
-            current_time - cached_time < self._trends_cache_ttl):
-            logger.info(f"Using cached all trends data for store type: {store_type}")
-            return cached_data
-
         logger.info(f"Fetching all trends from multiple sources for store type: {store_type}")
 
-        # 각 소스별로 트렌드 수집 (매장 타입 기반)
-        google_trends = self._get_google_trends(limit, store_type)
-        instagram_trends = self._get_instagram_trends(limit, store_type)
+        # 1. Google Trends 수집 (독립적 캐싱 + 에러 격리)
+        google_trends = []
+        try:
+            # 캐시 확인
+            cache_key = f"google_{store_type}"
+            cached_time = self._google_trends_cache_time.get(cache_key)
 
-        # 우선순위 결정
+            if cached_time and (current_time - cached_time < self._google_trends_cache_ttl):
+                google_trends = self._google_trends_cache.get(cache_key, [])
+                logger.info(f"Using cached Google Trends for {store_type}: {len(google_trends)} items")
+            else:
+                # 새로 수집
+                google_trends = self._get_google_trends(limit, store_type)
+                # 캐시 저장
+                self._google_trends_cache[cache_key] = google_trends
+                self._google_trends_cache_time[cache_key] = current_time
+                logger.info(f"Fetched Google Trends for {store_type}: {len(google_trends)} items")
+        except Exception as e:
+            logger.error(f"Failed to fetch Google Trends: {e}")
+            google_trends = []
+
+        # 2. Instagram Trends 수집 (독립적 캐싱 + 에러 격리)
+        instagram_trends = []
+        try:
+            # 캐시 확인
+            cache_key = f"instagram_{store_type}"
+            cached_time = self._instagram_trends_cache_time.get(cache_key)
+
+            if cached_time and (current_time - cached_time < self._instagram_trends_cache_ttl):
+                instagram_trends = self._instagram_trends_cache.get(cache_key, [])
+                logger.info(f"Using cached Instagram Trends for {store_type}: {len(instagram_trends)} items")
+            else:
+                # 새로 수집
+                instagram_trends = self._get_instagram_trends(limit, store_type)
+                # 캐시 저장
+                self._instagram_trends_cache[cache_key] = instagram_trends
+                self._instagram_trends_cache_time[cache_key] = current_time
+                logger.info(f"Fetched Instagram Trends for {store_type}: {len(instagram_trends)} items")
+        except Exception as e:
+            logger.error(f"Failed to fetch Instagram Trends: {e}")
+            instagram_trends = []
+
+        # 3. 우선순위 결정
         if google_trends:
             primary = google_trends
         elif instagram_trends:
@@ -288,10 +313,6 @@ class ContextCollectorService:
             "instagram": instagram_trends,
             "primary": primary
         }
-
-        # 캐시 저장
-        setattr(self, cache_key, result)
-        setattr(self, cache_time_key, current_time)
 
         logger.info(f"All trends collected - Google: {len(google_trends)}, Instagram: {len(instagram_trends)}")
         return result
@@ -438,7 +459,7 @@ class ContextCollectorService:
                         })
 
                     # Rate limit 방지를 위한 지연
-                    time_module.sleep(0.5)
+                    time.sleep(0.5)
 
                 except Exception as e:
                     logger.warning(f"Failed to check hashtag '{hashtag}': {e}")
