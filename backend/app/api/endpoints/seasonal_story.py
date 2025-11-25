@@ -3,9 +3,11 @@ Seasonal Story API Endpoints
 시즈널 스토리 생성 API 엔드포인트
 """
 
-from fastapi import APIRouter, HTTPException, status
+from fastapi import APIRouter, HTTPException, status, Depends
+from sqlalchemy.orm import Session
 from datetime import datetime
 import pytz
+import time
 
 from app.schemas.seasonal_story import (
     SeasonalStoryRequest,
@@ -17,6 +19,9 @@ from app.schemas.seasonal_story import (
 )
 from app.services.context_collector import context_collector_service
 from app.services.story_generator import story_generator_service
+from app.services.menu_service import menu_service
+from app.models.seasonal_story import SeasonalStory
+from app.core.database import get_db
 from app.core.logging import app_logger as logger
 
 
@@ -33,13 +38,18 @@ router = APIRouter()
         500: {"description": "서버 오류", "model": ErrorResponse}
     }
 )
-async def generate_seasonal_story(request: SeasonalStoryRequest):
+async def generate_seasonal_story(
+    request: SeasonalStoryRequest,
+    db: Session = Depends(get_db)
+):
     """
     시즈널 스토리 생성
 
     현재 날씨, 계절, 시간대, 트렌드 정보를 수집하여
     LLM 기반으로 감성적인 추천 문구를 생성합니다.
     """
+    start_time = time.time()
+
     try:
         logger.info(f"Seasonal story generation requested: {request}")
 
@@ -52,17 +62,56 @@ async def generate_seasonal_story(request: SeasonalStoryRequest):
             store_type=request.store_type
         )
 
-        # 2. 스토리 생성
+        # 2. 메뉴 정보 조회 (store_id가 있는 경우)
+        menu_items = []
+        menu_text = None
+        if request.store_id:
+            try:
+                menu_items = menu_service.get_popular_menus(db, request.store_id, limit=5)
+                if menu_items:
+                    menu_text = menu_service.format_menus_for_story(menu_items)
+                    logger.info(f"Retrieved {len(menu_items)} menus for store {request.store_id}")
+            except Exception as e:
+                logger.warning(f"Failed to get menus for store {request.store_id}: {e}")
+
+        # 3. 스토리 생성
         story = story_generator_service.generate_story(
             context=context,
             store_name=request.store_name,
             store_type=request.store_type,
             menu_categories=request.menu_categories,
-            selected_trends=request.selected_trends
+            selected_trends=request.selected_trends,
+            menu_text=menu_text  # 메뉴 정보 전달
         )
 
-        # 3. 응답 생성
+        # 4. DB에 저장
+        try:
+            seasonal_story = SeasonalStory(
+                store_id=request.store_id,
+                store_name=request.store_name,
+                store_type=request.store_type,
+                story_content=story,
+                weather_condition=context.get("weather", {}).get("condition"),
+                temperature=context.get("weather", {}).get("temperature"),
+                season=context.get("season"),
+                time_period=context.get("time_info", {}).get("period"),
+                google_trends=context.get("google_trends", []),
+                instagram_trends=context.get("instagram_trends", []),
+                selected_trends=request.selected_trends,
+                menu_items=[{"id": m["id"], "name": m["name"], "price": m["price"]} for m in menu_items] if menu_items else None
+            )
+            db.add(seasonal_story)
+            db.commit()
+            db.refresh(seasonal_story)
+            logger.info(f"Seasonal story saved to DB with ID: {seasonal_story.id}")
+        except Exception as e:
+            logger.error(f"Failed to save story to DB: {e}")
+            db.rollback()
+
+        # 5. 응답 생성
         korea_tz = pytz.timezone('Asia/Seoul')
+        generation_time = time.time() - start_time
+
         response_data = {
             "story": story,
             "context": {
@@ -71,7 +120,9 @@ async def generate_seasonal_story(request: SeasonalStoryRequest):
                 "time_info": context.get("time_info"),
                 "trends": context.get("trends", []),
                 "google_trends": context.get("google_trends", []),
-                "instagram_trends": context.get("instagram_trends", [])
+                "instagram_trends": context.get("instagram_trends", []),
+                "google_trends_status": context.get("google_trends_status"),
+                "instagram_trends_status": context.get("instagram_trends_status")
             },
             "store_info": {
                 "store_id": request.store_id,
@@ -79,7 +130,9 @@ async def generate_seasonal_story(request: SeasonalStoryRequest):
                 "store_type": request.store_type,
                 "location": request.location
             },
-            "generated_at": datetime.now(korea_tz).isoformat()
+            "menu_items": menu_items if menu_items else [],
+            "generated_at": datetime.now(korea_tz).isoformat(),
+            "generation_time": round(generation_time, 2)
         }
 
         logger.info("Seasonal story generated successfully")

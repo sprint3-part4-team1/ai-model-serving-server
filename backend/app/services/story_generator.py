@@ -24,7 +24,8 @@ class StoryGeneratorService:
         store_name: Optional[str] = None,
         store_type: Optional[str] = "카페",
         menu_categories: Optional[List[str]] = None,
-        selected_trends: Optional[List[str]] = None
+        selected_trends: Optional[List[str]] = None,
+        menu_text: Optional[str] = None
     ) -> str:
         """
         컨텍스트 기반 스토리 문구 생성
@@ -35,6 +36,7 @@ class StoryGeneratorService:
             store_type: 매장 타입 (카페, 레스토랑 등)
             menu_categories: 메뉴 카테고리 리스트
             selected_trends: 사용자가 선택한 트렌드 키워드 (우선적으로 반영)
+            menu_text: 실제 메뉴 정보 텍스트 (예: "아메리카노(3,500원), 카페라떼(4,000원)")
 
         Returns:
             생성된 스토리 문구 (1-2문장)
@@ -45,7 +47,7 @@ class StoryGeneratorService:
 
         try:
             # Prompt 생성
-            prompt = self._build_prompt(context, store_name, store_type, menu_categories, selected_trends)
+            prompt = self._build_prompt(context, store_name, store_type, menu_categories, selected_trends, menu_text)
 
             logger.info(f"Generating story with prompt: {prompt[:100]}...")
 
@@ -85,7 +87,8 @@ class StoryGeneratorService:
         store_name: Optional[str],
         store_type: str,
         menu_categories: Optional[List[str]],
-        selected_trends: Optional[List[str]] = None
+        selected_trends: Optional[List[str]] = None,
+        menu_text: Optional[str] = None
     ) -> str:
         """
         GPT 프롬프트 생성
@@ -96,6 +99,7 @@ class StoryGeneratorService:
             store_type: 매장 타입
             menu_categories: 메뉴 카테고리
             selected_trends: 사용자가 선택한 트렌드
+            menu_text: 실제 메뉴 정보
 
         Returns:
             생성된 프롬프트
@@ -130,8 +134,14 @@ class StoryGeneratorService:
         # 트렌드 정보
         trend_str = ", ".join(trends[:3]) if trends else ""
 
-        # 메뉴 카테고리
-        menu_str = ", ".join(menu_categories) if menu_categories else "음료"
+        # 메뉴 정보
+        if menu_text:
+            # 실제 메뉴 정보가 있으면 사용
+            menu_info = f"추천 메뉴: {menu_text}"
+        else:
+            # 없으면 메뉴 카테고리 사용
+            menu_str = ", ".join(menu_categories) if menu_categories else "음료"
+            menu_info = f"주요 메뉴: {menu_str}"
 
         # 매장 타입별 예시 생성
         examples = self._get_examples_by_store_type(store_type)
@@ -141,7 +151,7 @@ class StoryGeneratorService:
 **매장 정보:**
 - 매장 이름: {store_name or store_type}
 - 매장 타입: {store_type}
-- 주요 메뉴: {menu_str}
+- {menu_info}
 
 **현재 상황:**
 - 날씨: {weather_desc}, 온도 {temperature}도
