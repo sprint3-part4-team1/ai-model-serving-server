@@ -10,6 +10,7 @@ import MenuBoardPage from '@pages/MenuBoardPage'
 import SeasonalStoryPage from '@pages/SeasonalStoryPage'
 import MenuRecommendationPage from '@pages/MenuRecommendationPage'
 import MenuStorytellingPage from '@pages/MenuStorytellingPage'
+import MenuGenerationPage from '@pages/MenuGenerationPage'
 
 function App() {
   return (
@@ -25,6 +26,7 @@ function App() {
           <Route path="seasonal-story" element={<SeasonalStoryPage />} />
           <Route path="menu-recommendation" element={<MenuRecommendationPage />} />
           <Route path="menu-storytelling" element={<MenuStorytellingPage />} />
+          <Route path="menu-generation" element={<MenuGenerationPage />} />
         </Route>
       </Routes>
     </Box>

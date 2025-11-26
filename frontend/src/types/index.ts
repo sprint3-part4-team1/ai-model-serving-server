@@ -228,6 +228,56 @@ export interface MenuItem {
   history?: string
 }
 
+// ============ 메뉴판 생성 ============
+export interface MenuItemCreate {
+  name: string
+  price?: number
+  image_url?: string
+  description?: string
+  ingredients?: string[]
+}
+
+export interface MenuCategoryCreate {
+  category_name: string
+  category_description?: string
+  items: MenuItemCreate[]
+}
+
+export interface MenuGenerationRequest {
+  store_id: number
+  categories: MenuCategoryCreate[]
+  auto_generate_images?: boolean
+  auto_generate_descriptions?: boolean
+  image_style?: string
+}
+
+export interface GeneratedMenuItem {
+  id: number
+  name: string
+  description?: string
+  price?: number
+  image_url?: string
+  is_ai_generated_image: boolean
+  is_ai_generated_description: boolean
+}
+
+export interface GeneratedMenuCategory {
+  id: number
+  name: string
+  description?: string
+  items: GeneratedMenuItem[]
+}
+
+export interface MenuGenerationResponse {
+  success: boolean
+  data: {
+    categories: GeneratedMenuCategory[]
+    total_categories: number
+    total_items: number
+    generation_time: number
+  }
+}
+
 // ============ UI 상태 관리 ============
 export interface GenerationState {
   isLoading: boolean

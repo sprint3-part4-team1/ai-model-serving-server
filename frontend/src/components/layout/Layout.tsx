@@ -26,6 +26,7 @@ import {
   AutoAwesome as SparklesIcon,
   FilterList as FilterListIcon,
   MenuBook as MenuBookIcon,
+  AddBox as AddBoxIcon,
 } from '@mui/icons-material'
 
 const drawerWidth = 240
@@ -39,6 +40,7 @@ interface MenuItem {
 const menuItems: MenuItem[] = [
   { path: '/', label: '홈', icon: <HomeIcon /> },
   { path: '/menu-board', label: 'AI 메뉴판', icon: <RestaurantIcon /> },
+  { path: '/menu-generation', label: '메뉴판 생성', icon: <AddBoxIcon /> },
   { path: '/ad-copy', label: '광고 문구 생성', icon: <ArticleIcon /> },
   { path: '/image-generator', label: '이미지 생성', icon: <ImageIcon /> },
   { path: '/background-editor', label: '배경 편집', icon: <AutoFixHighIcon /> },

@@ -18,6 +18,8 @@ import type {
   ContextInfo,
   MenuFilterRequest,
   MenuFilterResponse,
+  MenuGenerationRequest,
+  MenuGenerationResponse,
 } from '@types/index'
 
 // Axios 인스턴스 생성
@@ -284,7 +286,7 @@ export const seasonalStoryApi = {
   },
 }
 
-// ============ 메뉴 필터링 API (향후 구현) ============
+// ============ 메뉴 필터링 API ============
 export const menuApi = {
   /**
    * AI 기반 메뉴 필터링/정렬
@@ -294,6 +296,28 @@ export const menuApi = {
       '/api/v1/menu/filter',
       request
     )
+    return data
+  },
+}
+
+// ============ 메뉴판 생성 API ============
+export const menuGenerationApi = {
+  /**
+   * AI 기반 메뉴판 생성
+   */
+  async generate(request: MenuGenerationRequest): Promise<MenuGenerationResponse> {
+    const { data } = await api.post<MenuGenerationResponse>(
+      '/api/v1/menu-generation/generate',
+      request
+    )
+    return data
+  },
+
+  /**
+   * 헬스 체크
+   */
+  async health(): Promise<{ success: boolean; data: { status: string } }> {
+    const { data } = await api.get('/api/v1/menu-generation/health')
     return data
   },
 }
