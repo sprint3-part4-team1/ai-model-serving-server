@@ -142,5 +142,5 @@ def get_recommendations_formatted(request: RecommendationRequest):
 
 # uvicorn 실행 (개발 환경용)
 if __name__ == "__main__":
-    port = int(os.getenv("PORT", 9090))
+    port = int(os.getenv("PORT", "9090"))
     uvicorn.run("app:app", host="0.0.0.0", port=port, reload=True)

@@ -7,55 +7,48 @@ import os
 import json
 from openai import OpenAI
 
+from constants import (
+    GPT_MODEL,
+    DEFAULT_REASONING,
+    DEFAULT_TEXT
+)
 
 class GPTClient:
-    """GPT-5.1 API 연동 클라이언트 (client.responses.create 스타일)"""
+    """GPT API 연동 클라이언트 (client.responses.create 스타일)"""
 
-    # 새로운 파라미터 구조를 위한 기본값 설정
-    DEFAULT_REASONING = {"effort": "low"}
-    DEFAULT_TEXT = {"verbosity": "low"}
-
-    def __init__(self, api_key=None, model="gpt-5.1"):
+    def __init__(self, api_key=None, model="gpt-5-mini"):
         """
         GPT 클라이언트 초기화
 
         Args:
-            api_key (str, optional): OpenAI API 키. None이면 환경변수에서 로드
-            model (str): 사용할 모델 이름 (기본: gpt-5.1)
+            api_key (str): OpenAI API 키 (없으면 환경변수에서 로드)
+            model (str): 사용할 모델 (기본값: constants.GPT_MODEL)
         """
         self.api_key = api_key or os.getenv("OPENAI_API_KEY")
-        if not self.api_key:
-            raise ValueError("OpenAI API key가 설정되지 않았습니다. .env 파일을 확인하세요.")
-
+        self.model = model or GPT_MODEL
         self.client = OpenAI(api_key=self.api_key)
-        self.model = model
 
-    def create_response(self, 
-                        input_text: str, 
-                        reasoning: dict = None, 
-                        text: dict = None):
+    def create_response(self, input_text, reasoning=None, text=None):
         """
-        GPT-5.1 Responses API (client.responses.create) 호출
-
-        기존의 messages 리스트 대신, 단일 input 문자열을 사용함! 
+        GPT 응답 생성
         
         Args:
-            input_text (str): 모델에 전달할 프롬프트 텍스트. (기존 messages의 user/system 역할 병합 필요)
-            reasoning (dict, optional): 추론 관련 설정 (e.g., {"effort": "high"})
-            text (dict, optional): 텍스트 출력 관련 설정 (e.g., {"verbosity": "high"})
-
+            input_text (str): 입력 프롬프트
+            reasoning (dict): 추론 설정 (기본값: constants.DEFAULT_REASONING)
+            text (dict): 텍스트 설정 (기본값: constants.DEFAULT_TEXT)
+        
         Returns:
-            str: GPT 응답 텍스트 (output_text)
+            str: GPT 응답 텍스트
         """
-        try:
-            _reasoning = reasoning if reasoning is not None else self.DEFAULT_REASONING
-            _text = text if text is not None else self.DEFAULT_TEXT
+        reasoning = reasoning or DEFAULT_REASONING
+        text = text or DEFAULT_TEXT
 
+        try:
             response = self.client.responses.create(
                 model=self.model,
                 input=input_text,
-                reasoning=_reasoning,
-                text=_text,
+                reasoning=reasoning,
+                text=text,
             )
             return response.output_text
 

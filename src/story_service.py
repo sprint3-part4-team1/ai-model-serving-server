@@ -101,7 +101,7 @@ def generate_story_for_item(item_id: int, max_retries: int = 5):
         # DB에 저장/업데이트
         if existing_story:
             existing_story.content = story_data.get("content")
-            existing_story.confidence = confidence
+            existing_story.confidence = Decimal(str(confidence))
             existing_story.last_computed_at = datetime.now()
         else:
             new_story = Story(

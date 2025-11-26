@@ -47,6 +47,8 @@ class MenuItem(Base):
     ingredients = relationship("ItemIngredient", back_populates="menu_item")
     nutrition = relationship("NutritionEstimate", back_populates="menu_item", uselist=False)
 
+    story = relationship("Story", back_populates="menu_item", uselist=False)
+    
 class ItemIngredient(Base):
     __tablename__ = "item_ingredients"
     
@@ -79,8 +81,8 @@ class Story(Base):
     __tablename__ = "stories"
     id = Column(Integer, primary_key=True, autoincrement=True)
     item_id = Column(Integer, ForeignKey("menu_items.id"), unique=True)
-    content = Column(String)
-    confidence = Column(DECIMAL)
+    content = Column(Text)
+    confidence = Column(DECIMAL(5,2))
     last_computed_at = Column(DateTime, default=datetime.now)
 
     menu_item = relationship("MenuItem", back_populates="story")
