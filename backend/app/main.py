@@ -191,13 +191,14 @@ os.makedirs(ocr_results_dir, exist_ok=True)
 app.mount("/static/ocr_results", StaticFiles(directory=ocr_results_dir), name="ocr_results")
 
 # API 라우터 등록
-from app.api.endpoints import ad_copy, text_to_image, background, seasonal_story, menu, menu_ocr
+from app.api.endpoints import ad_copy, text_to_image, background, seasonal_story, menu, menu_ocr, menu_generation
 app.include_router(ad_copy.router, prefix="/api/v1/ad-copy", tags=["광고 문구 생성"])
 app.include_router(text_to_image.router, prefix="/api/v1/text-to-image", tags=["텍스트→이미지"])
 app.include_router(background.router, prefix="/api/v1/background", tags=["배경 처리"])
 app.include_router(seasonal_story.router, prefix="/api/v1/seasonal-story", tags=["시즈널 스토리"])
 app.include_router(menu.router, prefix="/api/v1/menu", tags=["메뉴 필터링"])
 app.include_router(menu_ocr.router, prefix="/api/v1/menu-ocr", tags=["메뉴판 OCR/Repaint"])
+app.include_router(menu_generation.router, prefix="/api/v1/menu-generation", tags=["메뉴판 생성"])
 
 # 추후 추가할 라우터들
 # from app.api.endpoints import image_to_image, templates
