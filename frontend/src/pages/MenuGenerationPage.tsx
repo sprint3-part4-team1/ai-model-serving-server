@@ -343,7 +343,7 @@ function MenuGenerationPage() {
       </Box>
 
       {/* 매장 메뉴 조회 */}
-      <Card sx={{ mb: 3, bgcolor: 'primary.50' }}>
+      <Card sx={{ mb: 2, bgcolor: 'primary.50' }}>
         <CardContent>
           <Typography variant="h6" gutterBottom>
             매장 메뉴 조회
@@ -351,10 +351,11 @@ function MenuGenerationPage() {
           <Typography variant="body2" color="text.secondary" gutterBottom>
             매장 ID 0번: 샘플 메뉴판 / 1번 이상: 실제 생성된 메뉴판
           </Typography>
-          <Grid container spacing={2} alignItems="center" sx={{ mt: 1 }}>
+          <Grid container spacing={1.5} alignItems="center" sx={{ mt: 1 }}>
             <Grid item xs={12} sm={6} md={4}>
               <TextField
                 fullWidth
+                size="small"
                 label="조회할 매장 ID"
                 type="number"
                 value={viewStoreId}
@@ -377,15 +378,16 @@ function MenuGenerationPage() {
       </Card>
 
       {/* 설정 */}
-      <Card sx={{ mb: 3 }}>
+      <Card sx={{ mb: 2 }}>
         <CardContent>
           <Typography variant="h6" gutterBottom>
             메뉴 생성 설정
           </Typography>
-          <Grid container spacing={2} alignItems="center">
+          <Grid container spacing={1.5} alignItems="center">
             <Grid item xs={12} sm={4}>
               <TextField
                 fullWidth
+                size="small"
                 label="생성할 매장 ID (1부터)"
                 type="number"
                 value={storeId}
@@ -420,14 +422,15 @@ function MenuGenerationPage() {
 
       {/* 카테고리 입력 */}
       {categories.map((category, categoryIndex) => (
-        <Card key={categoryIndex} sx={{ mb: 3 }}>
+        <Card key={categoryIndex} sx={{ mb: 2 }}>
           <CardContent>
-            <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
+            <Box sx={{ display: 'flex', alignItems: 'center', mb: 1.5 }}>
               <Typography variant="h6" sx={{ flexGrow: 1 }}>
                 카테고리 {categoryIndex + 1}
               </Typography>
               {categories.length > 1 && (
                 <IconButton
+                  size="small"
                   color="error"
                   onClick={() => handleRemoveCategory(categoryIndex)}
                 >
@@ -438,79 +441,88 @@ function MenuGenerationPage() {
 
             <TextField
               fullWidth
+              size="small"
               label="카테고리 이름 (예: 파스타, 스테이크)"
               value={category.category_name}
               onChange={(e) => handleCategoryNameChange(categoryIndex, e.target.value)}
-              sx={{ mb: 2 }}
+              sx={{ mb: 1.5 }}
             />
 
-            <Divider sx={{ my: 2 }} />
+            <Divider sx={{ my: 1.5 }} />
 
-            {/* 메뉴 아이템 */}
-            {category.items.map((item, itemIndex) => (
-              <Paper key={itemIndex} sx={{ p: 2, mb: 2, bgcolor: 'grey.50' }}>
-                <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
-                  <Typography variant="subtitle1" sx={{ flexGrow: 1 }}>
-                    메뉴 {itemIndex + 1}
-                  </Typography>
-                  {category.items.length > 1 && (
-                    <IconButton
-                      size="small"
-                      color="error"
-                      onClick={() => handleRemoveItem(categoryIndex, itemIndex)}
-                    >
-                      <Delete />
-                    </IconButton>
-                  )}
-                </Box>
-
-                <Grid container spacing={2}>
-                  <Grid item xs={12} sm={6}>
-                    <TextField
-                      fullWidth
-                      label="메뉴 이름 (필수)"
-                      value={item.name}
-                      onChange={(e) =>
-                        handleItemChange(categoryIndex, itemIndex, 'name', e.target.value)
-                      }
-                      required
-                    />
-                  </Grid>
-                  <Grid item xs={12} sm={6}>
-                    <TextField
-                      fullWidth
-                      label="가격"
-                      type="number"
-                      value={item.price || ''}
-                      onChange={(e) =>
-                        handleItemChange(
-                          categoryIndex,
-                          itemIndex,
-                          'price',
-                          e.target.value ? parseFloat(e.target.value) : undefined
-                        )
-                      }
-                    />
-                  </Grid>
-                  <Grid item xs={12}>
-                    <Box>
-                      <Typography variant="body2" color="text.secondary" gutterBottom>
-                        재료 (Enter로 추가)
+            {/* 메뉴 아이템 - Grid 레이아웃 (가로 3개씩) */}
+            <Grid container spacing={1.5}>
+              {category.items.map((item, itemIndex) => (
+                <Grid item xs={12} sm={6} md={4} key={itemIndex}>
+                  <Paper sx={{ p: 1.5, bgcolor: 'grey.50', height: '100%' }}>
+                    <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
+                      <Typography variant="body2" fontWeight="bold" sx={{ flexGrow: 1 }}>
+                        메뉴 {itemIndex + 1}
                       </Typography>
-                      <TextField
-                        fullWidth
-                        size="small"
-                        placeholder="재료 입력 후 Enter"
-                        onKeyPress={(e) => {
-                          if (e.key === 'Enter') {
-                            const input = e.target as HTMLInputElement
-                            handleAddIngredient(categoryIndex, itemIndex, input.value)
-                            input.value = ''
-                            e.preventDefault()
+                      {category.items.length > 1 && (
+                        <IconButton
+                          size="small"
+                          color="error"
+                          onClick={() => handleRemoveItem(categoryIndex, itemIndex)}
+                        >
+                          <Delete />
+                        </IconButton>
+                      )}
+                    </Box>
+
+                    {/* 2열 레이아웃: 왼쪽 입력필드, 오른쪽 재료 Chip */}
+                    <Box sx={{ display: 'flex', gap: 1 }}>
+                      {/* 왼쪽: 입력 필드들 */}
+                      <Box sx={{ flex: '0 0 55%', display: 'flex', flexDirection: 'column', gap: 1 }}>
+                        <TextField
+                          fullWidth
+                          size="small"
+                          label="메뉴 이름"
+                          value={item.name}
+                          onChange={(e) =>
+                            handleItemChange(categoryIndex, itemIndex, 'name', e.target.value)
                           }
-                        }}
-                      />
-                      <Box sx={{ mt: 1, display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
+                          required
+                        />
+
+                        <TextField
+                          fullWidth
+                          size="small"
+                          label="가격"
+                          type="number"
+                          value={item.price || ''}
+                          onChange={(e) =>
+                            handleItemChange(
+                              categoryIndex,
+                              itemIndex,
+                              'price',
+                              e.target.value ? parseFloat(e.target.value) : undefined
+                            )
+                          }
+                        />
+
+                        <Box>
+                          <Typography variant="caption" color="text.secondary">
+                            재료
+                          </Typography>
+                          <TextField
+                            fullWidth
+                            size="small"
+                            placeholder="Enter로 추가"
+                            onKeyPress={(e) => {
+                              if (e.key === 'Enter') {
+                                const input = e.target as HTMLInputElement
+                                handleAddIngredient(categoryIndex, itemIndex, input.value)
+                                input.value = ''
+                                e.preventDefault()
+                              }
+                            }}
+                          />
+                        </Box>
+                      </Box>
+
+                      {/* 오른쪽: 재료 Chip 목록 */}
+                      <Box sx={{ flex: 1, display: 'flex', flexWrap: 'wrap', gap: 0.5, alignContent: 'flex-start' }}>
                         {item.ingredients?.map((ingredient, ingredientIndex) => (
                           <Chip
                             key={ingredientIndex}
@@ -523,10 +535,10 @@ function MenuGenerationPage() {
                         ))}
                       </Box>
                     </Box>
-                  </Grid>
+                  </Paper>
                 </Grid>
-              </Paper>
-            ))}
+              ))}
+            </Grid>
 
             <Button
               startIcon={<Add />}
