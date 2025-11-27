@@ -84,3 +84,41 @@ class MenuFilterResponse(BaseModel):
                 }
             }
         }
+
+
+class MenuItemUpdateRequest(BaseModel):
+    """메뉴 아이템 업데이트 요청"""
+    name: Optional[str] = Field(None, description="메뉴 이름")
+    description: Optional[str] = Field(None, description="메뉴 설명")
+    price: Optional[float] = Field(None, description="가격")
+    image_url: Optional[str] = Field(None, description="이미지 URL (상대경로)")
+
+    class Config:
+        json_schema_extra = {
+            "example": {
+                "name": "아메리카노",
+                "description": "깊고 진한 에스프레소의 맛",
+                "price": 4500,
+                "image_url": "/data/uploads/menu_images/americano.jpg"
+            }
+        }
+
+
+class MenuItemUpdateResponse(BaseModel):
+    """메뉴 아이템 업데이트 응답"""
+    success: bool = Field(True, description="성공 여부")
+    data: dict = Field(..., description="업데이트된 메뉴 정보")
+
+    class Config:
+        json_schema_extra = {
+            "example": {
+                "success": True,
+                "data": {
+                    "id": 1,
+                    "name": "아메리카노",
+                    "description": "깊고 진한 에스프레소의 맛",
+                    "price": 4500,
+                    "image_url": "/data/uploads/menu_images/americano.jpg"
+                }
+            }
+        }

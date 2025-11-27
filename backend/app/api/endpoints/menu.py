@@ -3,13 +3,16 @@ Menu API Endpoints
 메뉴 필터링 API 엔드포인트
 """
 
-from fastapi import APIRouter, HTTPException, status, Depends
+from fastapi import APIRouter, HTTPException, status, Depends, UploadFile, File
 from sqlalchemy.orm import Session
-from app.schemas.menu import MenuFilterRequest, MenuFilterResponse
+from app.schemas.menu import MenuFilterRequest, MenuFilterResponse, MenuItemUpdateRequest, MenuItemUpdateResponse
 from app.services.menu_filter_service import menu_filter_service
 from app.core.logging import app_logger as logger
 from app.core.database import get_db
 from app.models.menu import Menu, MenuItem
+import os
+import uuid
+from pathlib import Path
 
 
 router = APIRouter()
@@ -140,6 +143,182 @@ async def get_store_menus(store_id: int, db: Session = Depends(get_db)):
                 "error": {
                     "code": 500,
                     "message": "메뉴 조회 중 오류가 발생했습니다.",
+                    "details": str(e)
+                }
+            }
+        )
+
+
+@router.put(
+    "/item/{item_id}",
+    response_model=MenuItemUpdateResponse,
+    summary="메뉴 아이템 업데이트",
+    description="메뉴 아이템의 정보를 업데이트합니다."
+)
+async def update_menu_item(
+    item_id: int,
+    request: MenuItemUpdateRequest,
+    db: Session = Depends(get_db)
+):
+    """
+    메뉴 아이템 업데이트
+
+    메뉴 아이템의 이름, 설명, 가격, 이미지 URL을 업데이트합니다.
+    """
+    try:
+        logger.info(f"Updating menu item: item_id={item_id}")
+
+        # 메뉴 아이템 조회
+        menu_item = db.query(MenuItem).filter(MenuItem.id == item_id).first()
+
+        if not menu_item:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail={
+                    "success": False,
+                    "error": {
+                        "code": 404,
+                        "message": f"메뉴 아이템을 찾을 수 없습니다. (ID: {item_id})"
+                    }
+                }
+            )
+
+        # 업데이트할 필드만 변경
+        if request.name is not None:
+            menu_item.name = request.name
+        if request.description is not None:
+            menu_item.description = request.description
+        if request.price is not None:
+            menu_item.price = request.price
+        if request.image_url is not None:
+            menu_item.image_url = request.image_url
+
+        # DB 저장
+        db.commit()
+        db.refresh(menu_item)
+
+        logger.info(f"Menu item updated successfully: item_id={item_id}")
+
+        return MenuItemUpdateResponse(
+            success=True,
+            data={
+                "id": menu_item.id,
+                "name": menu_item.name,
+                "description": menu_item.description,
+                "price": float(menu_item.price) if menu_item.price else None,
+                "image_url": menu_item.image_url
+            }
+        )
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Failed to update menu item: {e}")
+        db.rollback()
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail={
+                "success": False,
+                "error": {
+                    "code": 500,
+                    "message": "메뉴 아이템 업데이트 중 오류가 발생했습니다.",
+                    "details": str(e)
+                }
+            }
+        )
+
+
+@router.post(
+    "/item/{item_id}/upload-image",
+    summary="메뉴 이미지 직접 업로드",
+    description="메뉴 아이템의 이미지를 직접 업로드합니다."
+)
+async def upload_menu_image(
+    item_id: int,
+    file: UploadFile = File(...),
+    db: Session = Depends(get_db)
+):
+    """
+    메뉴 이미지 업로드
+
+    이미지 파일을 업로드하여 메뉴 아이템에 연결합니다.
+    """
+    try:
+        logger.info(f"Uploading image for menu item: item_id={item_id}, filename={file.filename}")
+
+        # 메뉴 아이템 확인
+        menu_item = db.query(MenuItem).filter(MenuItem.id == item_id).first()
+        if not menu_item:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail={
+                    "success": False,
+                    "error": {
+                        "code": 404,
+                        "message": f"메뉴 아이템을 찾을 수 없습니다. (ID: {item_id})"
+                    }
+                }
+            )
+
+        # 파일 확장자 확인
+        allowed_extensions = {".jpg", ".jpeg", ".png", ".gif", ".webp"}
+        file_extension = Path(file.filename).suffix.lower()
+        if file_extension not in allowed_extensions:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail={
+                    "success": False,
+                    "error": {
+                        "code": 400,
+                        "message": f"지원하지 않는 파일 형식입니다. 허용된 형식: {', '.join(allowed_extensions)}"
+                    }
+                }
+            )
+
+        # 저장 경로 설정
+        upload_dir = Path("backend/data/uploads/menu_images")
+        upload_dir.mkdir(parents=True, exist_ok=True)
+
+        # 고유한 파일명 생성
+        unique_filename = f"{uuid.uuid4()}{file_extension}"
+        file_path = upload_dir / unique_filename
+
+        # 파일 저장
+        with open(file_path, "wb") as buffer:
+            content = await file.read()
+            buffer.write(content)
+
+        # 상대 경로로 변환 (API 응답용)
+        relative_path = f"/data/uploads/menu_images/{unique_filename}"
+
+        # DB 업데이트
+        menu_item.image_url = relative_path
+        db.commit()
+        db.refresh(menu_item)
+
+        logger.info(f"Image uploaded successfully: {relative_path}")
+
+        return {
+            "success": True,
+            "data": {
+                "id": menu_item.id,
+                "image_url": relative_path,
+                "filename": unique_filename
+            }
+        }
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Failed to upload image: {e}")
+        db.rollback()
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail={
+                "success": False,
+                "error": {
+                    "code": 500,
+                    "message": "이미지 업로드 중 오류가 발생했습니다.",
                     "details": str(e)
                 }
             }
