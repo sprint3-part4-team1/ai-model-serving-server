@@ -55,6 +55,15 @@ class MenuGenerationService:
         logger.info(f"메뉴판 생성 시작 - Store ID: {request.store_id}, 카테고리 수: {len(request.categories)}")
 
         try:
+            # ✅ 1. 해당 매장의 기존 메뉴 아이템 전체 조회 (재사용을 위해)
+            existing_items = db.query(MenuItem).join(Menu).filter(
+                Menu.store_id == request.store_id
+            ).all()
+
+            # 메뉴 이름으로 빠르게 찾기 위한 딕셔너리
+            existing_items_dict = {item.name: item for item in existing_items}
+            logger.info(f"기존 메뉴 아이템 {len(existing_items_dict)}개 조회 완료")
+
             generated_categories = []
 
             for category_req in request.categories:
@@ -65,14 +74,16 @@ class MenuGenerationService:
                     category_req=category_req
                 )
 
-                # 메뉴 아이템 생성
+                # 메뉴 아이템 생성 (기존 아이템 재사용)
                 generated_items = await self._create_menu_items(
                     db=db,
                     menu_id=menu_category.id,
+                    store_id=request.store_id,
                     items_req=category_req.items,
                     auto_generate_images=request.auto_generate_images,
                     auto_generate_descriptions=request.auto_generate_descriptions,
-                    image_style=request.image_style
+                    image_style=request.image_style,
+                    existing_items_dict=existing_items_dict
                 )
 
                 # 결과 객체 생성
@@ -121,10 +132,12 @@ class MenuGenerationService:
         self,
         db: Session,
         menu_id: int,
+        store_id: int,
         items_req: List[MenuItemCreate],
         auto_generate_images: bool,
         auto_generate_descriptions: bool,
-        image_style: Optional[str]
+        image_style: Optional[str],
+        existing_items_dict: Dict[str, MenuItem]
     ) -> List[GeneratedMenuItem]:
         """메뉴 아이템 리스트 생성"""
         logger.info(f"메뉴 아이템 생성 시작 - {len(items_req)}개")
@@ -138,7 +151,8 @@ class MenuGenerationService:
                 item_req=item_req,
                 auto_generate_image=auto_generate_images and not item_req.image_url,
                 auto_generate_description=auto_generate_descriptions and not item_req.description,
-                image_style=image_style
+                image_style=image_style,
+                existing_items_dict=existing_items_dict
             )
             generated_items.append(generated_item)
 
@@ -152,7 +166,8 @@ class MenuGenerationService:
         item_req: MenuItemCreate,
         auto_generate_image: bool,
         auto_generate_description: bool,
-        image_style: Optional[str]
+        image_style: Optional[str],
+        existing_items_dict: Dict[str, MenuItem]
     ) -> GeneratedMenuItem:
         """개별 메뉴 아이템 생성"""
         logger.info(f"메뉴 아이템 생성: {item_req.name}")
@@ -161,32 +176,56 @@ class MenuGenerationService:
         is_ai_generated_description = False
         image_url = item_req.image_url
         description = item_req.description
+        price = item_req.price
 
-        # AI로 설명 생성
-        if auto_generate_description:
-            description = await self._generate_description(
-                menu_name=item_req.name,
-                ingredients=item_req.ingredients
-            )
-            is_ai_generated_description = True
-            logger.info(f"AI 설명 생성 완료: {description[:50]}...")
+        # ✅ 기존 메뉴 아이템이 있는지 확인
+        existing_item = existing_items_dict.get(item_req.name)
 
-        # AI로 이미지 생성 (현재는 placeholder, 추후 Stable Diffusion 연동)
-        if auto_generate_image:
-            image_url = await self._generate_image(
-                menu_name=item_req.name,
-                description=description,
-                image_style=image_style
-            )
-            is_ai_generated_image = True
-            logger.info(f"AI 이미지 생성 완료: {image_url}")
+        if existing_item:
+            # 기존 데이터 재사용
+            logger.info(f"✅ 기존 메뉴 재사용: {item_req.name} (ID: {existing_item.id})")
 
-        # 메뉴 아이템 DB 저장
+            # 기존 데이터에서 description, image_url, price 가져오기
+            if not description and existing_item.description:
+                description = existing_item.description
+                logger.info(f"  - 설명 재사용: {description[:50]}...")
+
+            if not image_url and existing_item.image_url:
+                image_url = existing_item.image_url
+                logger.info(f"  - 이미지 재사용: {image_url}")
+
+            if not price and existing_item.price:
+                price = existing_item.price
+                logger.info(f"  - 가격 재사용: {price}")
+        else:
+            # 신규 메뉴 아이템 - AI로 생성
+            logger.info(f"🆕 신규 메뉴 생성: {item_req.name}")
+
+            # AI로 설명 생성
+            if auto_generate_description and not description:
+                description = await self._generate_description(
+                    menu_name=item_req.name,
+                    ingredients=item_req.ingredients
+                )
+                is_ai_generated_description = True
+                logger.info(f"  - AI 설명 생성 완료: {description[:50]}...")
+
+            # AI로 이미지 생성
+            if auto_generate_image and not image_url:
+                image_url = await self._generate_image(
+                    menu_name=item_req.name,
+                    description=description,
+                    image_style=image_style
+                )
+                is_ai_generated_image = True
+                logger.info(f"  - AI 이미지 생성 완료: {image_url}")
+
+        # 메뉴 아이템 DB 저장 (항상 새로운 레코드 생성)
         menu_item = MenuItem(
             menu_id=menu_id,
             name=item_req.name,
             description=description,
-            price=item_req.price,
+            price=price,
             image_url=image_url,
             is_available=True
         )
