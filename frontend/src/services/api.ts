@@ -298,6 +298,32 @@ export const menuApi = {
     )
     return data
   },
+
+  /**
+   * 매장별 메뉴 조회
+   */
+  async getStoreMenus(storeId: number): Promise<{
+    success: boolean
+    data: {
+      store_id: number
+      categories: Array<{
+        id: number
+        name: string
+        description?: string
+        items: Array<{
+          id: number
+          name: string
+          description?: string
+          price?: number
+          image_url?: string
+          is_available: boolean
+        }>
+      }>
+    }
+  }> {
+    const { data } = await api.get(`/api/v1/menu/store/${storeId}`)
+    return data
+  },
 }
 
 // ============ 메뉴판 생성 API ============

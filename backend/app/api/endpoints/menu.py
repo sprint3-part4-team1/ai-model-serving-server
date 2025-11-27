@@ -3,10 +3,13 @@ Menu API Endpoints
 메뉴 필터링 API 엔드포인트
 """
 
-from fastapi import APIRouter, HTTPException, status
+from fastapi import APIRouter, HTTPException, status, Depends
+from sqlalchemy.orm import Session
 from app.schemas.menu import MenuFilterRequest, MenuFilterResponse
 from app.services.menu_filter_service import menu_filter_service
 from app.core.logging import app_logger as logger
+from app.core.database import get_db
+from app.models.menu import Menu, MenuItem
 
 
 router = APIRouter()
@@ -62,6 +65,81 @@ async def filter_menus(request: MenuFilterRequest):
                 "error": {
                     "code": 500,
                     "message": "메뉴 필터링 중 오류가 발생했습니다.",
+                    "details": str(e)
+                }
+            }
+        )
+
+
+@router.get(
+    "/store/{store_id}",
+    summary="매장별 메뉴 조회",
+    description="특정 매장의 전체 메뉴를 카테고리별로 조회합니다."
+)
+async def get_store_menus(store_id: int, db: Session = Depends(get_db)):
+    """
+    매장별 메뉴 조회
+
+    매장 ID를 기반으로 해당 매장의 모든 메뉴를 카테고리별로 반환합니다.
+    """
+    try:
+        logger.info(f"Fetching menus for store_id: {store_id}")
+
+        # 매장의 모든 카테고리(메뉴) 조회
+        menus = db.query(Menu).filter(Menu.store_id == store_id).all()
+
+        if not menus:
+            return {
+                "success": True,
+                "data": {
+                    "store_id": store_id,
+                    "categories": []
+                }
+            }
+
+        # 카테고리별로 메뉴 아이템 구성
+        categories = []
+        for menu in menus:
+            # 해당 카테고리의 메뉴 아이템들 조회
+            items = db.query(MenuItem).filter(MenuItem.menu_id == menu.id).all()
+
+            category_data = {
+                "id": menu.id,
+                "name": menu.name,
+                "description": menu.description,
+                "items": [
+                    {
+                        "id": item.id,
+                        "name": item.name,
+                        "description": item.description,
+                        "price": float(item.price) if item.price else None,
+                        "image_url": item.image_url,
+                        "is_available": item.is_available
+                    }
+                    for item in items
+                ]
+            }
+            categories.append(category_data)
+
+        logger.info(f"Found {len(categories)} categories for store_id: {store_id}")
+
+        return {
+            "success": True,
+            "data": {
+                "store_id": store_id,
+                "categories": categories
+            }
+        }
+
+    except Exception as e:
+        logger.error(f"Failed to fetch menus for store {store_id}: {e}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail={
+                "success": False,
+                "error": {
+                    "code": 500,
+                    "message": "메뉴 조회 중 오류가 발생했습니다.",
                     "details": str(e)
                 }
             }
