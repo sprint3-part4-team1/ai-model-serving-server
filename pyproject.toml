@@ -14,4 +14,6 @@ dependencies = [
     "pytest==8.3.3",
     "uvicorn>=0.38.0",
     "google-genai>=1.52.0",
+    "requests>=2.32.0",
+    "pytz>=2024.2",
 ]

@@ -81,7 +81,7 @@ class RecommendationService:
             output.append(f"✍️  추천 문구 모델: {rec_meta['model_used']} ({rec_meta.get('elapsed_time', 0):.2f}s)")
 
         output.append("=" * 60)
-
+        
         for i, rec in enumerate(result['recommendations'], 1):
             menu = rec['menu']
             n = menu.get('nutrition')

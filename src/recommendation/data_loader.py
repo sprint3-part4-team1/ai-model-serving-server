@@ -24,6 +24,7 @@ class DataLoader:
             json_path (str): JSON 파일 경로 (source='json'일 때)
         """
         self.source = source
+        self.json_path = json_path
         self.session = None
 
         # ✅ 캐싱 레이어
