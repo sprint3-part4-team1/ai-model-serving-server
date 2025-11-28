@@ -55,14 +55,34 @@ class MenuGenerationService:
         logger.info(f"메뉴판 생성 시작 - Store ID: {request.store_id}, 카테고리 수: {len(request.categories)}")
 
         try:
-            # ✅ 1. 해당 매장의 기존 메뉴 아이템 전체 조회 (재사용을 위해)
+            # ✅ 1. 해당 매장의 기존 메뉴 아이템 전체 조회 (이미지/설명 재사용을 위해)
             existing_items = db.query(MenuItem).join(Menu).filter(
                 Menu.store_id == request.store_id
             ).all()
 
-            # 메뉴 이름으로 빠르게 찾기 위한 딕셔너리
-            existing_items_dict = {item.name: item for item in existing_items}
-            logger.info(f"기존 메뉴 아이템 {len(existing_items_dict)}개 조회 완료")
+            # 메뉴 이름으로 빠르게 찾기 위한 딕셔너리 (이미지/설명 재사용용)
+            existing_items_dict = {
+                item.name: {
+                    'image_url': item.image_url,
+                    'description': item.description,
+                    'is_ai_generated_image': item.is_ai_generated_image,
+                    'is_ai_generated_description': item.is_ai_generated_description
+                }
+                for item in existing_items
+            }
+            logger.info(f"기존 메뉴 아이템 {len(existing_items_dict)}개 데이터 백업 완료")
+
+            # ✅ 2. 기존 메뉴 카테고리 및 아이템 삭제 (중복 방지)
+            existing_menus = db.query(Menu).filter(Menu.store_id == request.store_id).all()
+            if existing_menus:
+                logger.info(f"기존 카테고리 {len(existing_menus)}개 삭제 중...")
+                for menu in existing_menus:
+                    # 카테고리에 속한 메뉴 아이템과 재료 삭제
+                    db.query(MenuItem).filter(MenuItem.menu_id == menu.id).delete()
+                # 카테고리 삭제
+                db.query(Menu).filter(Menu.store_id == request.store_id).delete()
+                db.flush()
+                logger.info("기존 메뉴 데이터 삭제 완료")
 
             generated_categories = []
 
@@ -137,7 +157,7 @@ class MenuGenerationService:
         auto_generate_images: bool,
         auto_generate_descriptions: bool,
         image_style: Optional[str],
-        existing_items_dict: Dict[str, MenuItem]
+        existing_items_dict: Dict[str, Dict]
     ) -> List[GeneratedMenuItem]:
         """메뉴 아이템 리스트 생성"""
         logger.info(f"메뉴 아이템 생성 시작 - {len(items_req)}개")
@@ -167,7 +187,7 @@ class MenuGenerationService:
         auto_generate_image: bool,
         auto_generate_description: bool,
         image_style: Optional[str],
-        existing_items_dict: Dict[str, MenuItem]
+        existing_items_dict: Dict[str, Dict]
     ) -> GeneratedMenuItem:
         """개별 메뉴 아이템 생성"""
         logger.info(f"메뉴 아이템 생성: {item_req.name}")
@@ -183,20 +203,18 @@ class MenuGenerationService:
 
         if existing_item:
             # 기존 데이터 재사용
-            logger.info(f"✅ 기존 메뉴 재사용: {item_req.name} (ID: {existing_item.id})")
+            logger.info(f"✅ 기존 메뉴 재사용: {item_req.name}")
 
-            # 기존 데이터에서 description, image_url, price 가져오기
-            if not description and existing_item.description:
-                description = existing_item.description
-                logger.info(f"  - 설명 재사용: {description[:50]}...")
+            # 기존 데이터에서 description, image_url 가져오기
+            if not description and existing_item.get('description'):
+                description = existing_item['description']
+                is_ai_generated_description = existing_item.get('is_ai_generated_description', False)
+                logger.info(f"  - 설명 재사용: {description[:50] if description else 'None'}...")
 
-            if not image_url and existing_item.image_url:
-                image_url = existing_item.image_url
+            if not image_url and existing_item.get('image_url'):
+                image_url = existing_item['image_url']
+                is_ai_generated_image = existing_item.get('is_ai_generated_image', False)
                 logger.info(f"  - 이미지 재사용: {image_url}")
-
-            if not price and existing_item.price:
-                price = existing_item.price
-                logger.info(f"  - 가격 재사용: {price}")
         else:
             # 신규 메뉴 아이템 - AI로 생성
             logger.info(f"🆕 신규 메뉴 생성: {item_req.name}")
