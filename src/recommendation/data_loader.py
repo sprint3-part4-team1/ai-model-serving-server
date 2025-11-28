@@ -51,7 +51,7 @@ class DataLoader:
     
     def load_from_mysql(self, store_id=1):
         """
-        MySQL에서 데이터 로드  (최적화)
+        MySQL에서 데이터 로드 (SQLAlchemy 사용)
         
         Args:
             store_id (int): 매장 ID
