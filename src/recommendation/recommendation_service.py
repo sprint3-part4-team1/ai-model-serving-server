@@ -1,9 +1,6 @@
 """
 추천 시스템 서비스 레이어
 """
-import sys
-import os
-
 from recommendation.intent_parser import IntentParser
 from recommendation.recommendation import MenuRecommender
 from recommendation.data_loader import DataLoader
@@ -47,6 +44,7 @@ class RecommendationService:
                 'total_found': result['total_found'],
                 'recommendations': result['recommendations'],
                 'parsed_intent': parsed_intent,
+                '_meta': result.get('_meta', {}),
                 'error': None
             }
         
@@ -56,6 +54,7 @@ class RecommendationService:
                 'total_found': 0,
                 'recommendations': [],
                 'parsed_intent': None,
+                '_meta': {},
                 'error': str(e)
             }
     
@@ -70,8 +69,19 @@ class RecommendationService:
         output = []
         output.append("=" * 60)
         output.append(f"🎯 추천 메뉴 ({result['total_found']}개 발견)")
-        output.append("=" * 60)
         
+        # 사용된 모델 정보 표시
+        meta = result.get('_meta', {})
+        intent_meta = meta.get('intent_parser', {})
+        rec_meta = meta.get('recommendation_generator', {})
+
+        if intent_meta.get('model_used'):
+            output.append(f"🤖 의도 파싱 모델: {intent_meta['model_used']} ({intent_meta.get('elapsed_time'):.2f}s)")
+        if rec_meta.get('model_used'):
+            output.append(f"✍️  추천 문구 모델: {rec_meta['model_used']} ({rec_meta.get('elapsed_time', 0):.2f}s)")
+
+        output.append("=" * 60)
+
         for i, rec in enumerate(result['recommendations'], 1):
             menu = rec['menu']
             n = menu.get('nutrition')

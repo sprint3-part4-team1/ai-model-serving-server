@@ -2,7 +2,7 @@
 메뉴 추천 엔진
 필터링, 정렬, 추천 문구 생성을 담당
 """
-from recommendation.gpt_client import get_gpt_client
+from llm.llm_router import get_llm_router
 from constants import (
     MAX_RECOMMENDATIONS,
     CALORIE_LOW_THRESHOLD,
@@ -12,8 +12,8 @@ from constants import (
     CAFFEINE_LOW_THRESHOLD,
     SUGAR_LOW_THRESHOLD,
     SUGAR_HIGH_THRESHOLD,
-    RECOMMENDATION_REASONING_EFFORT,
-    RECOMMENDATION_TEXT_VERBOSITY,
+    RECOMMENDATION_REASONING,
+    RECOMMENDATION_TEXT,
     DEFAULT_SORT
 )
 
@@ -21,7 +21,7 @@ class MenuRecommender:
     """메뉴 추천 엔진"""
     
     def __init__(self):
-        self.gpt_client = get_gpt_client()
+        self.llm_router = get_llm_router()
     
     def filter_menus(self, menu_items, nutrition_data, filter_conditions):
         """
@@ -191,16 +191,17 @@ class MenuRecommender:
         순수 JSON만 반환하세요."""
 
         try:
-            response = self.gpt_client.create_response(
-                input_text=combined_prompt,
-                reasoning={"effort": RECOMMENDATION_REASONING_EFFORT},
-                text={"verbosity": RECOMMENDATION_TEXT_VERBOSITY}
+            response = self.llm_router.create_response(
+                combined_prompt,
+                reasoning=RECOMMENDATION_REASONING,
+                text=RECOMMENDATION_TEXT
             )
             
-            result = self.gpt_client.parse_json_response(response)
+            parsed = self.llm_router.parse_json_response(response)
+            result = parsed['data']
             
             if not result or 'recommendations' not in result:
-                raise ValueError("GPT 응답 형식 오류")
+                raise ValueError("응답 형식 오류")
             
             recommendations = []
             for i, menu in enumerate(selected_menus):
@@ -213,11 +214,17 @@ class MenuRecommender:
                     "menu": menu,
                     "reason": reason
                 })
-            
-            return recommendations
+
+            return {
+                "recommendations": recommendations,
+                "_meta": {
+                    "model_used": parsed['model_used'],
+                    "elapsed_time": parsed['elapsed_time']
+                }
+            }
         
         except Exception as e:
-            print(f"⚠️ GPT 추천 문구 생성 실패: {e}, 기본 문구 사용")
+            print(f"⚠️ 추천 문구 생성 실패: {e}, 기본 문구 사용")
             
             recommendations = []
             for menu in selected_menus:
@@ -233,7 +240,13 @@ class MenuRecommender:
                     "reason": reason
                 })
             
-            return recommendations
+            return {
+                "recommendations": recommendations,
+                "_meta": {
+                    "model_used": "fallback",
+                    "elapsed_time": 0
+                }
+            }
     
     def recommend(self, menu_items, nutrition_data, parsed_intent):
         """전체 추천 프로세스"""
@@ -260,5 +273,9 @@ class MenuRecommender:
         
         return {
             "total_found": len(filtered),
-            "recommendations": recommendations
+            "recommendations": recommendations['recommendations'],
+            "_meta": {
+                "intent_parser": parsed_intent.get('_meta', {}),
+                "recommendation_generator": recommendations.get('_meta', {})
+            }
         }

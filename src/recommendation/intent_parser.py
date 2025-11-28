@@ -3,7 +3,7 @@
 GPT-5.1을 사용하여 자연어를 구조화된 필터 조건으로 변환
 """
 
-from recommendation.gpt_client import get_gpt_client
+from llm.llm_router import get_llm_router
 from constants import (
     MAX_RECOMMENDATIONS,
     CALORIE_LOW_THRESHOLD,
@@ -20,7 +20,7 @@ class IntentParser:
     """고객 요청 의도 파싱 클래스"""
     
     def __init__(self):
-        self.gpt_client = get_gpt_client()
+        self.llm_router = get_llm_router()
     
     def parse_customer_request(self, customer_request, available_menus=None):
         """
@@ -71,17 +71,24 @@ class IntentParser:
         순수 JSON만 반환하세요."""
 
         try:
-            response = self.gpt_client.create_response(
-                input_text=prompt,
+            # ✅ LLMRouter 사용 (자동 Fallback!)
+            response = self.llm_router.create_response(
+                prompt,
                 reasoning={"effort": "low"},
                 text={"verbosity": "low"}
             )
             
-            result = self.gpt_client.parse_json_response(response)
+            parsed = self.llm_router.parse_json_response(response)
+            result = parsed['data']
             
+
             if result:
                 result['limit'] = MAX_RECOMMENDATIONS
-            
+                # 사용된 모델 정보 추가
+                result['_meta'] = {
+                    'model_used': parsed['model_used'],
+                    'elapsed_time': parsed['elapsed_time']
+                }
             return result
         
         except Exception as e:
@@ -97,5 +104,10 @@ class IntentParser:
                 },
                 "sort_by": DEFAULT_SORT,
                 "limit": MAX_RECOMMENDATIONS,
-                "explanation": "모든 메뉴를 가격 순으로 추천합니다."
+                "explanation": "모든 메뉴를 가격 순으로 추천합니다.",
+                "_meta": {
+                    'model_used': 'fallback',
+                    'elapsed_time': 0
+                }
             }
+        

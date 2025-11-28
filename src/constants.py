@@ -27,15 +27,18 @@ SUGAR_LOW_THRESHOLD = 15
 SUGAR_HIGH_THRESHOLD = 25
 
 # ============================================
-# GPT 설정
+# LLM 설정
 # ============================================
-GPT_MODEL = "5-mini"
+GPT_MODEL = "gpt-5.1"
+GPT5_MODEL = "gpt-5-nano"
+GPT4_MODEL = "gpt-4.1"
+GEMINI_MODEL = "gemini-2.5-flash"
 
-DEFAULT_REASONING  = "low"
-DEFAULT_TEXT  = "low"
+DEFAULT_REASONING = {"effort": "low"}      # ✅ dict 형태
+DEFAULT_TEXT = {"verbosity": "low"}        # ✅ dict 형태
 
-RECOMMENDATION_REASONING_EFFORT = "medium"
-RECOMMENDATION_TEXT_VERBOSITY = "medium"
+RECOMMENDATION_REASONING = {"effort": "medium"}
+RECOMMENDATION_TEXT = {"verbosity": "medium"}
 
 # ============================================
 # 정렬 옵션
