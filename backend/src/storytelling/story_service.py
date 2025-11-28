@@ -2,6 +2,7 @@ import os
 import json
 import logging
 from datetime import datetime, timedelta
+from decimal import Decimal
 from ..database import get_session
 from ..models import MenuItem, NutritionEstimate, Story
 

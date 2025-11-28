@@ -10,7 +10,7 @@ import os
 import sys
 sys.path.append(os.path.dirname(os.path.dirname(__file__)))
 
-from ..schemas.seasonal_story import (
+from ...schemas.seasonal_story import (
     SeasonalStoryRequest,
     SeasonalStoryResponse,
     MenuStorytellingRequest,
@@ -18,9 +18,9 @@ from ..schemas.seasonal_story import (
     ContextInfo,
     ErrorResponse
 )
-from ..services.context_collector import context_collector_service
-from ..services.story_generator import story_generator_service
-from ..logger import app_logger as logger
+from ...services.context_collector import context_collector_service
+from ...services.story_generator import story_generator_service
+from ...logger import app_logger as logger
 
 
 router = APIRouter()
