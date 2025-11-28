@@ -1,6 +1,11 @@
 """
 시스템 전역 상수 정의
 """
+import os
+# ============================================
+# 프로젝트 경로
+# ============================================
+BASE_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
 
 # ============================================
 # 추천 시스템 설정
@@ -30,7 +35,7 @@ SUGAR_HIGH_THRESHOLD = 25
 # LLM 설정
 # ============================================
 GPT_MODEL = "gpt-5.1"
-GPT5_MODEL = "gpt-5-nano"
+GPT5_MODEL = "gpt-5.1"
 GPT4_MODEL = "gpt-4.1"
 GEMINI_MODEL = "gemini-2.5-flash"
 

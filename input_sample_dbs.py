@@ -231,8 +231,8 @@ def main():
         cursor.execute("SELECT COUNT(*) FROM item_ingredients")
         print(f"   - Item Ingredients: {cursor.fetchone()[0]}개")
 
-        # cursor.execute("SELECT COUNT(*) FROM nutrition_estimates")
-        # print(f"   - Nutrition Estimates: {cursor.fetchone()[0]}개")
+        cursor.execute("SELECT COUNT(*) FROM nutrition_estimates")
+        print(f"   - Nutrition Estimates: {cursor.fetchone()[0]}개")
         
         
     except pymysql.Error as e:

@@ -29,8 +29,8 @@ class LLMRouter:
 
     def __init__(self):
         self.providers = {
-            ModelPriority.PRIMARY: GPT5Provider(),
-            ModelPriority.SECONDARY: GPT4Provider(),
+            ModelPriority.PRIMARY: GPT4Provider(),
+            ModelPriority.SECONDARY: GPT5Provider(),
             ModelPriority.TERTIARY: GeminiProvider()
         }
         self.metrics = [] # 성능 측정 데이터
