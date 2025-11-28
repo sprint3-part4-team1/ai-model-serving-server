@@ -3,8 +3,8 @@ import os
 import json
 import logging
 from datetime import datetime
-from database import get_session
-from models import MenuItem, NutritionEstimate
+from ..database import get_session
+from ..models import MenuItem, NutritionEstimate
 
 from langchain_openai import ChatOpenAI
 from langchain_core.prompts import ChatPromptTemplate

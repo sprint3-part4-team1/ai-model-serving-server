@@ -7,10 +7,9 @@ import os
 import time
 from typing import Dict, Any, List
 
-from database import get_session
-from sqlalchemy.orm import joinedload
-from models import Store, Menu, MenuItem, ItemIngredient, NutritionEstimate
-from constants import BASE_DIR
+from ..database import get_session
+from ..models import Store, Menu, MenuItem, ItemIngredient, NutritionEstimate
+from ..constants import BASE_DIR
 
 class DataLoader:
     """데이터 로드 담당 클래스 (SQLAlchemy 버전)"""
@@ -21,10 +20,8 @@ class DataLoader:
         
         Args:
             source (str): 데이터 소스 ('json' 또는 'mysql')
-            json_path (str): JSON 파일 경로 (source='json'일 때)
         """
         self.source = source
-        self.json_path = json_path
         self.session = None
 
         # ✅ 캐싱 레이어
@@ -158,7 +155,7 @@ class DataLoader:
             dict: 메뉴 데이터
         """
 
-        json_path = os.path.join(BASE_DIR, 'samples', 'menu_sample_data_v2')
+        json_path = os.path.join(BASE_DIR, 'backend', 'samples', 'menu_sample_data_v2')
 
         try:
             with open(json_path, 'r', encoding='utf-8') as f:
@@ -166,7 +163,7 @@ class DataLoader:
             return data
         
         except FileNotFoundError:
-            raise FileNotFoundError(f"JSON 파일을 찾을 수 없습니다: {self.json_path}")
+            raise FileNotFoundError(f"JSON 파일을 찾을 수 없습니다: {json_path}")
         except json.JSONDecodeError as e:
             raise ValueError(f"JSON 파싱 오류: {str(e)}")
     

@@ -2,9 +2,9 @@
 추천 시스템 CLI 인터페이스
 main.py에서 호출할 대화형 인터페이스
 """
-
 import sys
-from recommendation.recommendation_service import RecommendationService
+import time
+from .recommendation_service import RecommendationService
 
 
 def run_recommendation_demo():
@@ -56,6 +56,7 @@ def run_recommendation_demo():
 
         try:
             # 추천 실행
+            start = time.time()
             print("\n🤖 AI가 요청을 분석 중...")
             result = service.get_recommendations(customer_request, source=source)
 
@@ -65,6 +66,9 @@ def run_recommendation_demo():
                 print(service.format_output(result))
             else:
                 print(f"\n❌ 오류 발생: {result['error']}")
+            
+            end = time.time()
+            print(f"실행 시간: {end - start:.4f}초")
 
         except KeyboardInterrupt:
             print("\n\n👋 중단되었습니다.")

@@ -4,10 +4,10 @@ AI 메뉴 추천 시스템 - 메인 실행 파일
 import os
 import sys
 
-from recommendation.recommendation_cli import run_recommendation_demo
+from ..recommendation.recommendation_cli import run_recommendation_demo
 from dotenv import load_dotenv
-from nutrition_service import compute_nutrition_for_item
-from story_service import generate_story_for_item
+from ..storytelling.nutrition_service import compute_nutrition_for_item
+from ..storytelling.story_service import generate_story_for_item
 
 
 # 환경변수 로드

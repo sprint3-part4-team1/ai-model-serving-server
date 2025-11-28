@@ -1,0 +1,91 @@
+{
+  "total_experiments": 1,
+  "experiments": [
+    {
+      "experiment_id": "exp_20251128_144808",
+      "prompt": "\n고객 요청: \"칼로리 낮은 음료 추천\"\n\n다음 JSON 형식으로 응답하세요:\n{\n  \"filter_conditions\": {\n    \"menu_id\": null 또는 숫자,\n    \"calorie\": \"low\"\n  },\n  \"sort_by\": \"calories_asc\",\n  \"limit\": 3\n}\n",
+      "timestamp": "2025-11-28T14:48:16.042376",
+      "models_tested": [
+        "gpt-5.1",
+        "gpt-4.1",
+        "gemini-2.5-flash"
+      ],
+      "results": {
+        "gpt-5.1": {
+          "success": true,
+          "response": "{\n  \"filter_conditions\": {\n    \"menu_id\": null,\n    \"calorie\": \"low\"\n  },\n  \"sort_by\": \"calories_asc\",\n  \"limit\": 3\n}",
+          "elapsed_time": 2.164405584335327,
+          "input_tokens": 32,
+          "output_tokens": 16,
+          "estimated_cost": 4.1925e-05,
+          "json_parsable": true,
+          "parsed_data": {
+            "filter_conditions": {
+              "menu_id": null,
+              "calorie": "low"
+            },
+            "sort_by": "calories_asc",
+            "limit": 3
+          },
+          "response_length": 117
+        },
+        "gpt-4.1": {
+          "success": true,
+          "response": "{\n  \"filter_conditions\": {\n    \"menu_id\": null,\n    \"calorie\": \"low\"\n  },\n  \"sort_by\": \"calories_asc\",\n  \"limit\": 3\n}",
+          "elapsed_time": 0.7508535385131836,
+          "input_tokens": 32,
+          "output_tokens": 16,
+          "estimated_cost": 0.00020020000000000001,
+          "json_parsable": true,
+          "parsed_data": {
+            "filter_conditions": {
+              "menu_id": null,
+              "calorie": "low"
+            },
+            "sort_by": "calories_asc",
+            "limit": 3
+          },
+          "response_length": 117
+        },
+        "gemini-2.5-flash": {
+          "success": true,
+          "response": "```json\n{\n  \"filter_conditions\": {\n    \"menu_id\": null,\n    \"calorie\": \"low\"\n  },\n  \"sort_by\": \"calories_asc\",\n  \"limit\": 3\n}\n```",
+          "elapsed_time": 4.163708209991455,
+          "input_tokens": 32,
+          "output_tokens": 19,
+          "estimated_cost": 5.85e-05,
+          "json_parsable": true,
+          "parsed_data": {
+            "filter_conditions": {
+              "menu_id": null,
+              "calorie": "low"
+            },
+            "sort_by": "calories_asc",
+            "limit": 3
+          },
+          "response_length": 129
+        }
+      }
+    }
+  ],
+  "aggregate_statistics": {
+    "gpt-5.1": {
+      "total_calls": 1,
+      "avg_time": 2.164405584335327,
+      "avg_cost": 4.1925e-05,
+      "json_success_rate": 1.0
+    },
+    "gpt-4.1": {
+      "total_calls": 1,
+      "avg_time": 0.7508535385131836,
+      "avg_cost": 0.00020020000000000001,
+      "json_success_rate": 1.0
+    },
+    "gemini-2.5-flash": {
+      "total_calls": 1,
+      "avg_time": 4.163708209991455,
+      "avg_cost": 5.85e-05,
+      "json_success_rate": 1.0
+    }
+  }
+}

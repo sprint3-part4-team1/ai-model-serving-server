@@ -2,8 +2,8 @@ import os
 import json
 import logging
 from datetime import datetime, timedelta
-from database import get_session
-from models import MenuItem, NutritionEstimate, Story
+from ..database import get_session
+from ..models import MenuItem, NutritionEstimate, Story
 
 from langchain_openai import ChatOpenAI
 from langchain_core.prompts import ChatPromptTemplate

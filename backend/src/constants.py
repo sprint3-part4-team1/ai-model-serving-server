@@ -2,10 +2,11 @@
 시스템 전역 상수 정의
 """
 import os
+from pathlib import Path
 # ============================================
 # 프로젝트 경로
 # ============================================
-BASE_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
+BASE_DIR = Path(__file__).resolve().parent.parent.parent
 
 # ============================================
 # 추천 시스템 설정
