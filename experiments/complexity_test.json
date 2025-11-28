@@ -1,0 +1,318 @@
+{
+  "total_experiments": 5,
+  "experiments": [
+    {
+      "experiment_id": "exp_20251128_160548",
+      "prompt": "{\"test\": \"hello\"}",
+      "timestamp": "2025-11-28T16:05:51.945294",
+      "models_tested": [
+        "gpt-5.1",
+        "gpt-4.1",
+        "gemini-2.5-flash"
+      ],
+      "results": {
+        "gpt-5.1": {
+          "success": true,
+          "response": "hello",
+          "elapsed_time": 1.8735206127166748,
+          "input_tokens": 2,
+          "output_tokens": 1,
+          "estimated_cost": 1.625e-05,
+          "json_parsable": false,
+          "parsed_data": null,
+          "response_length": 5
+        },
+        "gpt-4.1": {
+          "success": true,
+          "response": "Hello! How can I assist you today?",
+          "elapsed_time": 0.565812349319458,
+          "input_tokens": 2,
+          "output_tokens": 9,
+          "estimated_cost": 7.800000000000001e-05,
+          "json_parsable": false,
+          "parsed_data": null,
+          "response_length": 34
+        },
+        "gemini-2.5-flash": {
+          "success": true,
+          "response": "```json\n{\n  \"test\": \"hello\"\n}\n```",
+          "elapsed_time": 1.4869189262390137,
+          "input_tokens": 2,
+          "output_tokens": 7,
+          "estimated_cost": 2.0280000000000002e-05,
+          "json_parsable": true,
+          "parsed_data": {
+            "test": "hello"
+          },
+          "response_length": 33
+        }
+      }
+    },
+    {
+      "experiment_id": "exp_20251128_160551",
+      "prompt": "\n        고객: \"음료 추천\"\n        JSON: {\"category\": \"drink\"}\n        ",
+      "timestamp": "2025-11-28T16:06:00.112401",
+      "models_tested": [
+        "gpt-5.1",
+        "gpt-4.1",
+        "gemini-2.5-flash"
+      ],
+      "results": {
+        "gpt-5.1": {
+          "success": true,
+          "response": "취향에 따라 골라볼게요.  \n아래에서 하나 골라 말씀해 주세요, 바로 추천 이어갈게요.\n\n1. 상큼한 거 (과일, 탄산 등)  \n2. 달달한 거 (라떼, 밀크티 등)  \n3. 깔끔한 거 (아메리카노, 차 등)  \n4. 시원하게 톡 쏘는 거 (에이드, 탄산음료)  \n5. 특별한 메뉴 추천 (시그니처/신메뉴)",
+          "elapsed_time": 2.746119260787964,
+          "input_tokens": 7,
+          "output_tokens": 53,
+          "estimated_cost": 0.00054275,
+          "json_parsable": false,
+          "parsed_data": null,
+          "response_length": 171
+        },
+        "gpt-4.1": {
+          "success": true,
+          "response": "추천드릴 수 있는 음료는 여러 가지가 있습니다! 고객님께서 선호하시는 맛이나 종류가 있으신가요?  \n예를 들어 커피, 차, 주스, 에이드, 스무디 등 다양한 옵션이 있습니다.\n\n간단히 몇 가지를 추천드리자면:\n\n- 아메리카노 (진한 커피 맛을 원하신다면)\n- 카페라떼 (부드러운 커피와 우유 조화)\n- 녹차라떼 (고소하고 건강하게)\n- 자몽 에이드 (상큼한 음료)\n- 망고 스무디 (달콤하고 시원하게)\n\n원하시는 취향이나 추가 조건이 있다면 말씀해 주세요!",
+          "elapsed_time": 2.1151318550109863,
+          "input_tokens": 7,
+          "output_tokens": 78,
+          "estimated_cost": 0.0006395999999999999,
+          "json_parsable": false,
+          "parsed_data": null,
+          "response_length": 255
+        },
+        "gemini-2.5-flash": {
+          "success": true,
+          "response": "        고객: \"메뉴 추천\"\n        JSON: {\"category\": \"menu\"}",
+          "elapsed_time": 3.3006207942962646,
+          "input_tokens": 7,
+          "output_tokens": 7,
+          "estimated_cost": 2.1840000000000004e-05,
+          "json_parsable": false,
+          "parsed_data": null,
+          "response_length": 54
+        }
+      }
+    },
+    {
+      "experiment_id": "exp_20251128_160600",
+      "prompt": "\n        고객: \"칼로리 낮은 음료\"\n        JSON: {\"category\": \"drink\", \"calorie\": \"low\"}\n        ",
+      "timestamp": "2025-11-28T16:06:04.801958",
+      "models_tested": [
+        "gpt-5.1",
+        "gpt-4.1",
+        "gemini-2.5-flash"
+      ],
+      "results": {
+        "gpt-5.1": {
+          "success": true,
+          "response": "{\"category\": \"drink\", \"calorie\": \"low\"}",
+          "elapsed_time": 2.890833616256714,
+          "input_tokens": 11,
+          "output_tokens": 5,
+          "estimated_cost": 6.662499999999999e-05,
+          "json_parsable": true,
+          "parsed_data": {
+            "category": "drink",
+            "calorie": "low"
+          },
+          "response_length": 39
+        },
+        "gpt-4.1": {
+          "success": true,
+          "response": "{\n  \"category\": \"음료\",\n  \"calorie\": \"낮음\"\n}",
+          "elapsed_time": 0.6072494983673096,
+          "input_tokens": 11,
+          "output_tokens": 7,
+          "estimated_cost": 8.58e-05,
+          "json_parsable": true,
+          "parsed_data": {
+            "category": "음료",
+            "calorie": "낮음"
+          },
+          "response_length": 41
+        },
+        "gemini-2.5-flash": {
+          "success": true,
+          "response": "고객: \"탄산수\"\nJSON: {\"category\": \"drink\", \"flavor\": \"none\"}",
+          "elapsed_time": 1.1883985996246338,
+          "input_tokens": 11,
+          "output_tokens": 9,
+          "estimated_cost": 2.626e-05,
+          "json_parsable": false,
+          "parsed_data": null,
+          "response_length": 55
+        }
+      }
+    },
+    {
+      "experiment_id": "exp_20251128_160604",
+      "prompt": "\n        당신은 전문가입니다.\n        고객: \"다이어트 중, 단백질 많고 당분 적은 메뉴\"\n        \n        응답:\n        {\n        \"filter_conditions\": {\n            \"calorie\": \"low\",\n            \"protein\": \"high\",\n            \"sugar\": \"low\"\n        },\n        \"sort_by\": \"protein_desc\",\n        \"limit\": 3\n        }\n        ",
+      "timestamp": "2025-11-28T16:06:13.051411",
+      "models_tested": [
+        "gpt-5.1",
+        "gpt-4.1",
+        "gemini-2.5-flash"
+      ],
+      "results": {
+        "gpt-5.1": {
+          "success": true,
+          "response": "{\n  \"filter_conditions\": {\n    \"calorie\": \"low\",\n    \"protein\": \"high\",\n    \"sugar\": \"low\"\n  },\n  \"sort_by\": \"protein_desc\",\n  \"limit\": 3\n}",
+          "elapsed_time": 3.5538864135742188,
+          "input_tokens": 33,
+          "output_tokens": 19,
+          "estimated_cost": 0.00023725,
+          "json_parsable": true,
+          "parsed_data": {
+            "filter_conditions": {
+              "calorie": "low",
+              "protein": "high",
+              "sugar": "low"
+            },
+            "sort_by": "protein_desc",
+            "limit": 3
+          },
+          "response_length": 139
+        },
+        "gpt-4.1": {
+          "success": true,
+          "response": "{\n  \"filter_conditions\": {\n    \"calorie\": \"low\",\n    \"protein\": \"high\",\n    \"sugar\": \"low\"\n  },\n  \"sort_by\": \"protein_desc\",\n  \"limit\": 3\n}",
+          "elapsed_time": 0.6464323997497559,
+          "input_tokens": 33,
+          "output_tokens": 19,
+          "estimated_cost": 0.00022360000000000001,
+          "json_parsable": true,
+          "parsed_data": {
+            "filter_conditions": {
+              "calorie": "low",
+              "protein": "high",
+              "sugar": "low"
+            },
+            "sort_by": "protein_desc",
+            "limit": 3
+          },
+          "response_length": 139
+        },
+        "gemini-2.5-flash": {
+          "success": true,
+          "response": "```json\n{\n\"filter_conditions\": {\n\"calorie\": \"low\",\n\"protein\": \"high\",\n\"sugar\": \"low\"\n},\n\"sort_by\": \"protein_desc\",\n\"limit\": 3\n}\n```",
+          "elapsed_time": 4.046567440032959,
+          "input_tokens": 33,
+          "output_tokens": 22,
+          "estimated_cost": 6.539000000000001e-05,
+          "json_parsable": true,
+          "parsed_data": {
+            "filter_conditions": {
+              "calorie": "low",
+              "protein": "high",
+              "sugar": "low"
+            },
+            "sort_by": "protein_desc",
+            "limit": 3
+          },
+          "response_length": 131
+        }
+      }
+    },
+    {
+      "experiment_id": "exp_20251128_160613",
+      "prompt": "\n        당신은 메뉴 추천 전문가입니다.\n        \n        고객 요청: \"추운 날 먹기 좋고, 칼로리는 높지만 당분은 적으면서, \n        단백질이 풍부한 메뉴를 추천해줘. 카페인은 없었으면 좋겠어.\"\n        \n        사용 가능한 메뉴: [\n        {\"id\": 1, \"name\": \"스테이크\"},\n        {\"id\": 2, \"name\": \"샐러드\"},\n        {\"id\": 3, \"name\": \"파스타\"}\n        ]\n        \n        필터 기준:\n        - calorie: \"low\"(<300kcal), \"medium\"(300-500kcal), \"high\"(>500kcal)\n        - protein: \"low\"(<10g), \"medium\"(10-20g), \"high\"(>20g)\n        - caffeine: \"none\"(0mg), \"low\"(1-100mg), \"high\"(>100mg)\n        - sugar: \"low\"(<15g), \"medium\"(15-25g), \"high\"(>25g)\n        \n        응답 형식:\n        {\n        \"filter_conditions\": {\n            \"menu_id\": null,\n            \"calorie\": \"high\",\n            \"protein\": \"high\",\n            \"caffeine\": \"none\",\n            \"sugar\": \"low\"\n        },\n        \"sort_by\": \"protein_desc\",\n        \"limit\": 3,\n        \"explanation\": \"상세 분석\"\n        }\n        \n        순수 JSON만 반환하세요.\n        ",
+      "timestamp": "2025-11-28T16:06:23.184182",
+      "models_tested": [
+        "gpt-5.1",
+        "gpt-4.1",
+        "gemini-2.5-flash"
+      ],
+      "results": {
+        "gpt-5.1": {
+          "success": true,
+          "response": "{\n  \"filter_conditions\": {\n    \"menu_id\": null,\n    \"calorie\": \"high\",\n    \"protein\": \"high\",\n    \"caffeine\": \"none\",\n    \"sugar\": \"low\"\n  },\n  \"sort_by\": \"protein_desc\",\n  \"limit\": 3,\n  \"explanation\": \"추운 날 어울리도록 열량이 높고, 포만감과 체온 유지에 도움이 되는 고단백 메뉴를 우선으로 필터링했습니다. 당분과 카페인은 최소화하여 혈당 급상승과 각성 효과를 줄이고, 단백질과 열량 공급에 집중한 기준입니다.\"\n}",
+          "elapsed_time": 3.3338449001312256,
+          "input_tokens": 113,
+          "output_tokens": 61,
+          "estimated_cost": 0.000752375,
+          "json_parsable": true,
+          "parsed_data": {
+            "filter_conditions": {
+              "menu_id": null,
+              "calorie": "high",
+              "protein": "high",
+              "caffeine": "none",
+              "sugar": "low"
+            },
+            "sort_by": "protein_desc",
+            "limit": 3,
+            "explanation": "추운 날 어울리도록 열량이 높고, 포만감과 체온 유지에 도움이 되는 고단백 메뉴를 우선으로 필터링했습니다. 당분과 카페인은 최소화하여 혈당 급상승과 각성 효과를 줄이고, 단백질과 열량 공급에 집중한 기준입니다."
+          },
+          "response_length": 323
+        },
+        "gpt-4.1": {
+          "success": true,
+          "response": "{\n    \"filter_conditions\": {\n        \"menu_id\": null,\n        \"calorie\": \"high\",\n        \"protein\": \"high\",\n        \"caffeine\": \"none\",\n        \"sugar\": \"low\"\n    },\n    \"sort_by\": \"protein_desc\",\n    \"limit\": 3,\n    \"explanation\": \"추운 날에는 따뜻하고 영양이 풍부한 메뉴가 적합합니다. 요청하신 대로 칼로리가 높고, 단백질이 풍부하며, 카페인이 없고, 당분이 적은 조건을 적용했습니다. 스테이크는 주로 고단백·고칼로리이며, 당분과 카페인은 거의 없어 조건에 가장 적합합니다. 파스타는 일부 종류가 해당 조건에 근접할 수 있으나, 샐러드는 단백질과 칼로리가 낮은 경우가 많아 우선순위에서 제외됩니다.\"\n}",
+          "elapsed_time": 2.730158805847168,
+          "input_tokens": 113,
+          "output_tokens": 84,
+          "estimated_cost": 0.0009022000000000001,
+          "json_parsable": true,
+          "parsed_data": {
+            "filter_conditions": {
+              "menu_id": null,
+              "calorie": "high",
+              "protein": "high",
+              "caffeine": "none",
+              "sugar": "low"
+            },
+            "sort_by": "protein_desc",
+            "limit": 3,
+            "explanation": "추운 날에는 따뜻하고 영양이 풍부한 메뉴가 적합합니다. 요청하신 대로 칼로리가 높고, 단백질이 풍부하며, 카페인이 없고, 당분이 적은 조건을 적용했습니다. 스테이크는 주로 고단백·고칼로리이며, 당분과 카페인은 거의 없어 조건에 가장 적합합니다. 파스타는 일부 종류가 해당 조건에 근접할 수 있으나, 샐러드는 단백질과 칼로리가 낮은 경우가 많아 우선순위에서 제외됩니다."
+          },
+          "response_length": 441
+        },
+        "gemini-2.5-flash": {
+          "success": true,
+          "response": "```json\n{\n  \"filter_conditions\": {\n    \"menu_id\": null,\n    \"calorie\": \"high\",\n    \"protein\": \"high\",\n    \"caffeine\": \"none\",\n    \"sugar\": \"low\"\n  },\n  \"sort_by\": \"protein_desc\",\n  \"limit\": 3,\n  \"explanation\": \"고객 요청에 따라, 추운 날 어울리는 높은 칼로리와 풍부한 단백질을 선호하시며, 당분은 적고 카페인은 없는 메뉴를 찾으시는군요. 이에 맞춰 칼로리 'high', 단백질 'high', 당분 'low', 카페인 'none'으로 필터 조건을 설정했습니다. 추천 시 단백질 함량이 높은 순서로 정렬하여 가장 적합한 메뉴를 제안할 것입니다.\"\n}\n```",
+          "elapsed_time": 4.06644344329834,
+          "input_tokens": 113,
+          "output_tokens": 83,
+          "estimated_cost": 0.00024192999999999998,
+          "json_parsable": true,
+          "parsed_data": {
+            "filter_conditions": {
+              "menu_id": null,
+              "calorie": "high",
+              "protein": "high",
+              "caffeine": "none",
+              "sugar": "low"
+            },
+            "sort_by": "protein_desc",
+            "limit": 3,
+            "explanation": "고객 요청에 따라, 추운 날 어울리는 높은 칼로리와 풍부한 단백질을 선호하시며, 당분은 적고 카페인은 없는 메뉴를 찾으시는군요. 이에 맞춰 칼로리 'high', 단백질 'high', 당분 'low', 카페인 'none'으로 필터 조건을 설정했습니다. 추천 시 단백질 함량이 높은 순서로 정렬하여 가장 적합한 메뉴를 제안할 것입니다."
+          },
+          "response_length": 403
+        }
+      }
+    }
+  ],
+  "aggregate_statistics": {
+    "gpt-5.1": {
+      "total_calls": 5,
+      "avg_time": 2.8796409606933593,
+      "avg_cost": 0.00032304999999999996,
+      "json_success_rate": 0.6,
+      "json_success_count": 3
+    },
+    "gpt-4.1": {
+      "total_calls": 5,
+      "avg_time": 1.3329569816589355,
+      "avg_cost": 0.00038584000000000003,
+      "json_success_rate": 0.6,
+      "json_success_count": 3
+    },
+    "gemini-2.5-flash": {
+      "total_calls": 5,
+      "avg_time": 2.817789840698242,
+      "avg_cost": 7.513999999999999e-05,
+      "json_success_rate": 0.6,
+      "json_success_count": 3
+    }
+  }
+}

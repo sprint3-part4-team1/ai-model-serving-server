@@ -4,10 +4,10 @@ from pydantic import BaseModel
 from typing import Optional
 import uvicorn
 from dotenv import load_dotenv
-from story_service import generate_story_for_item
-from recommendation.recommendation_service import RecommendationService
+from ..storytelling.story_service import generate_story_for_item
+from ..recommendation.recommendation_service import RecommendationService
+from .seasonal_story import router as seasonal_story_router
 
-from api.seasonal_story import router as seasonal_story_router
 # .env 파일 로드
 load_dotenv()
 

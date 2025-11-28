@@ -4,8 +4,8 @@ GPT-4 Provider
 
 import os
 from openai import OpenAI
-from llm.base_provider import BaseLLMProvider
-from constants import GPT4_MODEL
+from .base_provider import BaseLLMProvider
+from ..constants import GPT4_MODEL
 
 class GPT4Provider(BaseLLMProvider):
     """GPT-4 Provider"""

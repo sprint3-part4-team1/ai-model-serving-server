@@ -1,0 +1,420 @@
+{
+  "total_experiments": 5,
+  "experiments": [
+    {
+      "experiment_id": "exp_20251128_155803",
+      "prompt": "\n    당신은 고객의 메뉴 추천 요청을 분석하는 전문가입니다.\n\n    고객 요청: \"칼로리 낮은 음료 추천\"\n\n    사용 가능한 메뉴: [{\"id\": 4, \"name\": \"메인\"}, {\"id\": 5, \"name\": \"음료\"}]\n\n    응답 형식:\n    {\n    \"filter_conditions\": {\n        \"menu_id\": null,\n        \"calorie\": null,\n        \"protein\": null,\n        \"caffeine\": null,\n        \"sugar\": null\n    },\n    \"sort_by\": \"price_asc\",\n    \"limit\": 3,\n    \"explanation\": \"분석 설명\"\n    }\n\n    순수 JSON만 반환하세요.\n    ",
+      "timestamp": "2025-11-28T15:58:28.548008",
+      "models_tested": [
+        "gpt-5.1",
+        "gpt-4.1",
+        "gemini-2.5-flash"
+      ],
+      "results": {
+        "gpt-5.1": {
+          "success": true,
+          "response": "{\n  \"filter_conditions\": {\n    \"menu_id\": 5,\n    \"calorie\": \"low\",\n    \"protein\": null,\n    \"caffeine\": null,\n    \"sugar\": null\n  },\n  \"sort_by\": \"price_asc\",\n  \"limit\": 3,\n  \"explanation\": \"고객은 칼로리가 낮은 음료를 원하므로 메뉴를 '음료'(id: 5)로 한정하고, 칼로리 기준을 낮음으로 설정했습니다. 다른 영양 성분 조건은 없으므로 null로 두었고, 기본적으로 저렴한 순으로 최대 3개까지 추천하도록 설정했습니다.\"\n}",
+          "elapsed_time": 3.7267282009124756,
+          "input_tokens": 66,
+          "output_tokens": 61,
+          "estimated_cost": 0.000693875,
+          "json_parsable": true,
+          "parsed_data": {
+            "filter_conditions": {
+              "menu_id": 5,
+              "calorie": "low",
+              "protein": null,
+              "caffeine": null,
+              "sugar": null
+            },
+            "sort_by": "price_asc",
+            "limit": 3,
+            "explanation": "고객은 칼로리가 낮은 음료를 원하므로 메뉴를 '음료'(id: 5)로 한정하고, 칼로리 기준을 낮음으로 설정했습니다. 다른 영양 성분 조건은 없으므로 null로 두었고, 기본적으로 저렴한 순으로 최대 3개까지 추천하도록 설정했습니다."
+          },
+          "response_length": 323
+        },
+        "gpt-4.1": {
+          "success": true,
+          "response": "{\n    \"filter_conditions\": {\n        \"menu_id\": 5,\n        \"calorie\": \"low\",\n        \"protein\": null,\n        \"caffeine\": null,\n        \"sugar\": null\n    },\n    \"sort_by\": \"price_asc\",\n    \"limit\": 3,\n    \"explanation\": \"고객이 칼로리가 낮은 음료를 요청했으므로, '음료' 메뉴(메뉴 id 5)에서 칼로리가 낮은 항목만을 필터링합니다. 그 후 가격이 저렴한 순으로 최대 3개까지 추천합니다.\"\n}",
+          "elapsed_time": 2.401221990585327,
+          "input_tokens": 66,
+          "output_tokens": 53,
+          "estimated_cost": 0.000559,
+          "json_parsable": true,
+          "parsed_data": {
+            "filter_conditions": {
+              "menu_id": 5,
+              "calorie": "low",
+              "protein": null,
+              "caffeine": null,
+              "sugar": null
+            },
+            "sort_by": "price_asc",
+            "limit": 3,
+            "explanation": "고객이 칼로리가 낮은 음료를 요청했으므로, '음료' 메뉴(메뉴 id 5)에서 칼로리가 낮은 항목만을 필터링합니다. 그 후 가격이 저렴한 순으로 최대 3개까지 추천합니다."
+          },
+          "response_length": 318
+        },
+        "gemini-2.5-flash": {
+          "success": true,
+          "response": "```json\n{\n  \"filter_conditions\": {\n    \"menu_id\": 5,\n    \"calorie\": \"low\",\n    \"protein\": null,\n    \"caffeine\": null,\n    \"sugar\": null\n  },\n  \"sort_by\": \"calorie_asc\",\n  \"limit\": 3,\n  \"explanation\": \"고객 요청 '칼로리 낮은 음료 추천'을 분석했습니다. '음료' 키워드를 통해 사용 가능한 메뉴 중 menu_id를 5로 설정했습니다. '칼로리 낮은' 요청을 반영하여 filter_conditions.calorie를 'low'로 지정하고, 가장 적합한 정렬 기준인 'calorie_asc'(칼로리 낮은 순)로 sort_by를 설정했습니다. 별도의 수량 요청이 없어 limit은 기본값인 3으로 지정했으며, 언급되지 않은 다른 필터 조건은 null로 유지했습니다.\"\n}\n```",
+          "elapsed_time": 18.48191523551941,
+          "input_tokens": 66,
+          "output_tokens": 91,
+          "estimated_cost": 0.00024739,
+          "json_parsable": true,
+          "parsed_data": {
+            "filter_conditions": {
+              "menu_id": 5,
+              "calorie": "low",
+              "protein": null,
+              "caffeine": null,
+              "sugar": null
+            },
+            "sort_by": "calorie_asc",
+            "limit": 3,
+            "explanation": "고객 요청 '칼로리 낮은 음료 추천'을 분석했습니다. '음료' 키워드를 통해 사용 가능한 메뉴 중 menu_id를 5로 설정했습니다. '칼로리 낮은' 요청을 반영하여 filter_conditions.calorie를 'low'로 지정하고, 가장 적합한 정렬 기준인 'calorie_asc'(칼로리 낮은 순)로 sort_by를 설정했습니다. 별도의 수량 요청이 없어 limit은 기본값인 3으로 지정했으며, 언급되지 않은 다른 필터 조건은 null로 유지했습니다."
+          },
+          "response_length": 465
+        }
+      }
+    },
+    {
+      "experiment_id": "exp_20251128_155828",
+      "prompt": "\n    당신은 고객의 메뉴 추천 요청을 분석하는 전문가입니다.\n\n    고객 요청: \"고단백 메뉴 추천\"\n\n    사용 가능한 메뉴: [{\"id\": 4, \"name\": \"메인\"}, {\"id\": 5, \"name\": \"음료\"}]\n\n    응답 형식:\n    {\n    \"filter_conditions\": {\n        \"menu_id\": null,\n        \"calorie\": null,\n        \"protein\": null,\n        \"caffeine\": null,\n        \"sugar\": null\n    },\n    \"sort_by\": \"price_asc\",\n    \"limit\": 3,\n    \"explanation\": \"분석 설명\"\n    }\n\n    순수 JSON만 반환하세요.\n    ",
+      "timestamp": "2025-11-28T15:58:43.876676",
+      "models_tested": [
+        "gpt-5.1",
+        "gpt-4.1",
+        "gemini-2.5-flash"
+      ],
+      "results": {
+        "gpt-5.1": {
+          "success": true,
+          "response": "{\n  \"filter_conditions\": {\n    \"menu_id\": 4,\n    \"calorie\": null,\n    \"protein\": \"high\",\n    \"caffeine\": null,\n    \"sugar\": null\n  },\n  \"sort_by\": \"price_asc\",\n  \"limit\": 3,\n  \"explanation\": \"고단백 메뉴를 원하는 요청이므로 단백질 함량이 높은( protein='high' ) 메인 메뉴(id=4)를 우선 추천하도록 필터링하고, 고객이 부담 없이 선택할 수 있도록 가격 오름차순으로 최대 3개를 조회합니다.\"\n}",
+          "elapsed_time": 3.3657662868499756,
+          "input_tokens": 65,
+          "output_tokens": 58,
+          "estimated_cost": 0.0006662500000000001,
+          "json_parsable": true,
+          "parsed_data": {
+            "filter_conditions": {
+              "menu_id": 4,
+              "calorie": null,
+              "protein": "high",
+              "caffeine": null,
+              "sugar": null
+            },
+            "sort_by": "price_asc",
+            "limit": 3,
+            "explanation": "고단백 메뉴를 원하는 요청이므로 단백질 함량이 높은( protein='high' ) 메인 메뉴(id=4)를 우선 추천하도록 필터링하고, 고객이 부담 없이 선택할 수 있도록 가격 오름차순으로 최대 3개를 조회합니다."
+          },
+          "response_length": 314
+        },
+        "gpt-4.1": {
+          "success": true,
+          "response": "{\n    \"filter_conditions\": {\n        \"menu_id\": 4,\n        \"calorie\": null,\n        \"protein\": \"high\",\n        \"caffeine\": null,\n        \"sugar\": null\n    },\n    \"sort_by\": \"price_asc\",\n    \"limit\": 3,\n    \"explanation\": \"고객이 고단백 메뉴를 요청하여, '메인' 메뉴(식사류) 중 단백질 함량이 높은 메뉴를 우선적으로 추천합니다. 음료 메뉴는 일반적으로 단백질 함량이 낮아 제외하였습니다. 가격이 낮은 순으로 최대 3개까지 추천합니다.\"\n}",
+          "elapsed_time": 3.2388365268707275,
+          "input_tokens": 65,
+          "output_tokens": 59,
+          "estimated_cost": 0.0006084,
+          "json_parsable": true,
+          "parsed_data": {
+            "filter_conditions": {
+              "menu_id": 4,
+              "calorie": null,
+              "protein": "high",
+              "caffeine": null,
+              "sugar": null
+            },
+            "sort_by": "price_asc",
+            "limit": 3,
+            "explanation": "고객이 고단백 메뉴를 요청하여, '메인' 메뉴(식사류) 중 단백질 함량이 높은 메뉴를 우선적으로 추천합니다. 음료 메뉴는 일반적으로 단백질 함량이 낮아 제외하였습니다. 가격이 낮은 순으로 최대 3개까지 추천합니다."
+          },
+          "response_length": 344
+        },
+        "gemini-2.5-flash": {
+          "success": true,
+          "response": "```json\n{\n    \"filter_conditions\": {\n        \"menu_id\": null,\n        \"calorie\": null,\n        \"protein\": {\n            \"min\": 20\n        },\n        \"caffeine\": null,\n        \"sugar\": null\n    },\n    \"sort_by\": \"protein_desc\",\n    \"limit\": 3,\n    \"explanation\": \"고객 요청 '고단백 메뉴 추천'에 따라, 단백질 함량이 20g 이상인 메뉴를 필터링하고, 단백질 함량이 높은 순서(내림차순)로 정렬하여 상위 3개 메뉴를 추천합니다.\"\n}\n```",
+          "elapsed_time": 8.71781611442566,
+          "input_tokens": 65,
+          "output_tokens": 59,
+          "estimated_cost": 0.00016900000000000004,
+          "json_parsable": true,
+          "parsed_data": {
+            "filter_conditions": {
+              "menu_id": null,
+              "calorie": null,
+              "protein": {
+                "min": 20
+              },
+              "caffeine": null,
+              "sugar": null
+            },
+            "sort_by": "protein_desc",
+            "limit": 3,
+            "explanation": "고객 요청 '고단백 메뉴 추천'에 따라, 단백질 함량이 20g 이상인 메뉴를 필터링하고, 단백질 함량이 높은 순서(내림차순)로 정렬하여 상위 3개 메뉴를 추천합니다."
+          },
+          "response_length": 362
+        }
+      }
+    },
+    {
+      "experiment_id": "exp_20251128_155843",
+      "prompt": "\n    당신은 고객의 메뉴 추천 요청을 분석하는 전문가입니다.\n\n    고객 요청: \"다이어트 중인데 뭐 먹을까\"\n\n    사용 가능한 메뉴: [{\"id\": 4, \"name\": \"메인\"}, {\"id\": 5, \"name\": \"음료\"}]\n\n    응답 형식:\n    {\n    \"filter_conditions\": {\n        \"menu_id\": null,\n        \"calorie\": null,\n        \"protein\": null,\n        \"caffeine\": null,\n        \"sugar\": null\n    },\n    \"sort_by\": \"price_asc\",\n    \"limit\": 3,\n    \"explanation\": \"분석 설명\"\n    }\n\n    순수 JSON만 반환하세요.\n    ",
+      "timestamp": "2025-11-28T15:59:05.607980",
+      "models_tested": [
+        "gpt-5.1",
+        "gpt-4.1",
+        "gemini-2.5-flash"
+      ],
+      "results": {
+        "gpt-5.1": {
+          "success": true,
+          "response": "{\n  \"filter_conditions\": {\n    \"menu_id\": null,\n    \"calorie\": \"low\",\n    \"protein\": null,\n    \"caffeine\": null,\n    \"sugar\": null\n  },\n  \"sort_by\": \"price_asc\",\n  \"limit\": 3,\n  \"explanation\": \"고객이 다이어트 중이라고 했으므로, 전체 메뉴 중에서 칼로리가 낮은 메뉴를 우선적으로 추천하도록 설정했습니다. 특정 메뉴 타입(메인/음료)은 제한하지 않고, 가격이 저렴한 순으로 상위 3개를 보여주도록 했습니다.\"\n}",
+          "elapsed_time": 6.139121055603027,
+          "input_tokens": 66,
+          "output_tokens": 58,
+          "estimated_cost": 0.0006678750000000001,
+          "json_parsable": true,
+          "parsed_data": {
+            "filter_conditions": {
+              "menu_id": null,
+              "calorie": "low",
+              "protein": null,
+              "caffeine": null,
+              "sugar": null
+            },
+            "sort_by": "price_asc",
+            "limit": 3,
+            "explanation": "고객이 다이어트 중이라고 했으므로, 전체 메뉴 중에서 칼로리가 낮은 메뉴를 우선적으로 추천하도록 설정했습니다. 특정 메뉴 타입(메인/음료)은 제한하지 않고, 가격이 저렴한 순으로 상위 3개를 보여주도록 했습니다."
+          },
+          "response_length": 315
+        },
+        "gpt-4.1": {
+          "success": true,
+          "response": "{\n    \"filter_conditions\": {\n        \"menu_id\": 4,\n        \"calorie\": \"low\",\n        \"protein\": \"high\",\n        \"caffeine\": null,\n        \"sugar\": \"low\"\n    },\n    \"sort_by\": \"price_asc\",\n    \"limit\": 3,\n    \"explanation\": \"고객은 다이어트 중이므로 낮은 칼로리, 높은 단백질, 낮은 당류 조건으로 메인 메뉴에서 추천합니다.\"\n}",
+          "elapsed_time": 1.4839808940887451,
+          "input_tokens": 66,
+          "output_tokens": 42,
+          "estimated_cost": 0.00047579999999999996,
+          "json_parsable": true,
+          "parsed_data": {
+            "filter_conditions": {
+              "menu_id": 4,
+              "calorie": "low",
+              "protein": "high",
+              "caffeine": null,
+              "sugar": "low"
+            },
+            "sort_by": "price_asc",
+            "limit": 3,
+            "explanation": "고객은 다이어트 중이므로 낮은 칼로리, 높은 단백질, 낮은 당류 조건으로 메인 메뉴에서 추천합니다."
+          },
+          "response_length": 282
+        },
+        "gemini-2.5-flash": {
+          "success": true,
+          "response": "```json\n{\n    \"filter_conditions\": {\n        \"menu_id\": 4,\n        \"calorie\": null,\n        \"protein\": null,\n        \"caffeine\": null,\n        \"sugar\": null\n    },\n    \"sort_by\": \"price_asc\",\n    \"limit\": 3,\n    \"explanation\": \"고객이 '다이어트 중'이라고 언급했으므로, 저칼로리, 고단백, 저당류의 메뉴를 선호할 것으로 분석됩니다. '뭐 먹을까'라는 요청은 주로 식사류를 의미하므로 사용 가능한 메뉴 중 ID 4번(메인)을 추천 대상에 포함했습니다. 구체적인 영양 성분 필터 값은 제공되지 않았으나, 해당 기준에 부합하는 메뉴를 우선적으로 고려해야 합니다. 정렬은 일반적인 추천 시스템의 기본값인 가격 오름차순으로 설정하고, 3개의 메뉴를 제안합니다.\"\n}\n```",
+          "elapsed_time": 14.105254650115967,
+          "input_tokens": 66,
+          "output_tokens": 94,
+          "estimated_cost": 0.00025714000000000005,
+          "json_parsable": true,
+          "parsed_data": {
+            "filter_conditions": {
+              "menu_id": 4,
+              "calorie": null,
+              "protein": null,
+              "caffeine": null,
+              "sugar": null
+            },
+            "sort_by": "price_asc",
+            "limit": 3,
+            "explanation": "고객이 '다이어트 중'이라고 언급했으므로, 저칼로리, 고단백, 저당류의 메뉴를 선호할 것으로 분석됩니다. '뭐 먹을까'라는 요청은 주로 식사류를 의미하므로 사용 가능한 메뉴 중 ID 4번(메인)을 추천 대상에 포함했습니다. 구체적인 영양 성분 필터 값은 제공되지 않았으나, 해당 기준에 부합하는 메뉴를 우선적으로 고려해야 합니다. 정렬은 일반적인 추천 시스템의 기본값인 가격 오름차순으로 설정하고, 3개의 메뉴를 제안합니다."
+          },
+          "response_length": 472
+        }
+      }
+    },
+    {
+      "experiment_id": "exp_20251128_155905",
+      "prompt": "\n    당신은 고객의 메뉴 추천 요청을 분석하는 전문가입니다.\n\n    고객 요청: \"카페인 없는 디저트\"\n\n    사용 가능한 메뉴: [{\"id\": 4, \"name\": \"메인\"}, {\"id\": 5, \"name\": \"음료\"}]\n\n    응답 형식:\n    {\n    \"filter_conditions\": {\n        \"menu_id\": null,\n        \"calorie\": null,\n        \"protein\": null,\n        \"caffeine\": null,\n        \"sugar\": null\n    },\n    \"sort_by\": \"price_asc\",\n    \"limit\": 3,\n    \"explanation\": \"분석 설명\"\n    }\n\n    순수 JSON만 반환하세요.\n    ",
+      "timestamp": "2025-11-28T15:59:18.391738",
+      "models_tested": [
+        "gpt-5.1",
+        "gpt-4.1",
+        "gemini-2.5-flash"
+      ],
+      "results": {
+        "gpt-5.1": {
+          "success": true,
+          "response": "{\n  \"filter_conditions\": {\n    \"menu_id\": null,\n    \"calorie\": null,\n    \"protein\": null,\n    \"caffeine\": 0,\n    \"sugar\": null\n  },\n  \"sort_by\": \"price_asc\",\n  \"limit\": 3,\n  \"explanation\": \"고객은 '카페인 없는 디저트'를 원하고 있어 카페인 함량이 0인 메뉴로 필터링했습니다. 디저트 카테고리가 별도로 없어 메인/음료 구분은 제한하지 않고 menu_id는 전체(null)로 두었으며, 합리적인 선택을 위해 가격 오름차순으로 상위 3개 메뉴를 추천하도록 설정했습니다.\"\n}",
+          "elapsed_time": 4.0419182777404785,
+          "input_tokens": 65,
+          "output_tokens": 67,
+          "estimated_cost": 0.0007572500000000001,
+          "json_parsable": true,
+          "parsed_data": {
+            "filter_conditions": {
+              "menu_id": null,
+              "calorie": null,
+              "protein": null,
+              "caffeine": 0,
+              "sugar": null
+            },
+            "sort_by": "price_asc",
+            "limit": 3,
+            "explanation": "고객은 '카페인 없는 디저트'를 원하고 있어 카페인 함량이 0인 메뉴로 필터링했습니다. 디저트 카테고리가 별도로 없어 메인/음료 구분은 제한하지 않고 menu_id는 전체(null)로 두었으며, 합리적인 선택을 위해 가격 오름차순으로 상위 3개 메뉴를 추천하도록 설정했습니다."
+          },
+          "response_length": 347
+        },
+        "gpt-4.1": {
+          "success": true,
+          "response": "{\n    \"filter_conditions\": {\n        \"menu_id\": 4,\n        \"calorie\": null,\n        \"protein\": null,\n        \"caffeine\": 0,\n        \"sugar\": null\n    },\n    \"sort_by\": \"price_asc\",\n    \"limit\": 3,\n    \"explanation\": \"\\\"카페인 없는 디저트\\\"를 요청하셨으므로, 디저트에 해당할 가능성이 높은 '메인' 메뉴에서 카페인 함량이 0인 항목만 추천합니다. 가격이 저렴한 순으로 최대 3개를 제공합니다.\"\n}",
+          "elapsed_time": 2.2775943279266357,
+          "input_tokens": 65,
+          "output_tokens": 53,
+          "estimated_cost": 0.0005564000000000001,
+          "json_parsable": true,
+          "parsed_data": {
+            "filter_conditions": {
+              "menu_id": 4,
+              "calorie": null,
+              "protein": null,
+              "caffeine": 0,
+              "sugar": null
+            },
+            "sort_by": "price_asc",
+            "limit": 3,
+            "explanation": "\"카페인 없는 디저트\"를 요청하셨으므로, 디저트에 해당할 가능성이 높은 '메인' 메뉴에서 카페인 함량이 0인 항목만 추천합니다. 가격이 저렴한 순으로 최대 3개를 제공합니다."
+          },
+          "response_length": 319
+        },
+        "gemini-2.5-flash": {
+          "success": true,
+          "response": "```json\n{\n  \"filter_conditions\": {\n    \"menu_id\": null,\n    \"calorie\": null,\n    \"protein\": null,\n    \"caffeine\": 0,\n    \"sugar\": null\n  },\n  \"sort_by\": \"price_asc\",\n  \"limit\": 3,\n  \"explanation\": \"고객 요청 '카페인 없는 디저트'를 분석했습니다. '카페인 없는'은 caffeine 필터를 0으로 설정합니다. '디저트'는 제공된 메뉴 목록(메인, 음료)에서 직접적인 menu_id로 매칭되지 않으므로 menu_id 필터는 null로 유지됩니다. 기타 영양 정보(calorie, protein, sugar)는 요청에 명시되지 않았으며, 정렬 방식과 결과 개수 제한 또한 명시되지 않아 기본값으로 설정되었습니다.\"\n}\n```",
+          "elapsed_time": 6.461076736450195,
+          "input_tokens": 65,
+          "output_tokens": 84,
+          "estimated_cost": 0.00023075,
+          "json_parsable": true,
+          "parsed_data": {
+            "filter_conditions": {
+              "menu_id": null,
+              "calorie": null,
+              "protein": null,
+              "caffeine": 0,
+              "sugar": null
+            },
+            "sort_by": "price_asc",
+            "limit": 3,
+            "explanation": "고객 요청 '카페인 없는 디저트'를 분석했습니다. '카페인 없는'은 caffeine 필터를 0으로 설정합니다. '디저트'는 제공된 메뉴 목록(메인, 음료)에서 직접적인 menu_id로 매칭되지 않으므로 menu_id 필터는 null로 유지됩니다. 기타 영양 정보(calorie, protein, sugar)는 요청에 명시되지 않았으며, 정렬 방식과 결과 개수 제한 또한 명시되지 않아 기본값으로 설정되었습니다."
+          },
+          "response_length": 434
+        }
+      }
+    },
+    {
+      "experiment_id": "exp_20251128_155918",
+      "prompt": "\n    당신은 고객의 메뉴 추천 요청을 분석하는 전문가입니다.\n\n    고객 요청: \"추운 날 먹기 좋은 메뉴\"\n\n    사용 가능한 메뉴: [{\"id\": 4, \"name\": \"메인\"}, {\"id\": 5, \"name\": \"음료\"}]\n\n    응답 형식:\n    {\n    \"filter_conditions\": {\n        \"menu_id\": null,\n        \"calorie\": null,\n        \"protein\": null,\n        \"caffeine\": null,\n        \"sugar\": null\n    },\n    \"sort_by\": \"price_asc\",\n    \"limit\": 3,\n    \"explanation\": \"분석 설명\"\n    }\n\n    순수 JSON만 반환하세요.\n    ",
+      "timestamp": "2025-11-28T15:59:30.432423",
+      "models_tested": [
+        "gpt-5.1",
+        "gpt-4.1",
+        "gemini-2.5-flash"
+      ],
+      "results": {
+        "gpt-5.1": {
+          "success": true,
+          "response": "{\n  \"filter_conditions\": {\n    \"menu_id\": 4,\n    \"calorie\": null,\n    \"protein\": null,\n    \"caffeine\": null,\n    \"sugar\": null\n  },\n  \"sort_by\": \"price_asc\",\n  \"limit\": 3,\n  \"explanation\": \"추운 날에는 따뜻한 식사류가 선호될 가능성이 높으므로, 메인(식사) 메뉴를 우선 추천하기 위해 menu_id를 4로 제한하고, 그중 가격이 낮은 순으로 최대 3개만 노출하도록 설정했습니다.\"\n}",
+          "elapsed_time": 3.9229516983032227,
+          "input_tokens": 67,
+          "output_tokens": 55,
+          "estimated_cost": 0.0006435000000000001,
+          "json_parsable": true,
+          "parsed_data": {
+            "filter_conditions": {
+              "menu_id": 4,
+              "calorie": null,
+              "protein": null,
+              "caffeine": null,
+              "sugar": null
+            },
+            "sort_by": "price_asc",
+            "limit": 3,
+            "explanation": "추운 날에는 따뜻한 식사류가 선호될 가능성이 높으므로, 메인(식사) 메뉴를 우선 추천하기 위해 menu_id를 4로 제한하고, 그중 가격이 낮은 순으로 최대 3개만 노출하도록 설정했습니다."
+          },
+          "response_length": 298
+        },
+        "gpt-4.1": {
+          "success": true,
+          "response": "{\n    \"filter_conditions\": {\n        \"menu_id\": null,\n        \"calorie\": null,\n        \"protein\": null,\n        \"caffeine\": null,\n        \"sugar\": null\n    },\n    \"sort_by\": \"price_asc\",\n    \"limit\": 3,\n    \"explanation\": \"고객은 추운 날씨에 어울리는 메뉴를 요청했습니다. 이에 따라 따뜻한 음식 또는 음료가 적합할 것으로 판단되나, 제공된 메뉴 카테고리가 '메인'과 '음료'로만 구분되어 있어 구체적인 온도나 조리 방식 필터는 적용하지 않았습니다. 가격이 낮은 순으로 최대 3개 메뉴를 추천할 수 있도록 설정했습니다.\"\n}",
+          "elapsed_time": 2.3709888458251953,
+          "input_tokens": 67,
+          "output_tokens": 76,
+          "estimated_cost": 0.0007488000000000001,
+          "json_parsable": true,
+          "parsed_data": {
+            "filter_conditions": {
+              "menu_id": null,
+              "calorie": null,
+              "protein": null,
+              "caffeine": null,
+              "sugar": null
+            },
+            "sort_by": "price_asc",
+            "limit": 3,
+            "explanation": "고객은 추운 날씨에 어울리는 메뉴를 요청했습니다. 이에 따라 따뜻한 음식 또는 음료가 적합할 것으로 판단되나, 제공된 메뉴 카테고리가 '메인'과 '음료'로만 구분되어 있어 구체적인 온도나 조리 방식 필터는 적용하지 않았습니다. 가격이 낮은 순으로 최대 3개 메뉴를 추천할 수 있도록 설정했습니다."
+          },
+          "response_length": 391
+        },
+        "gemini-2.5-flash": {
+          "success": true,
+          "response": "```json\n{\n  \"filter_conditions\": {\n    \"menu_id\": 4,\n    \"calorie\": null,\n    \"protein\": null,\n    \"caffeine\": null,\n    \"sugar\": null\n  },\n  \"sort_by\": \"price_asc\",\n  \"limit\": 3,\n  \"explanation\": \"고객님의 요청은 '추운 날 먹기 좋은 메뉴'입니다. 추운 날에는 몸을 따뜻하게 해주고 든든함을 줄 수 있는 메인 메뉴(id: 4)를 우선적으로 추천합니다. 특정 영양 성분이나 칼로리에 대한 언급이 없어 해당 필터는 적용하지 않았습니다. 가격 낮은 순으로 3개의 메뉴를 추천합니다.\"\n}\n```",
+          "elapsed_time": 5.7414870262146,
+          "input_tokens": 67,
+          "output_tokens": 78,
+          "estimated_cost": 0.00021527999999999999,
+          "json_parsable": true,
+          "parsed_data": {
+            "filter_conditions": {
+              "menu_id": 4,
+              "calorie": null,
+              "protein": null,
+              "caffeine": null,
+              "sugar": null
+            },
+            "sort_by": "price_asc",
+            "limit": 3,
+            "explanation": "고객님의 요청은 '추운 날 먹기 좋은 메뉴'입니다. 추운 날에는 몸을 따뜻하게 해주고 든든함을 줄 수 있는 메인 메뉴(id: 4)를 우선적으로 추천합니다. 특정 영양 성분이나 칼로리에 대한 언급이 없어 해당 필터는 적용하지 않았습니다. 가격 낮은 순으로 3개의 메뉴를 추천합니다."
+          },
+          "response_length": 361
+        }
+      }
+    }
+  ],
+  "aggregate_statistics": {
+    "gpt-5.1": {
+      "total_calls": 5,
+      "avg_time": 4.239297103881836,
+      "avg_cost": 0.00068575,
+      "json_success_rate": 1.0,
+      "json_success_count": 5
+    },
+    "gpt-4.1": {
+      "total_calls": 5,
+      "avg_time": 2.354524517059326,
+      "avg_cost": 0.0005896800000000001,
+      "json_success_rate": 1.0,
+      "json_success_count": 5
+    },
+    "gemini-2.5-flash": {
+      "total_calls": 5,
+      "avg_time": 10.701509952545166,
+      "avg_cost": 0.00022391200000000002,
+      "json_success_rate": 1.0,
+      "json_success_count": 5
+    }
+  }
+}

@@ -3,9 +3,8 @@ GPT-5 Provider
 """
 import os
 from openai import OpenAI
-from llm.base_provider import BaseLLMProvider
-
-from constants import GPT5_MODEL, DEFAULT_REASONING, DEFAULT_TEXT
+from .base_provider import BaseLLMProvider
+from ..constants import GPT5_MODEL, DEFAULT_REASONING, DEFAULT_TEXT
 
 
 class GPT5Provider(BaseLLMProvider):
@@ -47,6 +46,6 @@ class GPT5Provider(BaseLLMProvider):
     def get_cost_per_1k_tokens(self) -> dict:
         """비용 정보"""
         return {
-            "input": 0.00025,   # $0.00025 per 1K tokens
-            "output": 0.002     # $0.002 per 1K tokens
+            "input": 0.00125,   # $0.00125 per 1K tokens
+            "output": 0.01    # $0.01 per 1K tokens
         }

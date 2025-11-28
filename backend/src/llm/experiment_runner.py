@@ -24,8 +24,8 @@ class ExperimentRunner:
     
     def __init__(self):
         self.providers = {
-            "gpt-5-mini": GPT5Provider(),
-            "gpt-4o": GPT4Provider(),
+            "gpt-5.1": GPT5Provider(),
+            "gpt-4.1": GPT4Provider(),
             "gemini-2.5-flash": GeminiProvider()
         }
         self.experiments = []
@@ -79,6 +79,10 @@ class ExperimentRunner:
             
             print(f"🚀 {model_name} 실행 중...")
             
+            # ✅ 초기화!
+            json_parsable = False
+            parsed_data = None
+
             try:
                 # 응답 생성
                 start_time = time.time()
@@ -96,15 +100,14 @@ class ExperimentRunner:
                     (output_tokens / 1000) * cost_info['output']
                 )
                 
-                # JSON 파싱 시도
-                json_parsable = False
-                parsed_data = None
                 try:
                     parsed_data = provider.parse_json_response(response)
                     json_parsable = True
-                except:
-                    pass
-                
+                    print(f"  ✓ JSON 파싱 성공")
+                except Exception as parse_error:
+                    json_parsable = False
+                    print(f"  ✗ JSON 파싱 실패: {str(parse_error)[:50]}")
+
                 results[model_name] = {
                     "success": True,
                     "response": response,
@@ -120,8 +123,6 @@ class ExperimentRunner:
                 print(f"  ✅ 성공 ({elapsed_time:.2f}s, ${estimated_cost:.6f})")
                 print(f"  📊 토큰: {int(input_tokens)} in / {int(output_tokens)} out")
                 print(f"  📝 응답 길이: {len(response)} chars")
-                if json_parsable:
-                    print(f"  ✓ JSON 파싱 성공")
                 print()
             
             except Exception as e:
@@ -129,7 +130,8 @@ class ExperimentRunner:
                     "success": False,
                     "error": str(e),
                     "elapsed_time": 0,
-                    "estimated_cost": 0
+                    "estimated_cost": 0,
+                    "json_parsable": False
                 }
                 print(f"  ❌ 실패: {e}")
                 print()
@@ -179,6 +181,10 @@ class ExperimentRunner:
             "response_length": sorted(successful.items(), key=lambda x: x[1]['response_length'], reverse=True)
         }
         
+        # JSON 성공 개수 정확하게 계산
+        json_success_count = sum(1 for m in successful.values() if m.get('json_parsable', False))
+        json_success_rate = json_success_count / len(successful) if successful else 0
+
         # 통계 계산
         comparison = {
             "fastest_model": rankings['speed'][0][0],
@@ -186,7 +192,8 @@ class ExperimentRunner:
             "cheapest_model": rankings['cost'][0][0],
             "cheapest_cost": rankings['cost'][0][1]['estimated_cost'],
             "most_detailed": rankings['response_length'][0][0],
-            "json_success_rate": sum(1 for m in successful.values() if m['json_parsable']) / len(successful),
+            "json_success_rate": json_success_rate,
+            "json_success_count": json_success_count, 
             "rankings": {
                 "speed": [(m, d['elapsed_time']) for m, d in rankings['speed']],
                 "cost": [(m, d['estimated_cost']) for m, d in rankings['cost']]
@@ -274,9 +281,10 @@ class ExperimentRunner:
                 stats[model]['total_calls'] += 1
                 stats[model]['total_time'] += result['elapsed_time']
                 stats[model]['total_cost'] += result['estimated_cost']
-                if result['json_parsable']:
+
+                if result.get('json_parsable', False) is True:
                     stats[model]['json_success'] += 1
-        
+            
         # 평균 계산
         aggregate = {}
         for model, data in stats.items():
@@ -285,7 +293,8 @@ class ExperimentRunner:
                 "total_calls": calls,
                 "avg_time": data['total_time'] / calls,
                 "avg_cost": data['total_cost'] / calls,
-                "json_success_rate": data['json_success'] / calls
+                "json_success_rate": data['json_success'] / calls,
+                "json_success_count": data['json_success'] 
             }
         
         return aggregate

@@ -2,8 +2,8 @@
 메뉴 추천 엔진
 필터링, 정렬, 추천 문구 생성을 담당
 """
-from llm.llm_router import get_llm_router
-from constants import (
+from ..llm.llm_router import get_llm_router
+from ..constants import (
     MAX_RECOMMENDATIONS,
     CALORIE_LOW_THRESHOLD,
     CALORIE_HIGH_THRESHOLD,

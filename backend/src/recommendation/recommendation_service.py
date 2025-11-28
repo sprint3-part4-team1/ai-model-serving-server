@@ -1,9 +1,9 @@
 """
 추천 시스템 서비스 레이어
 """
-from recommendation.intent_parser import IntentParser
-from recommendation.recommendation import MenuRecommender
-from recommendation.data_loader import DataLoader
+from .intent_parser import IntentParser
+from .recommendation import MenuRecommender
+from .data_loader import DataLoader
 
 
 class RecommendationService:

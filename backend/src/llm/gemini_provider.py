@@ -4,8 +4,8 @@ Gemini 2.5 Flash Provider
 
 import os
 from google import genai
-from llm.base_provider import BaseLLMProvider
-from constants import GEMINI_MODEL
+from .base_provider import BaseLLMProvider
+from ..constants import GEMINI_MODEL
 
 
 class GeminiProvider(BaseLLMProvider):
