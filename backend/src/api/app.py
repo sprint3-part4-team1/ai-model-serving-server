@@ -36,3 +36,5 @@ if __name__ == "__main__":
     port = int(os.getenv("PORT", "9090"))
     uvicorn.run("app:app", host="0.0.0.0", port=port, reload=True)
 
+# 실제 실행시 최상위 루트에서,
+# uv run -m uvicorn backend.src.api.app:app --reload --host 0.0.0.0 --port 9090
