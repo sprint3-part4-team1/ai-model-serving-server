@@ -4,15 +4,18 @@ MySQL DB(SQLAlchemy) 또는 JSON 파일에서 메뉴 데이터 로드
 """
 import json
 import os
-from sqlalchemy.orm import joinedload
-from database import get_session
-from models import Store, Menu, MenuItem, ItemIngredient, NutritionEstimate
+import time
+from typing import Dict, Any, List
 
+from database import get_session
+from sqlalchemy.orm import joinedload
+from models import Store, Menu, MenuItem, ItemIngredient, NutritionEstimate
+from constants import BASE_DIR
 
 class DataLoader:
     """데이터 로드 담당 클래스 (SQLAlchemy 버전)"""
     
-    def __init__(self, source='json', json_path='samples/menu_sample_data_v2.json'):
+    def __init__(self, source='json'):
         """
         데이터 로더 초기화
         
@@ -23,35 +26,53 @@ class DataLoader:
         self.source = source
         self.json_path = json_path
         self.session = None
+
+        # ✅ 캐싱 레이어
+        self._cache = {}
+        self._cache_timestamp = {}
+        self._cache_ttl = 300  # 5분
         
-        if source == 'mysql':
-            self.session = get_session()
-    
-    def load_from_json(self):
+    def load(self, store_id=1) -> Dict[str, Any]:
         """
-        JSON 파일에서 데이터 로드
+        데이터 로드 (캐싱 지원)
+        
+        Args:
+            store_id (int): 매장 ID
         
         Returns:
-            dict: 전체 데이터
+            dict: {
+                'menu_items': [...],
+                'nutrition_estimates': [...],
+                'menus': [...]
+            }
         """
-        try:
-            with open(self.json_path, 'r', encoding='utf-8') as f:
-                data = json.load(f)
-            
-            # ✅ JSON에도 menu_name 추가
-            menus_map = {m['id']: m['name'] for m in data.get('menus', [])}
-            for item in data.get('menu_items', []):
-                item['menu_name'] = menus_map.get(item['menu_id'], '')
-            
-            return data
-        except FileNotFoundError:
-            raise FileNotFoundError(f"JSON 파일을 찾을 수 없습니다: {self.json_path}")
-        except json.JSONDecodeError as e:
-            raise ValueError(f"JSON 파싱 오류: {str(e)}")
-    
+        cache_key = f"{self.source}_{store_id}"
+        
+        # ✅ 캐시 확인
+        if cache_key in self._cache:
+            # TTL 체크
+            if time.time() - self._cache_timestamp[cache_key] < self._cache_ttl:
+                print(f"✅ 캐시에서 로드: {cache_key}")
+                return self._cache[cache_key]
+        
+        # 캐시 없음 → DB 조회
+        print(f"🔄 DB에서 로드: {cache_key}")
+        
+        if self.source == 'mysql':
+            data = self.load_from_mysql(store_id)
+        else:
+            data = self.load_from_json()
+        
+        # ✅ 캐시 저장
+        self._cache[cache_key] = data
+        self._cache_timestamp[cache_key] = time.time()
+        
+        return data
+
     def load_from_mysql(self, store_id=1):
         """
-        MySQL에서 데이터 로드 (SQLAlchemy 사용)
+        MySQL에서 데이터 로드 (최적화된 버전)
+        JOIN을 사용하여 한 번에 모든 데이터 로드
         
         Args:
             store_id (int): 매장 ID
@@ -59,105 +80,139 @@ class DataLoader:
         Returns:
             dict: 전체 데이터
         """
-        if not self.session:
-            raise Exception("MySQL 세션이 설정되지 않았습니다.")
-        
+        session = get_session()
+
         try:
-            # Stores
-            store = self.session.query(Store).filter(Store.id == store_id).first()
-            
-            if not store:
-                raise Exception(f"Store {store_id}를 찾을 수 없습니다.")
-            
-            stores = [store]
-            
-            # Menus
-            menus = store.menus
-            
-            # ✅ Menu 이름 매핑 테이블 생성
-            menu_name_map = {menu.id: menu.name for menu in menus}
-            
-            # Menu Items (menu 정보까지 eager loading)
-            menu_items = []
-            for menu in menus:
-                items = (
-                    self.session.query(MenuItem)
-                    .filter(MenuItem.menu_id == menu.id)
-                    .options(
-                        joinedload(MenuItem.nutrition),
-                        joinedload(MenuItem.ingredients),
-                        joinedload(MenuItem.menu)  # ✅ menu 관계 추가
-                    )
-                    .all()
+            # ✅ JOIN으로 한 번에 가져오기!
+            query = (
+                session.query(
+                    MenuItem,
+                    Menu.name.label('menu_name'),
+                    Menu.id.label('menu_id'),
+                    NutritionEstimate
                 )
-                menu_items.extend(items)
-            
-            # Item Ingredients
-            item_ingredients = []
-            for item in menu_items:
-                item_ingredients.extend(item.ingredients)
-            
-            # Nutrition Estimates
-            nutrition_estimates = [item.nutrition for item in menu_items if item.nutrition]
-            
-            # ✅ dict 변환 시 menu_name 추가
-            menu_items_dict = []
-            for item in menu_items:
-                item_dict = self._to_dict(item)
-                item_dict['menu_name'] = menu_name_map.get(item.menu_id, '')  # ✅ 메뉴 이름 추가
-                menu_items_dict.append(item_dict)
-            
+                .join(Menu, MenuItem.menu_id == Menu.id)
+                .outerjoin(NutritionEstimate, MenuItem.id == NutritionEstimate.item_id)
+                .filter(Menu.store_id == store_id)
+                .filter(MenuItem.is_available == True)
+            )
+
+            results = query.all()
+
+            # 데이터 변환
+            menu_items = []
+            nutrition_estimates = []
+            menus_dict = {}
+
+            for item, menu_name, menu_id, nutrition in results:
+                # MenuItem 데이터
+                menu_items.append({
+                    'id': item.id,
+                    'menu_id': item.menu_id,
+                    'name': item.name,
+                    'description': item.description,
+                    'price': float(item.price),
+                    'is_available': item.is_available,
+                    'image_url': item.image_url,
+                    'created_at': item.created_at.isoformat() if item.created_at else None,
+                    'updated_at': item.updated_at.isoformat() if item.updated_at else None,
+                    'menu_name': menu_name  # ✅ JOIN으로 가져온 데이터!
+                })
+
+                # Nutrition 데이터
+                if nutrition:
+                    nutrition_estimates.append({
+                        'id': nutrition.id,
+                        'item_id': nutrition.item_id,
+                        'calories': nutrition.calories,
+                        'sugar_g': nutrition.sugar_g,
+                        'caffeine_mg': nutrition.caffeine_mg,
+                        'protein_g': nutrition.protein_g,
+                        'fat_g': nutrition.fat_g,
+                        'carbs_g': nutrition.carbs_g,
+                        'confidence': nutrition.confidence,
+                        'last_computed_at': nutrition.last_computed_at.isoformat() if nutrition.last_computed_at else None
+                    })
+
+                # Menu 데이터 (중복 제거)
+                if menu_id not in menus_dict:
+                    menus_dict[menu_id] = {
+                        'id': menu_id,
+                        'name': menu_name
+                    }
+
             return {
-                "stores": [self._to_dict(s) for s in stores],
-                "menus": [self._to_dict(m) for m in menus],
-                "menu_items": menu_items_dict,  # ✅ menu_name 포함
-                "item_ingredients": [self._to_dict(ing) for ing in item_ingredients],
-                "nutrition_estimates": [self._to_dict(n) for n in nutrition_estimates]
+                'menu_items': menu_items,
+                'nutrition_estimates': nutrition_estimates,
+                'menus': list(menus_dict.values())
             }
         
-        except Exception as e:
-            raise Exception(f"MySQL 데이터 로드 실패: {str(e)}")
+        finally:
+            session.close()
     
-    def _to_dict(self, obj):
-        """ORM 객체 → dict 변환"""
-        if obj is None:
-            return None
-        
-        result = {}
-        for column in obj.__table__.columns:
-            value = getattr(obj, column.name)
-            # Decimal/datetime 등 JSON 호환 변환
-            if hasattr(value, 'isoformat'):
-                result[column.name] = value.isoformat()
-            elif value is not None:
-                # Decimal을 float로 변환
-                try:
-                    result[column.name] = float(value)
-                except (TypeError, ValueError):
-                    result[column.name] = value
-            else:
-                result[column.name] = value
-        return result
-    
-    def load(self, store_id=1):
+    def load_from_json(self) -> Dict[str, Any]:
         """
-        설정된 소스에서 데이터 로드
-        
-        Args:
-            store_id (int): 매장 ID (MySQL 사용 시)
+        JSON 파일에서 데이터 로드
         
         Returns:
-            dict: 전체 데이터
+            dict: 메뉴 데이터
         """
-        if self.source == 'json':
-            return self.load_from_json()
-        elif self.source == 'mysql':
-            return self.load_from_mysql(store_id)
+
+        json_path = os.path.join(BASE_DIR, 'samples', 'menu_sample_data_v2')
+
+        try:
+            with open(json_path, 'r', encoding='utf-8') as f:
+                data = json.load(f)   
+            return data
+        
+        except FileNotFoundError:
+            raise FileNotFoundError(f"JSON 파일을 찾을 수 없습니다: {self.json_path}")
+        except json.JSONDecodeError as e:
+            raise ValueError(f"JSON 파싱 오류: {str(e)}")
+    
+    def clear_cache(self, store_id: int = None):
+        """
+        캐시 삭제
+
+        Args:
+            store_id(int): 특정 매장 캐시만 삭제 (None이면 전체 삭제)
+        """
+        if store_id is None:
+            self._cache.clear()
+            self._cache_timestamp.clear()
+            print("✅ 전체 캐시 삭제")
         else:
-            raise ValueError(f"지원하지 않는 데이터 소스: {self.source}")
+            cache_key = f"{self.source}_{store_id}"
+            if cache_key in self._cache:
+                del self._cache[cache_key]
+                del self._cache_timestamp[cache_key]
+                print(f"✅ 캐시 삭제: {cache_key}")
+
+    def get_cache_info(self) -> Dict[str, Any]:
+        """
+        캐시 정보 반환
+
+        Returns:
+            dict: 캐시 통계
+        """
+        cache_info = {}
+        current_time = time.time()
+
+        for key, timestamp in self._cache_timestamp.items():
+            age = current_time - timestamp
+            remaining_ttl = max(0, self._cache_ttl - age)
+
+            cache_info[key] = {
+                'age': f"{age:.1f}s",
+                'remaining_ttl': f"{remaining_ttl:.1f}s",
+                'expired': remaining_ttl == 0
+            }
+        
+        return cache_info
     
     def close(self):
-        """데이터베이스 세션 종료"""
+        """리소스 정리"""
         if self.session:
             self.session.close()
+            self.session = None
             print("✅ MySQL 세션 종료")
