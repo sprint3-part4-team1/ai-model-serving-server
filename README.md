@@ -40,6 +40,37 @@ AI 기반 메뉴판 자동 생성 및 편집, 시즈널 스토리 생성, 메뉴
 - 영양성분 분석
 - 고객 의도 파싱
 
+## 프로젝트 구조
+
+```
+ai-model-serving-server/
+├── src/                          # Flask 기반 백엔드 (시즈널 스토리, 추천 시스템)
+│   ├── api/                      # Flask API 엔드포인트
+│   ├── llm/                      # LLM 프로바이더 (GPT-4, GPT-5, Gemini)
+│   ├── recommendation/           # 메뉴 추천 시스템
+│   ├── services/                 # 비즈니스 로직
+│   ├── schemas/                  # 데이터 스키마
+│   ├── models.py                 # DB 모델
+│   └── app.py                    # Flask 애플리케이션
+│
+├── backend/                      # FastAPI 기반 백엔드 (메뉴 생성, OCR)
+│   ├── app/
+│   │   ├── api/endpoints/       # FastAPI 엔드포인트
+│   │   ├── models/              # DB 모델
+│   │   ├── schemas/             # Pydantic 스키마
+│   │   ├── services/            # 비즈니스 로직
+│   │   └── core/                # 설정, DB, 로깅
+│   ├── data/uploads/            # 업로드된 이미지
+│   └── main.py                  # FastAPI 애플리케이션
+│
+└── frontend/                     # React 프론트엔드
+    ├── src/
+    │   ├── components/
+    │   ├── pages/
+    │   └── services/
+    └── vite.config.ts
+```
+
 ## 기술 스택
 
 ### Frontend
@@ -48,17 +79,22 @@ AI 기반 메뉴판 자동 생성 및 편집, 시즈널 스토리 생성, 메뉴
 - Material-UI (MUI)
 - Zustand (상태 관리)
 
-### Backend
-- **FastAPI** (메뉴 생성, OCR, 이미지 생성)
-- **Flask** (시즈널 스토리, 추천 시스템)
-- SQLAlchemy (ORM)
-- MySQL (데이터베이스)
-- PaddleOCR (텍스트 인식)
+### Backend - FastAPI (메뉴 생성 시스템)
+- FastAPI + Python 3.10
 - Stable Diffusion (이미지 생성)
+- PaddleOCR (텍스트 인식)
 - OpenAI API (텍스트 생성)
+- SQLAlchemy (ORM)
 
-### Infrastructure
-- Server: GCP VM (34.28.223.101)
+### Backend - Flask (추천 시스템)
+- Flask + Python 3.12
+- LangChain + Multiple LLMs
+- 트렌드 수집 (Google, Instagram)
+- SQLAlchemy (ORM)
+
+### Database & Infrastructure
+- MySQL 8.0
+- GCP VM (34.28.223.101)
 - Backend Port: 9090
 - Frontend Port: 8030
 
@@ -81,30 +117,45 @@ pip install -r requirements.txt
 
 ## 실행 방법
 
-### Backend 실행 (FastAPI)
+### 1. Backend - FastAPI (메뉴 생성)
 ```bash
 cd backend
 pip install -r requirements.txt
 uvicorn app.main:app --host 0.0.0.0 --port 9090
 ```
+- 메뉴 생성, OCR, 이미지 생성 API
+- API Docs: http://34.28.223.101:9090/docs
 
-### Backend 실행 (Flask - 추천 시스템)
+### 2. Backend - Flask (추천 시스템)
 ```bash
+# 프로젝트 루트에서
 uv run src/app.py
 ```
+- 시즈널 스토리, 메뉴 추천, 트렌드 수집 API
+- API Docs: http://127.0.0.1:9090/docs
 
-### Frontend 실행
+### 3. Frontend
 ```bash
 cd frontend
 npm install
-npm run dev  # http://localhost:8030
+npm run dev
 ```
+- 개발 서버: http://localhost:8030
+- 프로덕션: http://34.28.223.101:8030
 
-### 접속 정보
-- Frontend: http://34.28.223.101:8030
-- Backend API: http://34.28.223.101:9090
-- API Docs (FastAPI): http://34.28.223.101:9090/docs
-- API Docs (Flask): http://127.0.0.1:9090/docs
+### API 엔드포인트 구분
+
+**FastAPI (port 9090)**
+- `/api/v1/menu-generation` - 메뉴판 생성
+- `/api/v1/menu-ocr` - OCR/재생성
+- `/api/v1/menu` - 메뉴 CRUD
+- `/api/v1/text-to-image` - 이미지 생성
+- `/api/v1/background` - 배경 처리
+
+**Flask (port 9090)**
+- `/api/seasonal-story` - 시즈널 스토리
+- `/api/recommendation` - 메뉴 추천
+- `/api/trends` - 트렌드 수집
 
 ## 이미지 저장 구조
 
