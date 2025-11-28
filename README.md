@@ -1,10 +1,14 @@
-# Sprint 03 - AI Menu Generator
+# AI Model Serving Server - ValueUp
 
-AI 기반 메뉴판 자동 생성 및 편집 시스템
+AI 기반 메뉴판 자동 생성 및 편집, 시즈널 스토리 생성, 메뉴 추천 통합 시스템
 
 ## 프로젝트 개요
 
-AI를 활용하여 메뉴판을 자동으로 생성하고, 기존 메뉴판을 OCR로 인식하여 편집할 수 있는 통합 시스템
+소상공인을 위한 AI 기반 통합 서비스:
+- **메뉴판 생성**: AI로 메뉴 이미지와 설명 자동 생성
+- **메뉴판 OCR**: 기존 메뉴판 인식 및 재생성
+- **시즈널 스토리**: 매장별 계절 스토리 생성
+- **메뉴 추천**: LLM 기반 고객 맞춤 메뉴 추천
 
 ## 주요 기능
 
@@ -26,6 +30,16 @@ AI를 활용하여 메뉴판을 자동으로 생성하고, 기존 메뉴판을 O
 - 메뉴 이미지 업로드
 - 매장별 메뉴 조회
 
+### 4. 시즈널 스토리 생성
+- 매장 유형별 계절 스토리 생성
+- Google & Instagram 트렌드 수집
+- 컨텍스트 기반 스토리 생성
+
+### 5. 메뉴 추천 시스템
+- LLM 기반 메뉴 추천 (GPT-4, GPT-5, Gemini)
+- 영양성분 분석
+- 고객 의도 파싱
+
 ## 기술 스택
 
 ### Frontend
@@ -35,7 +49,8 @@ AI를 활용하여 메뉴판을 자동으로 생성하고, 기존 메뉴판을 O
 - Zustand (상태 관리)
 
 ### Backend
-- FastAPI + Python 3.10
+- **FastAPI** (메뉴 생성, OCR, 이미지 생성)
+- **Flask** (시즈널 스토리, 추천 시스템)
 - SQLAlchemy (ORM)
 - MySQL (데이터베이스)
 - PaddleOCR (텍스트 인식)
@@ -47,44 +62,35 @@ AI를 활용하여 메뉴판을 자동으로 생성하고, 기존 메뉴판을 O
 - Backend Port: 9090
 - Frontend Port: 8030
 
-## 프로젝트 구조
+## 환경설정
 
+### UV 환경설정 (추천 시스템)
+```bash
+uv python install 3.12
+uv init -p 3.12 --bare
+uv add langchain langchain-openai
+uv add dotenv sqlalchemy pymysql flask
 ```
-task/
-├── backend/                          # FastAPI 백엔드
-│   ├── app/
-│   │   ├── api/endpoints/           # API 엔드포인트
-│   │   │   ├── menu_generation.py  # AI 메뉴판 생성
-│   │   │   ├── menu_ocr.py         # OCR/Repaint
-│   │   │   └── menu.py             # 메뉴 CRUD
-│   │   ├── models/                  # DB 모델
-│   │   ├── schemas/                 # Pydantic 스키마
-│   │   ├── services/                # 비즈니스 로직
-│   │   └── core/                    # 설정, DB, 로깅
-│   ├── data/                        # 데이터 저장소
-│   │   └── uploads/                 # 업로드된 이미지
-│   └── requirements.txt
-│
-├── frontend/                         # React 프론트엔드
-│   ├── src/
-│   │   ├── components/              # UI 컴포넌트
-│   │   ├── pages/                   # 페이지
-│   │   ├── services/                # API 클라이언트
-│   │   └── store/                   # 상태 관리
-│   ├── vite.config.ts               # Vite 설정
-│   └── package.json
-│
-└── deployment/                       # 배포 설정 (현재 미사용)
-    └── docker-compose.yml
+
+### Python 환경설정 (메뉴 생성)
+```bash
+python -m venv venv
+source venv/bin/activate  # Windows: venv\Scripts\activate
+pip install -r requirements.txt
 ```
 
 ## 실행 방법
 
-### Backend 실행
+### Backend 실행 (FastAPI)
 ```bash
 cd backend
 pip install -r requirements.txt
 uvicorn app.main:app --host 0.0.0.0 --port 9090
+```
+
+### Backend 실행 (Flask - 추천 시스템)
+```bash
+uv run src/app.py
 ```
 
 ### Frontend 실행
@@ -97,95 +103,8 @@ npm run dev  # http://localhost:8030
 ### 접속 정보
 - Frontend: http://34.28.223.101:8030
 - Backend API: http://34.28.223.101:9090
-- API Docs: http://34.28.223.101:9090/docs
-
-## API 명세
-
-### 1. AI 메뉴판 생성
-**POST** `/api/v1/menu-generation/generate`
-
-#### Request
-```json
-{
-  "store_id": 1,
-  "categories": [
-    {
-      "category_name": "파스타",
-      "items": [
-        {
-          "name": "까르보나라",
-          "price": 15000,
-          "ingredients": ["파스타면", "베이컨", "크림", "파마산 치즈"]
-        }
-      ]
-    }
-  ],
-  "auto_generate_images": true,
-  "auto_generate_descriptions": true
-}
-```
-
-#### Response
-```json
-{
-  "store_id": 1,
-  "categories": [
-    {
-      "category_name": "파스타",
-      "items": [
-        {
-          "name": "까르보나라",
-          "description": "크리미한 크림소스와...",
-          "price": 15000,
-          "image_url": "/static/uploads/carbonara_123.jpg"
-        }
-      ]
-    }
-  ],
-  "generation_time": 12.5
-}
-```
-
-### 2. 메뉴판 OCR
-**POST** `/api/v1/menu-ocr/ocr`
-
-#### Request (multipart/form-data)
-- `image`: 메뉴판 이미지 파일
-- `crop_mode`: true/false
-- `save_results`: true/false
-
-#### Response
-```json
-{
-  "ocr_id": "abc123",
-  "schema_content": "# 카페 메뉴\n## 커피\n- 아메리카노: 4500원",
-  "result_image_url": "/static/ocr_results/abc123/result_with_boxes.jpg",
-  "extracted_images": ["/static/ocr_results/abc123/images/0.jpg"]
-}
-```
-
-### 3. 메뉴판 재생성
-**POST** `/api/v1/menu-ocr/repaint`
-
-#### Request
-```json
-{
-  "ocr_id": "abc123",
-  "schema_content": "# 카페 메뉴\n## 커피\n- 아메리카노: 5000원"
-}
-```
-
-### 4. 메뉴 아이템 업데이트
-**PUT** `/api/v1/menu/items/{item_id}`
-
-#### Request
-```json
-{
-  "name": "수정된 메뉴명",
-  "description": "수정된 설명",
-  "price": 18000
-}
-```
+- API Docs (FastAPI): http://34.28.223.101:9090/docs
+- API Docs (Flask): http://127.0.0.1:9090/docs
 
 ## 이미지 저장 구조
 
@@ -195,7 +114,7 @@ npm run dev  # http://localhost:8030
 
 ## 개발 환경
 
-- Python: 3.10
+- Python: 3.10, 3.12
 - Node.js: 18+
 - MySQL: 8.0
 - GCP VM: Ubuntu 20.04

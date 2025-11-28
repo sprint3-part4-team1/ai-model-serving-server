@@ -1,0 +1,23 @@
+{
+  "metrics": [
+    {
+      "model": "gemini-2.5-flash",
+      "elapsed_time": 3.374981641769409,
+      "success": true,
+      "timestamp": 1764211783.8430026,
+      "priority": 1
+    }
+  ],
+  "summary": {
+    "gemini-2.5-flash": {
+      "total_calls": 1,
+      "successful_calls": 1,
+      "success_rate": 1.0,
+      "avg_time": 3.374981641769409,
+      "cost_per_1k": {
+        "input": 0.0003,
+        "output": 0.0025
+      }
+    }
+  }
+}
