@@ -345,7 +345,6 @@ async def get_welcome_message(
         # 컨텍스트 수집
         context = context_collector_service.get_full_context(
             location=location,
-            include_all_trends=True,
             store_type=store_type
         )
 
@@ -480,7 +479,6 @@ async def get_menu_highlights(
         # 컨텍스트 수집
         context = context_collector_service.get_full_context(
             location=location,
-            include_all_trends=True,
             store_type=store_type
         )
 
