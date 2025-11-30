@@ -299,6 +299,234 @@ async def get_current_context(
 
 
 @router.get(
+    "/welcome-message/{store_id}",
+    response_model=dict,
+    summary="환영 문구 생성",
+    description="매장의 환영 문구를 생성합니다. 날씨, 계절, 시간대, 트렌드를 반영합니다.",
+    responses={
+        200: {"description": "성공"},
+        500: {"description": "서버 오류"}
+    }
+)
+async def get_welcome_message(
+    store_id: int,
+    location: str = "Seoul"
+):
+    """
+    메뉴판 상단 환영 문구 생성
+
+    날씨, 계절, 시간대, 트렌드를 반영하여 매력적인 환영 문구를 생성합니다.
+    """
+    try:
+        # backend/app 모듈 import
+        from app.models.menu import Store
+        from app.core.database import SessionLocal
+
+        logger.info(f"Welcome message requested for store_id={store_id}")
+
+        # DB에서 매장 정보 조회
+        db = SessionLocal()
+        try:
+            store = db.query(Store).filter(Store.id == store_id).first()
+
+            if not store:
+                raise HTTPException(
+                    status_code=status.HTTP_404_NOT_FOUND,
+                    detail=f"Store with id {store_id} not found"
+                )
+
+            store_name = store.name
+            # 매장 타입 추론 (이름이나 설명에서)
+            store_type = "카페"  # 기본값
+
+        finally:
+            db.close()
+
+        # 컨텍스트 수집
+        context = context_collector_service.get_full_context(
+            location=location,
+            include_all_trends=True,
+            store_type=store_type
+        )
+
+        # 환영 문구 생성
+        welcome_message = story_generator_service.generate_welcome_message(
+            context=context,
+            store_name=store_name,
+            store_type=store_type
+        )
+
+        logger.info(f"Welcome message generated: {welcome_message}")
+
+        return {
+            "success": True,
+            "data": {
+                "message": welcome_message,
+                "store_id": store_id,
+                "store_name": store_name,
+                "context": {
+                    "weather": context.get("weather"),
+                    "season": context.get("season"),
+                    "time": context.get("time_info", {}).get("period_kr"),
+                    "trends": context.get("instagram_trends", [])[:5]
+                },
+                "generated_at": datetime.now(pytz.timezone('Asia/Seoul')).isoformat()
+            }
+        }
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Failed to generate welcome message: {e}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail={
+                "success": False,
+                "error": {
+                    "code": 500,
+                    "message": "환영 문구 생성 중 오류가 발생했습니다.",
+                    "details": str(e)
+                }
+            }
+        )
+
+
+@router.get(
+    "/menu-highlights/{store_id}",
+    response_model=dict,
+    summary="메뉴 하이라이트",
+    description="시즌/날씨에 맞는 추천 메뉴를 하이라이트합니다.",
+    responses={
+        200: {"description": "성공"},
+        500: {"description": "서버 오류"}
+    }
+)
+async def get_menu_highlights(
+    store_id: int,
+    location: str = "Seoul",
+    max_highlights: int = 3
+):
+    """
+    시즌/날씨에 맞는 메뉴 하이라이트
+
+    현재 날씨, 계절, 트렌드에 가장 잘 맞는 메뉴를 선택하여 추천 이유와 함께 반환합니다.
+    """
+    try:
+        from app.models.menu import Store, Menu, MenuItem
+        from app.core.database import SessionLocal
+
+        logger.info(f"Menu highlights requested for store_id={store_id}")
+
+        # DB에서 매장 및 메뉴 정보 조회
+        db = SessionLocal()
+        try:
+            store = db.query(Store).filter(Store.id == store_id).first()
+
+            if not store:
+                raise HTTPException(
+                    status_code=status.HTTP_404_NOT_FOUND,
+                    detail=f"Store with id {store_id} not found"
+                )
+
+            # 매장의 메뉴 아이템 조회 (사용 가능한 메뉴만)
+            # 사이드와 음료 카테고리 제외
+            menu_items = db.query(MenuItem, Menu.name.label("category_name")).join(Menu).filter(
+                Menu.store_id == store_id,
+                MenuItem.is_available == True
+            ).all()
+
+            if not menu_items:
+                return {
+                    "success": True,
+                    "data": {
+                        "highlights": [],
+                        "message": "조회 가능한 메뉴가 없습니다."
+                    }
+                }
+
+            # 사이드/음료 제외 키워드
+            exclude_keywords = ["사이드", "side", "음료", "drink", "beverage", "드링크", "디저트", "dessert"]
+
+            # 메뉴 정보를 dict로 변환 (사이드/음료 제외)
+            menus = []
+            for item, category_name in menu_items:
+                # 카테고리 이름에 제외 키워드가 포함되어 있으면 스킵
+                if any(keyword in category_name.lower() for keyword in exclude_keywords):
+                    continue
+
+                menus.append({
+                    "id": item.id,
+                    "name": item.name,
+                    "description": item.description or "",
+                    "price": float(item.price) if item.price else 0,
+                    "category": category_name
+                })
+
+            # 필터링 후 메뉴가 없으면
+            if not menus:
+                return {
+                    "success": True,
+                    "data": {
+                        "highlights": [],
+                        "message": "추천 가능한 메인 메뉴가 없습니다."
+                    }
+                }
+
+            store_type = "카페"  # 기본값
+
+        finally:
+            db.close()
+
+        # 컨텍스트 수집
+        context = context_collector_service.get_full_context(
+            location=location,
+            include_all_trends=True,
+            store_type=store_type
+        )
+
+        # 메뉴 하이라이트 생성
+        highlights = story_generator_service.generate_menu_highlights(
+            context=context,
+            menus=menus,
+            store_type=store_type,
+            max_highlights=max_highlights
+        )
+
+        logger.info(f"{len(highlights)} menu highlights generated")
+
+        return {
+            "success": True,
+            "data": {
+                "highlights": highlights,
+                "total_menus": len(menus),
+                "context": {
+                    "weather": context.get("weather"),
+                    "season": context.get("season"),
+                    "time": context.get("time_info", {}).get("period_kr"),
+                    "trends": context.get("instagram_trends", [])[:5]
+                },
+                "generated_at": datetime.now(pytz.timezone('Asia/Seoul')).isoformat()
+            }
+        }
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Failed to generate menu highlights: {e}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail={
+                "success": False,
+                "error": {
+                    "code": 500,
+                    "message": "메뉴 하이라이트 생성 중 오류가 발생했습니다.",
+                    "details": str(e)
+                }
+            }
+        )
+
+
+@router.get(
     "/health",
     summary="헬스 체크",
     description="시즈널 스토리 API 서비스 상태를 확인합니다."
