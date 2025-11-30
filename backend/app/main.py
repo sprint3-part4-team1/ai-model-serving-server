@@ -182,13 +182,12 @@ import os
 # 업로드 디렉토리 생성
 os.makedirs(settings.UPLOAD_DIR, exist_ok=True)
 
-# 정적 파일 마운트
-app.mount("/static/uploads", StaticFiles(directory=settings.UPLOAD_DIR), name="uploads")
+# 정적 파일 마운트 (/data/uploads로 통일)
+app.mount("/data/uploads", StaticFiles(directory=settings.UPLOAD_DIR), name="uploads")
 
-# OCR 결과 디렉토리 생성 및 마운트
-ocr_results_dir = os.path.join(settings.STATIC_DIR, "ocr_results")
-os.makedirs(ocr_results_dir, exist_ok=True)
-app.mount("/static/ocr_results", StaticFiles(directory=ocr_results_dir), name="ocr_results")
+# Static 디렉토리 마운트
+os.makedirs(settings.STATIC_DIR, exist_ok=True)
+app.mount("/static", StaticFiles(directory=settings.STATIC_DIR), name="static")
 
 # API 라우터 등록
 from app.api.endpoints import ad_copy, text_to_image, background, seasonal_story, menu, menu_ocr, menu_generation
