@@ -203,7 +203,7 @@ export default function MenuBoardPage() {
               category: category.name,
               price: item.price || 0,
               description: item.description || '',
-              image_url: item.image_url ? `${import.meta.env.VITE_API_URL}${item.image_url}` : undefined,
+              image_url: item.image_url,
               ingredients: [],
             })
           })
@@ -282,7 +282,7 @@ export default function MenuBoardPage() {
         setDisplayedMenus((prevMenus) =>
           prevMenus.map((m) =>
             m.id === selectedMenu.id
-              ? { ...m, image_url: `${import.meta.env.VITE_API_URL}${response.data.image_url}` }
+              ? { ...m, image_url: response.data.image_url }
               : m
           )
         )
@@ -290,7 +290,7 @@ export default function MenuBoardPage() {
         // 선택된 메뉴 업데이트
         setSelectedMenu({
           ...selectedMenu,
-          image_url: `${import.meta.env.VITE_API_URL}${response.data.image_url}`,
+          image_url: response.data.image_url,
         })
 
         alert('이미지가 성공적으로 업로드되었습니다!')
