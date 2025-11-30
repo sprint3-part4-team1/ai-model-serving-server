@@ -84,7 +84,7 @@ function MenuItemImage({ imageUrl, menuName }: { imageUrl?: string | null; menuN
       {/* 실제 이미지 */}
       <Box
         component="img"
-        src={`${import.meta.env.VITE_API_URL}${imageUrl}`}
+        src={imageUrl}
         alt={menuName}
         onLoad={() => setImageLoaded(true)}
         onError={() => setImageError(true)}
