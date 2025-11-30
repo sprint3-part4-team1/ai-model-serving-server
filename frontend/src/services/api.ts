@@ -24,7 +24,7 @@ import type {
 
 // Axios 인스턴스 생성
 const api: AxiosInstance = axios.create({
-  baseURL: import.meta.env.VITE_API_URL || 'http://34.28.223.101:9090',
+  baseURL: import.meta.env.VITE_API_URL || 'http://34.28.223.101:9091',
   timeout: 300000, // 5분 (이미지 생성은 시간이 오래 걸릴 수 있음)
   headers: {
     'Content-Type': 'application/json',
@@ -322,6 +322,117 @@ export const menuApi = {
     }
   }> {
     const { data } = await api.get(`/api/v1/menu/store/${storeId}`)
+    return data
+  },
+}
+
+// ============ 매장 관리 API ============
+export const storeApi = {
+  /**
+   * 매장 생성
+   */
+  async createStore(request: {
+    name: string
+    address?: string
+    phone?: string
+    open_time?: string
+    close_time?: string
+  }): Promise<{
+    success: boolean
+    data: {
+      id: number
+      name: string
+      address?: string
+      phone?: string
+      open_time?: string
+      close_time?: string
+      created_at: string
+      updated_at: string
+    }
+  }> {
+    const { data } = await api.post('/api/v1/menu/store', request)
+    return data
+  },
+
+  /**
+   * 전체 매장 목록 조회
+   */
+  async getStores(): Promise<{
+    success: boolean
+    data: {
+      stores: Array<{
+        id: number
+        name: string
+        address?: string
+        phone?: string
+        open_time?: string
+        close_time?: string
+        created_at: string
+        updated_at: string
+      }>
+      total: number
+    }
+  }> {
+    const { data } = await api.get('/api/v1/menu/stores')
+    return data
+  },
+
+  /**
+   * 특정 매장 조회
+   */
+  async getStore(storeId: number): Promise<{
+    success: boolean
+    data: {
+      id: number
+      name: string
+      address?: string
+      phone?: string
+      open_time?: string
+      close_time?: string
+      created_at: string
+      updated_at: string
+    }
+  }> {
+    const { data } = await api.get(`/api/v1/menu/store/${storeId}`)
+    return data
+  },
+
+  /**
+   * 매장 정보 수정
+   */
+  async updateStore(storeId: number, request: {
+    name?: string
+    address?: string
+    phone?: string
+    open_time?: string
+    close_time?: string
+  }): Promise<{
+    success: boolean
+    data: {
+      id: number
+      name: string
+      address?: string
+      phone?: string
+      open_time?: string
+      close_time?: string
+      created_at: string
+      updated_at: string
+    }
+  }> {
+    const { data } = await api.put(`/api/v1/menu/store/${storeId}`, request)
+    return data
+  },
+
+  /**
+   * 매장 삭제
+   */
+  async deleteStore(storeId: number): Promise<{
+    success: boolean
+    data: {
+      message: string
+    }
+  }> {
+    const { data } = await api.delete(`/api/v1/menu/store/${storeId}`)
     return data
   },
 }

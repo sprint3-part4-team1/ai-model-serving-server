@@ -5,14 +5,20 @@ Menu API Endpoints
 
 from fastapi import APIRouter, HTTPException, status, Depends, UploadFile, File
 from sqlalchemy.orm import Session
-from app.schemas.menu import MenuFilterRequest, MenuFilterResponse, MenuItemUpdateRequest, MenuItemUpdateResponse
+from app.schemas.menu import (
+    MenuFilterRequest, MenuFilterResponse,
+    MenuItemUpdateRequest, MenuItemUpdateResponse,
+    StoreCreateRequest, StoreUpdateRequest, StoreResponse
+)
 from app.services.menu_filter_service import menu_filter_service
 from app.core.logging import app_logger as logger
 from app.core.database import get_db
-from app.models.menu import Menu, MenuItem
+from app.models.menu import Menu, MenuItem, Store
 import os
 import uuid
 from pathlib import Path
+from datetime import datetime
+from typing import List
 
 
 router = APIRouter()
@@ -340,3 +346,362 @@ async def health_check():
             "version": "1.0.0"
         }
     }
+
+
+# ============ Store (매장) CRUD API ============
+
+@router.post(
+    "/store",
+    summary="매장 생성",
+    description="새로운 매장을 생성합니다."
+)
+async def create_store(
+    request: StoreCreateRequest,
+    db: Session = Depends(get_db)
+):
+    """
+    매장 생성
+
+    새로운 매장 정보를 DB에 저장합니다.
+    """
+    try:
+        logger.info(f"Creating new store: {request.name}")
+
+        # 시간 문자열을 time 객체로 변환
+        open_time_obj = None
+        close_time_obj = None
+
+        if request.open_time:
+            try:
+                hour, minute = request.open_time.split(":")
+                open_time_obj = datetime.strptime(f"{hour}:{minute}", "%H:%M").time()
+            except ValueError:
+                raise HTTPException(
+                    status_code=status.HTTP_400_BAD_REQUEST,
+                    detail="오픈 시간 형식이 올바르지 않습니다. HH:MM 형식으로 입력해주세요."
+                )
+
+        if request.close_time:
+            try:
+                hour, minute = request.close_time.split(":")
+                close_time_obj = datetime.strptime(f"{hour}:{minute}", "%H:%M").time()
+            except ValueError:
+                raise HTTPException(
+                    status_code=status.HTTP_400_BAD_REQUEST,
+                    detail="마감 시간 형식이 올바르지 않습니다. HH:MM 형식으로 입력해주세요."
+                )
+
+        # 새 매장 생성
+        new_store = Store(
+            name=request.name,
+            address=request.address,
+            phone=request.phone,
+            open_time=open_time_obj,
+            close_time=close_time_obj
+        )
+
+        db.add(new_store)
+        db.commit()
+        db.refresh(new_store)
+
+        logger.info(f"Store created successfully: id={new_store.id}, name={new_store.name}")
+
+        return {
+            "success": True,
+            "data": {
+                "id": new_store.id,
+                "name": new_store.name,
+                "address": new_store.address,
+                "phone": new_store.phone,
+                "open_time": new_store.open_time.strftime("%H:%M") if new_store.open_time else None,
+                "close_time": new_store.close_time.strftime("%H:%M") if new_store.close_time else None,
+                "created_at": new_store.created_at.isoformat(),
+                "updated_at": new_store.updated_at.isoformat()
+            }
+        }
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Failed to create store: {e}")
+        db.rollback()
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail={
+                "success": False,
+                "error": {
+                    "code": 500,
+                    "message": "매장 생성 중 오류가 발생했습니다.",
+                    "details": str(e)
+                }
+            }
+        )
+
+
+@router.get(
+    "/stores",
+    summary="매장 목록 조회",
+    description="전체 매장 목록을 조회합니다."
+)
+async def get_stores(db: Session = Depends(get_db)):
+    """
+    매장 목록 조회
+
+    등록된 모든 매장을 조회합니다.
+    """
+    try:
+        logger.info("Fetching all stores")
+
+        stores = db.query(Store).all()
+
+        store_list = [
+            {
+                "id": store.id,
+                "name": store.name,
+                "address": store.address,
+                "phone": store.phone,
+                "open_time": store.open_time.strftime("%H:%M") if store.open_time else None,
+                "close_time": store.close_time.strftime("%H:%M") if store.close_time else None,
+                "created_at": store.created_at.isoformat(),
+                "updated_at": store.updated_at.isoformat()
+            }
+            for store in stores
+        ]
+
+        logger.info(f"Found {len(store_list)} stores")
+
+        return {
+            "success": True,
+            "data": {
+                "stores": store_list,
+                "total": len(store_list)
+            }
+        }
+
+    except Exception as e:
+        logger.error(f"Failed to fetch stores: {e}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail={
+                "success": False,
+                "error": {
+                    "code": 500,
+                    "message": "매장 조회 중 오류가 발생했습니다.",
+                    "details": str(e)
+                }
+            }
+        )
+
+
+@router.get(
+    "/store/{store_id}",
+    summary="매장 상세 조회",
+    description="특정 매장의 상세 정보를 조회합니다."
+)
+async def get_store(store_id: int, db: Session = Depends(get_db)):
+    """
+    매장 상세 조회
+
+    매장 ID로 특정 매장의 정보를 조회합니다.
+    """
+    try:
+        logger.info(f"Fetching store: id={store_id}")
+
+        store = db.query(Store).filter(Store.id == store_id).first()
+
+        if not store:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail={
+                    "success": False,
+                    "error": {
+                        "code": 404,
+                        "message": f"매장을 찾을 수 없습니다. (ID: {store_id})"
+                    }
+                }
+            )
+
+        return {
+            "success": True,
+            "data": {
+                "id": store.id,
+                "name": store.name,
+                "address": store.address,
+                "phone": store.phone,
+                "open_time": store.open_time.strftime("%H:%M") if store.open_time else None,
+                "close_time": store.close_time.strftime("%H:%M") if store.close_time else None,
+                "created_at": store.created_at.isoformat(),
+                "updated_at": store.updated_at.isoformat()
+            }
+        }
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Failed to fetch store {store_id}: {e}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail={
+                "success": False,
+                "error": {
+                    "code": 500,
+                    "message": "매장 조회 중 오류가 발생했습니다.",
+                    "details": str(e)
+                }
+            }
+        )
+
+
+@router.put(
+    "/store/{store_id}",
+    summary="매장 정보 수정",
+    description="매장 정보를 수정합니다."
+)
+async def update_store(
+    store_id: int,
+    request: StoreUpdateRequest,
+    db: Session = Depends(get_db)
+):
+    """
+    매장 정보 수정
+
+    매장의 정보를 업데이트합니다.
+    """
+    try:
+        logger.info(f"Updating store: id={store_id}")
+
+        store = db.query(Store).filter(Store.id == store_id).first()
+
+        if not store:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail={
+                    "success": False,
+                    "error": {
+                        "code": 404,
+                        "message": f"매장을 찾을 수 없습니다. (ID: {store_id})"
+                    }
+                }
+            )
+
+        # 업데이트할 필드만 변경
+        if request.name is not None:
+            store.name = request.name
+        if request.address is not None:
+            store.address = request.address
+        if request.phone is not None:
+            store.phone = request.phone
+
+        if request.open_time is not None:
+            try:
+                hour, minute = request.open_time.split(":")
+                store.open_time = datetime.strptime(f"{hour}:{minute}", "%H:%M").time()
+            except ValueError:
+                raise HTTPException(
+                    status_code=status.HTTP_400_BAD_REQUEST,
+                    detail="오픈 시간 형식이 올바르지 않습니다. HH:MM 형식으로 입력해주세요."
+                )
+
+        if request.close_time is not None:
+            try:
+                hour, minute = request.close_time.split(":")
+                store.close_time = datetime.strptime(f"{hour}:{minute}", "%H:%M").time()
+            except ValueError:
+                raise HTTPException(
+                    status_code=status.HTTP_400_BAD_REQUEST,
+                    detail="마감 시간 형식이 올바르지 않습니다. HH:MM 형식으로 입력해주세요."
+                )
+
+        db.commit()
+        db.refresh(store)
+
+        logger.info(f"Store updated successfully: id={store_id}")
+
+        return {
+            "success": True,
+            "data": {
+                "id": store.id,
+                "name": store.name,
+                "address": store.address,
+                "phone": store.phone,
+                "open_time": store.open_time.strftime("%H:%M") if store.open_time else None,
+                "close_time": store.close_time.strftime("%H:%M") if store.close_time else None,
+                "created_at": store.created_at.isoformat(),
+                "updated_at": store.updated_at.isoformat()
+            }
+        }
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Failed to update store {store_id}: {e}")
+        db.rollback()
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail={
+                "success": False,
+                "error": {
+                    "code": 500,
+                    "message": "매장 수정 중 오류가 발생했습니다.",
+                    "details": str(e)
+                }
+            }
+        )
+
+
+@router.delete(
+    "/store/{store_id}",
+    summary="매장 삭제",
+    description="매장을 삭제합니다. 매장의 모든 메뉴도 함께 삭제됩니다."
+)
+async def delete_store(store_id: int, db: Session = Depends(get_db)):
+    """
+    매장 삭제
+
+    매장을 삭제합니다. CASCADE로 인해 매장의 모든 메뉴도 함께 삭제됩니다.
+    """
+    try:
+        logger.info(f"Deleting store: id={store_id}")
+
+        store = db.query(Store).filter(Store.id == store_id).first()
+
+        if not store:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail={
+                    "success": False,
+                    "error": {
+                        "code": 404,
+                        "message": f"매장을 찾을 수 없습니다. (ID: {store_id})"
+                    }
+                }
+            )
+
+        db.delete(store)
+        db.commit()
+
+        logger.info(f"Store deleted successfully: id={store_id}")
+
+        return {
+            "success": True,
+            "data": {
+                "message": f"매장 ID {store_id}가 성공적으로 삭제되었습니다."
+            }
+        }
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Failed to delete store {store_id}: {e}")
+        db.rollback()
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail={
+                "success": False,
+                "error": {
+                    "code": 500,
+                    "message": "매장 삭제 중 오류가 발생했습니다.",
+                    "details": str(e)
+                }
+            }
+        )

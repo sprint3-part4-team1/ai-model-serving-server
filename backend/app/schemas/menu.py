@@ -5,6 +5,7 @@ Menu Filter Schemas
 
 from pydantic import BaseModel, Field
 from typing import List, Optional
+from datetime import time
 
 
 class MenuItem(BaseModel):
@@ -120,5 +121,73 @@ class MenuItemUpdateResponse(BaseModel):
                     "price": 4500,
                     "image_url": "/data/uploads/menu_images/americano.jpg"
                 }
+            }
+        }
+
+
+# ============ Store (매장) 관련 스키마 ============
+
+class StoreCreateRequest(BaseModel):
+    """매장 생성 요청"""
+    name: str = Field(..., description="매장 이름", min_length=1, max_length=100)
+    address: Optional[str] = Field(None, description="매장 주소", max_length=255)
+    phone: Optional[str] = Field(None, description="전화번호", max_length=20)
+    open_time: Optional[str] = Field(None, description="오픈 시간 (HH:MM 형식)")
+    close_time: Optional[str] = Field(None, description="마감 시간 (HH:MM 형식)")
+
+    class Config:
+        json_schema_extra = {
+            "example": {
+                "name": "맛있는 파스타집",
+                "address": "서울시 강남구 테헤란로 123",
+                "phone": "02-1234-5678",
+                "open_time": "11:00",
+                "close_time": "22:00"
+            }
+        }
+
+
+class StoreUpdateRequest(BaseModel):
+    """매장 업데이트 요청"""
+    name: Optional[str] = Field(None, description="매장 이름", min_length=1, max_length=100)
+    address: Optional[str] = Field(None, description="매장 주소", max_length=255)
+    phone: Optional[str] = Field(None, description="전화번호", max_length=20)
+    open_time: Optional[str] = Field(None, description="오픈 시간 (HH:MM 형식)")
+    close_time: Optional[str] = Field(None, description="마감 시간 (HH:MM 형식)")
+
+    class Config:
+        json_schema_extra = {
+            "example": {
+                "name": "맛있는 파스타집",
+                "address": "서울시 강남구 테헤란로 123",
+                "phone": "02-1234-5678",
+                "open_time": "11:00",
+                "close_time": "22:00"
+            }
+        }
+
+
+class StoreResponse(BaseModel):
+    """매장 응답"""
+    id: int = Field(..., description="매장 ID")
+    name: str = Field(..., description="매장 이름")
+    address: Optional[str] = Field(None, description="매장 주소")
+    phone: Optional[str] = Field(None, description="전화번호")
+    open_time: Optional[str] = Field(None, description="오픈 시간")
+    close_time: Optional[str] = Field(None, description="마감 시간")
+    created_at: str = Field(..., description="생성 일시")
+    updated_at: str = Field(..., description="수정 일시")
+
+    class Config:
+        json_schema_extra = {
+            "example": {
+                "id": 1,
+                "name": "맛있는 파스타집",
+                "address": "서울시 강남구 테헤란로 123",
+                "phone": "02-1234-5678",
+                "open_time": "11:00",
+                "close_time": "22:00",
+                "created_at": "2024-11-27T10:00:00",
+                "updated_at": "2024-11-27T10:00:00"
             }
         }

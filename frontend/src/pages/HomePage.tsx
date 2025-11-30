@@ -6,13 +6,12 @@ import {
   Card,
   CardContent,
   CardActionArea,
-  CardMedia,
   Container,
 } from '@mui/material'
 import {
-  Article as ArticleIcon,
-  Image as ImageIcon,
-  AutoFixHigh as AutoFixHighIcon,
+  Store as StoreIcon,
+  AddBox as AddBoxIcon,
+  Restaurant as RestaurantIcon,
 } from '@mui/icons-material'
 
 interface FeatureCard {
@@ -25,24 +24,24 @@ interface FeatureCard {
 
 const features: FeatureCard[] = [
   {
-    title: '광고 문구 생성',
-    description: 'GPT-4를 활용한 전문적인 광고 문구 자동 생성. 6가지 톤과 3가지 길이 선택 가능.',
-    path: '/ad-copy',
-    icon: <ArticleIcon sx={{ fontSize: 60 }} />,
+    title: '매장 생성',
+    description: '매장 정보를 등록하고 관리합니다. 매장 이름, 주소, 영업 시간 등을 설정할 수 있습니다.',
+    path: '/store-management',
+    icon: <StoreIcon sx={{ fontSize: 60 }} />,
     color: '#1976d2',
   },
   {
-    title: '이미지 생성',
-    description: 'Stable Diffusion XL로 고품질 제품 이미지 생성. 6가지 스타일 프리셋 제공.',
-    path: '/image-generator',
-    icon: <ImageIcon sx={{ fontSize: 60 }} />,
+    title: '메뉴판 생성',
+    description: 'AI가 자동으로 메뉴 설명과 이미지를 생성합니다. 메뉴 카테고리와 아이템을 입력하면 전문적인 메뉴판이 완성됩니다.',
+    path: '/menu-generation',
+    icon: <AddBoxIcon sx={{ fontSize: 60 }} />,
     color: '#9c27b0',
   },
   {
-    title: '배경 편집',
-    description: 'AI 기반 배경 제거 및 교체. 제품 이미지를 다양한 배경에 합성.',
-    path: '/background-editor',
-    icon: <AutoFixHighIcon sx={{ fontSize: 60 }} />,
+    title: 'AI 메뉴판',
+    description: '생성된 메뉴판을 확인하고 관리합니다. OCR 기능으로 기존 메뉴판을 업데이트할 수도 있습니다.',
+    path: '/menu-board',
+    icon: <RestaurantIcon sx={{ fontSize: 60 }} />,
     color: '#2e7d32',
   },
 ]
@@ -56,10 +55,10 @@ export default function HomePage() {
         {/* 헤더 */}
         <Box sx={{ textAlign: 'center', mb: 6 }}>
           <Typography variant="h3" component="h1" gutterBottom fontWeight={700}>
-            소상공인 광고 콘텐츠 생성 서비스
+            AI 메뉴판 생성 서비스
           </Typography>
           <Typography variant="h6" color="text.secondary" sx={{ mt: 2 }}>
-            AI를 활용하여 전문적인 광고 콘텐츠를 쉽고 빠르게 제작하세요
+            매장을 등록하고 AI가 자동으로 메뉴판을 생성해드립니다
           </Typography>
         </Box>
 
@@ -117,26 +116,26 @@ export default function HomePage() {
           <Grid container spacing={3} sx={{ mt: 2 }}>
             <Grid item xs={12} md={4}>
               <Typography variant="h6" color="primary" fontWeight={600}>
-                고성능 AI 모델
+                간편한 매장 관리
               </Typography>
               <Typography color="text.secondary">
-                GPT-4와 Stable Diffusion XL을 활용한 최고 품질의 콘텐츠 생성
+                매장 정보를 한 번만 등록하면 언제든지 메뉴판을 생성하고 관리할 수 있습니다
               </Typography>
             </Grid>
             <Grid item xs={12} md={4}>
               <Typography variant="h6" color="primary" fontWeight={600}>
-                빠른 처리 속도
+                AI 자동 생성
               </Typography>
               <Typography color="text.secondary">
-                최적화된 시스템으로 2-30초 내 결과 제공
+                메뉴 이름만 입력하면 AI가 자동으로 설명과 이미지를 생성해드립니다
               </Typography>
             </Grid>
             <Grid item xs={12} md={4}>
               <Typography variant="h6" color="primary" fontWeight={600}>
-                쉬운 사용
+                전문적인 결과
               </Typography>
               <Typography color="text.secondary">
-                전문 지식 없이도 직관적인 인터페이스로 쉽게 제작
+                GPT-4와 Stable Diffusion을 활용한 고품질 메뉴 설명과 이미지
               </Typography>
             </Grid>
           </Grid>
