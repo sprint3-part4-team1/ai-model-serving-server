@@ -113,6 +113,16 @@ interface MenuHighlight {
   reason: string
 }
 
+interface RecommendationContext {
+  weather?: {
+    description: string
+    temperature: number
+  }
+  season?: string
+  time?: string
+  trends?: string[]
+}
+
 export default function CustomerMenuPage() {
   const { storeId } = useParams<{ storeId: string }>()
   const [storeInfo, setStoreInfo] = useState<StoreInfo | null>(null)
@@ -122,6 +132,7 @@ export default function CustomerMenuPage() {
   const [welcomeMessage, setWelcomeMessage] = useState<string>('')
   const [highlights, setHighlights] = useState<MenuHighlight[]>([])
   const [recommendationsLoading, setRecommendationsLoading] = useState(false)
+  const [recommendationContext, setRecommendationContext] = useState<RecommendationContext | null>(null)
 
   useEffect(() => {
     if (storeId) {
@@ -187,10 +198,28 @@ export default function CustomerMenuPage() {
 
       if (welcomeResponse?.success) {
         setWelcomeMessage(welcomeResponse.data.message)
+        // 컨텍스트 정보 저장
+        if (welcomeResponse.data.context) {
+          setRecommendationContext({
+            weather: welcomeResponse.data.context.weather,
+            season: welcomeResponse.data.context.season,
+            time: welcomeResponse.data.context.time,
+            trends: welcomeResponse.data.context.trends || []
+          })
+        }
       }
 
       if (highlightsResponse?.success) {
         setHighlights(highlightsResponse.data.highlights || [])
+        // 컨텍스트 정보가 아직 없으면 하이라이트 응답에서 가져오기
+        if (!recommendationContext && highlightsResponse.data.context) {
+          setRecommendationContext({
+            weather: highlightsResponse.data.context.weather,
+            season: highlightsResponse.data.context.season,
+            time: highlightsResponse.data.context.time,
+            trends: highlightsResponse.data.context.trends || []
+          })
+        }
       }
     } catch (err: any) {
       console.error('추천 정보 로드 실패:', err)
@@ -277,11 +306,31 @@ export default function CustomerMenuPage() {
             }}
           >
             {welcomeMessage && (
-              <Box display="flex" alignItems="center" gap={1} mb={highlights.length > 0 ? 2 : 0}>
-                <WbSunny sx={{ fontSize: 32 }} />
-                <Typography variant="h5" fontWeight="600">
-                  {welcomeMessage}
-                </Typography>
+              <Box>
+                <Box display="flex" alignItems="center" gap={1} mb={1}>
+                  <WbSunny sx={{ fontSize: 32 }} />
+                  <Typography variant="h5" fontWeight="600">
+                    {welcomeMessage}
+                  </Typography>
+                </Box>
+                {recommendationContext && (
+                  <Typography
+                    variant="caption"
+                    sx={{
+                      opacity: 0.85,
+                      display: 'block',
+                      mb: highlights.length > 0 ? 2 : 0,
+                      fontSize: '0.75rem'
+                    }}
+                  >
+                    📍 기반 정보: {recommendationContext.weather?.description} {recommendationContext.weather?.temperature}도
+                    {recommendationContext.season && `, ${recommendationContext.season}`}
+                    {recommendationContext.time && `, ${recommendationContext.time}`}
+                    {recommendationContext.trends && recommendationContext.trends.length > 0 &&
+                      ` | 트렌드: ${recommendationContext.trends.slice(0, 3).join(', ')}`
+                    }
+                  </Typography>
+                )}
               </Box>
             )}
 
