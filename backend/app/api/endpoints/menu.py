@@ -94,17 +94,23 @@ async def get_store_menus(store_id: int, db: Session = Depends(get_db)):
     try:
         logger.info(f"Fetching menus for store_id: {store_id}")
 
+        # 매장 정보 조회
+        store = db.query(Store).filter(Store.id == store_id).first()
+
+        if not store:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail={
+                    "success": False,
+                    "error": {
+                        "code": 404,
+                        "message": f"매장을 찾을 수 없습니다. (ID: {store_id})"
+                    }
+                }
+            )
+
         # 매장의 모든 카테고리(메뉴) 조회
         menus = db.query(Menu).filter(Menu.store_id == store_id).all()
-
-        if not menus:
-            return {
-                "success": True,
-                "data": {
-                    "store_id": store_id,
-                    "categories": []
-                }
-            }
 
         # 카테고리별로 메뉴 아이템 구성
         categories = []
@@ -136,6 +142,9 @@ async def get_store_menus(store_id: int, db: Session = Depends(get_db)):
             "success": True,
             "data": {
                 "store_id": store_id,
+                "store_name": store.name,
+                "store_address": store.address,
+                "store_phone": store.phone,
                 "categories": categories
             }
         }

@@ -146,21 +146,16 @@ export default function CustomerMenuPage() {
       setLoading(true)
       setError(null)
 
-      // 매장 정보와 메뉴 불러오기
-      const [storeResponse, menuResponse] = await Promise.all([
-        storeApi.getStore(id),
-        menuApi.getStoreMenus(id)
-      ])
-
-      if (storeResponse.success && storeResponse.data) {
-        setStoreInfo({
-          id: storeResponse.data.id,
-          name: storeResponse.data.name,
-          description: '',
-        })
-      }
+      // 메뉴 불러오기 (store 정보 포함)
+      const menuResponse = await menuApi.getStoreMenus(id)
 
       if (menuResponse.success && menuResponse.data) {
+        // Store 정보 설정
+        setStoreInfo({
+          id: menuResponse.data.store_id,
+          name: menuResponse.data.store_name || '매장',
+          description: menuResponse.data.store_address || '',
+        })
         // 메뉴 데이터 변환
         const menuList: MenuItem[] = []
         menuResponse.data.categories?.forEach((category) => {
