@@ -322,6 +322,19 @@ export const menuApi = {
     }
   }> {
     const { data } = await api.get(`/api/v1/menu/store/${storeId}`)
+
+    // 상대 경로 이미지 URL을 절대 경로로 변환
+    const baseURL = import.meta.env.VITE_API_URL || 'http://34.28.223.101:9091'
+    if (data.data?.categories) {
+      data.data.categories.forEach(category => {
+        category.items?.forEach(item => {
+          if (item.image_url && item.image_url.startsWith('/')) {
+            item.image_url = `${baseURL}${item.image_url}`
+          }
+        })
+      })
+    }
+
     return data
   },
 }
@@ -447,6 +460,19 @@ export const menuGenerationApi = {
       '/api/v1/menu-generation/generate',
       request
     )
+
+    // 상대 경로 이미지 URL을 절대 경로로 변환
+    const baseURL = import.meta.env.VITE_API_URL || 'http://34.28.223.101:9091'
+    if (data.data?.categories) {
+      data.data.categories.forEach(category => {
+        category.items?.forEach(item => {
+          if (item.image_url && item.image_url.startsWith('/')) {
+            item.image_url = `${baseURL}${item.image_url}`
+          }
+        })
+      })
+    }
+
     return data
   },
 
