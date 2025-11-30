@@ -43,6 +43,7 @@ const menuItems: MenuItem[] = [
   { path: '/store-management', label: '매장 생성', icon: <StoreIcon /> },
   { path: '/menu-generation', label: '메뉴판 생성', icon: <AddBoxIcon /> },
   { path: '/menu-board', label: 'AI 메뉴판', icon: <RestaurantIcon /> },
+  { path: '/customer-menu', label: '고객 메뉴판', icon: <MenuBookIcon /> },
   { path: '/ad-copy', label: '광고 문구 생성', icon: <ArticleIcon /> },
   { path: '/image-generator', label: '이미지 생성', icon: <ImageIcon /> },
   { path: '/background-editor', label: '배경 편집', icon: <AutoFixHighIcon /> },

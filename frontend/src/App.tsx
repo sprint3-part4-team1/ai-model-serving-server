@@ -13,6 +13,7 @@ import MenuStorytellingPage from '@pages/MenuStorytellingPage'
 import MenuGenerationPage from '@pages/MenuGenerationPage'
 import StoreManagementPage from '@pages/StoreManagementPage'
 import CustomerMenuPage from '@pages/CustomerMenuPage'
+import CustomerMenuListPage from '@pages/CustomerMenuListPage'
 
 function App() {
   return (
@@ -23,6 +24,7 @@ function App() {
 
         {/* 관리자 페이지 (Layout 포함) */}
         <Route path="/" element={<Layout />}>
+          <Route path="customer-menu" element={<CustomerMenuListPage />} />
           <Route index element={<HomePage />} />
           <Route path="store-management" element={<StoreManagementPage />} />
           <Route path="menu-generation" element={<MenuGenerationPage />} />
