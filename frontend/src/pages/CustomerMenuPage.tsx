@@ -13,7 +13,7 @@ import {
   Divider,
 } from '@mui/material'
 import { Restaurant, Store } from '@mui/icons-material'
-import { menuApi } from '../services/api'
+import { menuApi, storeApi } from '../services/api'
 
 interface MenuItem {
   id: number
@@ -126,7 +126,7 @@ export default function CustomerMenuPage() {
 
       // 매장 정보와 메뉴 불러오기
       const [storeResponse, menuResponse] = await Promise.all([
-        menuApi.getStore(id),
+        storeApi.getStore(id),
         menuApi.getStoreMenus(id)
       ])
 

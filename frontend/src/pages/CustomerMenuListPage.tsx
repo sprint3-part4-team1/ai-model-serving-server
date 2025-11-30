@@ -13,7 +13,7 @@ import {
   Chip,
 } from '@mui/material'
 import { Store, Restaurant } from '@mui/icons-material'
-import { menuApi } from '../services/api'
+import { storeApi } from '../services/api'
 
 interface Store {
   id: number
@@ -37,10 +37,10 @@ export default function CustomerMenuListPage() {
       setLoading(true)
       setError(null)
 
-      const response = await menuApi.getStores()
+      const response = await storeApi.getStores()
 
       if (response.success && response.data) {
-        setStores(response.data)
+        setStores(response.data.stores || [])
       }
     } catch (err: any) {
       console.error('매장 목록 로드 실패:', err)
