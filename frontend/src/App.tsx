@@ -12,11 +12,16 @@ import MenuRecommendationPage from '@pages/MenuRecommendationPage'
 import MenuStorytellingPage from '@pages/MenuStorytellingPage'
 import MenuGenerationPage from '@pages/MenuGenerationPage'
 import StoreManagementPage from '@pages/StoreManagementPage'
+import CustomerMenuPage from '@pages/CustomerMenuPage'
 
 function App() {
   return (
     <Box sx={{ minHeight: '100vh', bgcolor: 'background.default' }}>
       <Routes>
+        {/* 고객용 메뉴판 (Layout 없음) */}
+        <Route path="/menu/:storeId" element={<CustomerMenuPage />} />
+
+        {/* 관리자 페이지 (Layout 포함) */}
         <Route path="/" element={<Layout />}>
           <Route index element={<HomePage />} />
           <Route path="store-management" element={<StoreManagementPage />} />
