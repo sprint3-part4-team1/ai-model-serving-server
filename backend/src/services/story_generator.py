@@ -6,10 +6,10 @@ Story Generator Service
 import os
 from typing import Dict, List, Optional
 from openai import OpenAI
-import sys
-sys.path.append(os.path.dirname(os.path.dirname(__file__)))
-from logger import app_logger as logger
-from config import settings
+
+# 상대 경로로 import
+from ..logger import app_logger as logger
+from ..config import settings
 
 
 class StoryGeneratorService:
