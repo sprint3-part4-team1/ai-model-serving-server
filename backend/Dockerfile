@@ -19,13 +19,15 @@ COPY requirements.txt .
 RUN pip install --no-cache-dir --upgrade pip && \
     pip install --no-cache-dir -r requirements.txt
 
-# 애플리케이션 코드 복사
+# 애플리케이션 코드 복사 (app과 src 모두 복사)
 COPY app /app/app
+COPY src /app/src
 COPY .env /app/.env
 
 # 필요한 디렉토리 생성
 RUN mkdir -p /app/data/models \
              /app/data/uploads \
+             /app/data/static \
              /app/logs
 
 # 환경 변수 설정
@@ -33,11 +35,11 @@ ENV PYTHONUNBUFFERED=1
 ENV PYTHONDONTWRITEBYTECODE=1
 
 # 포트 노출
-EXPOSE 8000
+EXPOSE 9091
 
 # 헬스 체크
 HEALTHCHECK --interval=30s --timeout=10s --start-period=60s --retries=3 \
-    CMD python -c "import requests; requests.get('http://localhost:8000/health')"
+    CMD python -c "import requests; requests.get('http://localhost:9091/health')"
 
-# 서버 실행
-CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]
+# 서버 실행 - 새로운 entry point 사용
+CMD ["uvicorn", "src.api.app:app", "--host", "0.0.0.0", "--port", "9091"]
