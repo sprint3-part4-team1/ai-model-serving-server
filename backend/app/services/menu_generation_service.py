@@ -403,6 +403,7 @@ JSON 형식으로 응답하세요:
             filename = self._save_image(image, menu_name)
 
             # URL 생성 (Static 마운트 경로와 일치시킴)
+            # filename은 "menu_images/xxx.jpg" 형식으로 반환됨
             image_url = f"/data/uploads/{filename}"
 
             logger.info(f"메뉴 이미지 생성 완료: {image_url} ({generation_time:.2f}초)")

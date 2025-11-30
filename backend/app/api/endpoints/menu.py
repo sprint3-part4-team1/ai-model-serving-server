@@ -282,7 +282,7 @@ async def upload_menu_image(
             )
 
         # 저장 경로 설정
-        upload_dir = Path("backend/data/uploads/menu_images")
+        upload_dir = Path("backend/data/uploads")
         upload_dir.mkdir(parents=True, exist_ok=True)
 
         # 고유한 파일명 생성
@@ -295,7 +295,7 @@ async def upload_menu_image(
             buffer.write(content)
 
         # 상대 경로로 변환 (API 응답용)
-        relative_path = f"/data/uploads/menu_images/{unique_filename}"
+        relative_path = f"/data/uploads/{unique_filename}"
 
         # DB 업데이트
         menu_item.image_url = relative_path
