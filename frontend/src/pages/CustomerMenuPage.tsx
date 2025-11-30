@@ -11,9 +11,10 @@ import {
   Alert,
   Chip,
   Divider,
+  Paper,
 } from '@mui/material'
-import { Restaurant, Store } from '@mui/icons-material'
-import { menuApi, storeApi } from '../services/api'
+import { Restaurant, Store, WbSunny, Star } from '@mui/icons-material'
+import { menuApi, storeApi, seasonalStoryApi } from '../services/api'
 
 interface MenuItem {
   id: number
@@ -106,16 +107,26 @@ function MenuItemImage({ imageUrl, menuName }: { imageUrl?: string; menuName: st
   )
 }
 
+interface MenuHighlight {
+  menu_id: number
+  name: string
+  reason: string
+}
+
 export default function CustomerMenuPage() {
   const { storeId } = useParams<{ storeId: string }>()
   const [storeInfo, setStoreInfo] = useState<StoreInfo | null>(null)
   const [menus, setMenus] = useState<MenuItem[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const [welcomeMessage, setWelcomeMessage] = useState<string>('')
+  const [highlights, setHighlights] = useState<MenuHighlight[]>([])
+  const [recommendationsLoading, setRecommendationsLoading] = useState(false)
 
   useEffect(() => {
     if (storeId) {
       loadStoreMenu(parseInt(storeId))
+      loadRecommendations(parseInt(storeId))
     }
   }, [storeId])
 
@@ -164,6 +175,31 @@ export default function CustomerMenuPage() {
     }
   }
 
+  const loadRecommendations = async (id: number) => {
+    try {
+      setRecommendationsLoading(true)
+
+      // 환영 문구와 메뉴 하이라이트 동시 로드
+      const [welcomeResponse, highlightsResponse] = await Promise.all([
+        seasonalStoryApi.getWelcomeMessage(id).catch(() => null),
+        seasonalStoryApi.getMenuHighlights(id, 'Seoul', 3).catch(() => null),
+      ])
+
+      if (welcomeResponse?.success) {
+        setWelcomeMessage(welcomeResponse.data.message)
+      }
+
+      if (highlightsResponse?.success) {
+        setHighlights(highlightsResponse.data.highlights || [])
+      }
+    } catch (err: any) {
+      console.error('추천 정보 로드 실패:', err)
+      // 추천 정보는 실패해도 메인 메뉴는 보여줌
+    } finally {
+      setRecommendationsLoading(false)
+    }
+  }
+
   // 카테고리별로 메뉴 그룹화
   const menusByCategory = menus.reduce((acc, menu) => {
     if (!acc[menu.category]) {
@@ -172,6 +208,12 @@ export default function CustomerMenuPage() {
     acc[menu.category].push(menu)
     return acc
   }, {} as Record<string, MenuItem[]>)
+
+  // 추천 메뉴 ID 목록
+  const highlightedMenuIds = new Set(highlights.map(h => h.menu_id))
+
+  // 특정 메뉴가 추천 메뉴인지 확인
+  const isHighlighted = (menuId: number) => highlightedMenuIds.has(menuId)
 
   if (loading) {
     return (
@@ -223,6 +265,57 @@ export default function CustomerMenuPage() {
           </CardContent>
         </Card>
 
+        {/* 시즌별 추천 배너 */}
+        {!recommendationsLoading && (welcomeMessage || highlights.length > 0) && (
+          <Paper
+            elevation={3}
+            sx={{
+              mb: 4,
+              p: 3,
+              background: 'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)',
+              color: 'white',
+            }}
+          >
+            {welcomeMessage && (
+              <Box display="flex" alignItems="center" gap={1} mb={highlights.length > 0 ? 2 : 0}>
+                <WbSunny sx={{ fontSize: 32 }} />
+                <Typography variant="h5" fontWeight="600">
+                  {welcomeMessage}
+                </Typography>
+              </Box>
+            )}
+
+            {highlights.length > 0 && (
+              <Box>
+                <Typography variant="h6" fontWeight="bold" sx={{ mb: 2, display: 'flex', alignItems: 'center', gap: 1 }}>
+                  <Star /> 오늘의 추천 메뉴
+                </Typography>
+                <Grid container spacing={2}>
+                  {highlights.map((highlight) => (
+                    <Grid item xs={12} sm={4} key={highlight.menu_id}>
+                      <Paper
+                        sx={{
+                          p: 2,
+                          bgcolor: 'rgba(255,255,255,0.95)',
+                          color: 'text.primary',
+                          borderRadius: 2,
+                        }}
+                      >
+                        <Typography variant="subtitle1" fontWeight="bold" gutterBottom>
+                          {highlight.name}
+                        </Typography>
+                        <Typography variant="body2" color="text.secondary">
+                          {highlight.reason}
+                        </Typography>
+                      </Paper>
+                    </Grid>
+                  ))}
+                </Grid>
+              </Box>
+            )}
+          </Paper>
+        )}
+
         {/* 메뉴 목록 */}
         {Object.keys(menusByCategory).length === 0 ? (
           <Alert severity="info">등록된 메뉴가 없습니다.</Alert>
@@ -235,53 +328,75 @@ export default function CustomerMenuPage() {
               <Divider sx={{ mb: 3 }} />
 
               <Grid container spacing={3}>
-                {items.map((menu) => (
-                  <Grid item xs={12} sm={6} md={4} key={menu.id}>
-                    <Card
-                      sx={{
-                        height: '100%',
-                        display: 'flex',
-                        flexDirection: 'column',
-                        transition: 'transform 0.2s, box-shadow 0.2s',
-                        '&:hover': {
-                          transform: 'translateY(-4px)',
-                          boxShadow: 6,
-                        },
-                      }}
-                    >
-                      <MenuItemImage imageUrl={menu.image_url} menuName={menu.name} />
-
-                      <CardContent sx={{ flexGrow: 1 }}>
-                        <Box display="flex" justifyContent="space-between" alignItems="center" mb={1}>
-                          <Typography variant="h6" fontWeight="bold">
-                            {menu.name}
-                          </Typography>
+                {items.map((menu) => {
+                  const highlighted = isHighlighted(menu.id)
+                  return (
+                    <Grid item xs={12} sm={6} md={4} key={menu.id}>
+                      <Card
+                        sx={{
+                          height: '100%',
+                          display: 'flex',
+                          flexDirection: 'column',
+                          transition: 'transform 0.2s, box-shadow 0.2s',
+                          position: 'relative',
+                          border: highlighted ? '3px solid #f5576c' : 'none',
+                          boxShadow: highlighted ? 4 : 1,
+                          '&:hover': {
+                            transform: 'translateY(-4px)',
+                            boxShadow: 6,
+                          },
+                        }}
+                      >
+                        {highlighted && (
                           <Chip
-                            label={`${menu.price.toLocaleString()}원`}
-                            color="primary"
+                            icon={<Star />}
+                            label="추천"
+                            color="error"
                             size="small"
-                          />
-                        </Box>
-
-                        {menu.description && (
-                          <Typography
-                            variant="body2"
-                            color="text.secondary"
                             sx={{
-                              overflow: 'hidden',
-                              textOverflow: 'ellipsis',
-                              display: '-webkit-box',
-                              WebkitLineClamp: 3,
-                              WebkitBoxOrient: 'vertical',
+                              position: 'absolute',
+                              top: 12,
+                              right: 12,
+                              zIndex: 1,
+                              fontWeight: 'bold',
                             }}
-                          >
-                            {menu.description}
-                          </Typography>
+                          />
                         )}
-                      </CardContent>
-                    </Card>
-                  </Grid>
-                ))}
+
+                        <MenuItemImage imageUrl={menu.image_url} menuName={menu.name} />
+
+                        <CardContent sx={{ flexGrow: 1 }}>
+                          <Box display="flex" justifyContent="space-between" alignItems="center" mb={1}>
+                            <Typography variant="h6" fontWeight="bold">
+                              {menu.name}
+                            </Typography>
+                            <Chip
+                              label={`${menu.price.toLocaleString()}원`}
+                              color="primary"
+                              size="small"
+                            />
+                          </Box>
+
+                          {menu.description && (
+                            <Typography
+                              variant="body2"
+                              color="text.secondary"
+                              sx={{
+                                overflow: 'hidden',
+                                textOverflow: 'ellipsis',
+                                display: '-webkit-box',
+                                WebkitLineClamp: 3,
+                                WebkitBoxOrient: 'vertical',
+                              }}
+                            >
+                              {menu.description}
+                            </Typography>
+                          )}
+                        </CardContent>
+                      </Card>
+                    </Grid>
+                  )
+                })}
               </Grid>
             </Box>
           ))

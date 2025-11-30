@@ -400,7 +400,8 @@ async def get_menu_highlights(
                 )
 
             # 매장의 메뉴 아이템 조회 (사용 가능한 메뉴만)
-            menu_items = db.query(MenuItem).join(Menu).filter(
+            # 사이드와 음료 카테고리 제외
+            menu_items = db.query(MenuItem, Menu.name.label("category_name")).join(Menu).filter(
                 Menu.store_id == store_id,
                 MenuItem.is_available == True
             ).all()
@@ -414,16 +415,33 @@ async def get_menu_highlights(
                     }
                 }
 
-            # 메뉴 정보를 dict로 변환
+            # 사이드/음료 제외 키워드
+            exclude_keywords = ["사이드", "side", "음료", "drink", "beverage", "드링크", "디저트", "dessert"]
+
+            # 메뉴 정보를 dict로 변환 (사이드/음료 제외)
             menus = []
-            for item in menu_items:
+            for item, category_name in menu_items:
+                # 카테고리 이름에 제외 키워드가 포함되어 있으면 스킵
+                if any(keyword in category_name.lower() for keyword in exclude_keywords):
+                    continue
+
                 menus.append({
                     "id": item.id,
                     "name": item.name,
                     "description": item.description or "",
                     "price": float(item.price) if item.price else 0,
-                    "category": ""  # 카테고리 정보가 있다면 추가
+                    "category": category_name
                 })
+
+            # 필터링 후 메뉴가 없으면
+            if not menus:
+                return {
+                    "success": True,
+                    "data": {
+                        "highlights": [],
+                        "message": "추천 가능한 메인 메뉴가 없습니다."
+                    }
+                }
 
             store_type = "카페"  # 기본값
 

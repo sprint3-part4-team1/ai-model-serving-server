@@ -278,6 +278,51 @@ export const seasonalStoryApi = {
   },
 
   /**
+   * 환영 문구 생성 (날씨/트렌드 반영)
+   */
+  async getWelcomeMessage(storeId: number, location: string = 'Seoul'): Promise<{
+    success: boolean
+    data: {
+      message: string
+      store_id: number
+      store_name: string
+      context: any
+      generated_at: string
+    }
+  }> {
+    const { data } = await api.get(`/api/v1/seasonal-story/welcome-message/${storeId}`, {
+      params: { location }
+    })
+    return data
+  },
+
+  /**
+   * 메뉴 하이라이트 (시즌/날씨 기반 추천)
+   */
+  async getMenuHighlights(
+    storeId: number,
+    location: string = 'Seoul',
+    maxHighlights: number = 3
+  ): Promise<{
+    success: boolean
+    data: {
+      highlights: Array<{
+        menu_id: number
+        name: string
+        reason: string
+      }>
+      total_menus: number
+      context: any
+      generated_at: string
+    }
+  }> {
+    const { data } = await api.get(`/api/v1/seasonal-story/menu-highlights/${storeId}`, {
+      params: { location, max_highlights: maxHighlights }
+    })
+    return data
+  },
+
+  /**
    * 헬스 체크
    */
   async health(): Promise<{ success: boolean; data: { status: string } }> {

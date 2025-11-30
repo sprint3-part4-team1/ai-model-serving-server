@@ -537,14 +537,15 @@ class StoryGeneratorService:
 - 시간대: {period_kr}
 - 인기 트렌드: {', '.join(trends[:5]) if trends else '없음'}
 
-**메뉴 목록:**
+**메뉴 목록 (메인 메뉴만, 사이드/음료 제외됨):**
 {json.dumps(menu_info, ensure_ascii=False, indent=2)}
 
 **작성 가이드:**
 1. 날씨/계절/시간대에 가장 잘 맞는 메뉴 선택
 2. 트렌드와 관련된 메뉴 우선 선택
 3. 추천 이유는 간결하고 설득력 있게 (20자 내외)
-4. JSON 형식으로 응답
+4. 현재 날씨와 트렌드를 자연스럽게 반영한 이유 작성
+5. JSON 형식으로 응답
 
 **응답 형식:**
 {{
