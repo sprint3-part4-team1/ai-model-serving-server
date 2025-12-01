@@ -1,5 +1,5 @@
 # models.py
-from sqlalchemy import Column, Integer, String, DECIMAL, DateTime, ForeignKey, Boolean, Text
+from sqlalchemy import Column, Integer, String, DECIMAL, Time, DateTime, ForeignKey, Boolean, Text
 from sqlalchemy.orm import declarative_base, relationship
 from datetime import datetime
 
@@ -12,10 +12,12 @@ class Store(Base):
     name = Column(String)
     address = Column(String)
     phone = Column(String)
+    open_time = Column(Time)
+    close_time = Column(Time)
     created_at = Column(DateTime, default=datetime.now)
     updated_at = Column(DateTime, default=datetime.now)
     
-    menus = relationship("Menu", back_populates="store")
+    menus = relationship("Menu", back_populates="store", cascade="all, delete-orphan")
 
 class Menu(Base):
     __tablename__ = "menus"
@@ -28,24 +30,26 @@ class Menu(Base):
     updated_at = Column(DateTime, default=datetime.now)
     
     store = relationship("Store", back_populates="menus")
-    menu_items = relationship("MenuItem", back_populates="menu")
+    menu_items = relationship("MenuItem", back_populates="menu", cascade="all, delete-orphan")
 
 class MenuItem(Base):
     __tablename__ = "menu_items"
     
     id = Column(Integer, primary_key=True, autoincrement=True)
-    menu_id = Column(Integer, ForeignKey("menus.id"))
+    menu_id = Column(Integer, ForeignKey("menus.id", ondelete="CASCADE"), nullable=False)
     name = Column(String)
     description = Column(String)
     price = Column(DECIMAL)
     is_available = Column(Boolean)
     image_url = Column(String)
+    is_ai_generated_image = Column(Boolean, default=False)
+    is_ai_generated_description = Column(Boolean, default=False)
     created_at = Column(DateTime)
     updated_at = Column(DateTime)
     
     menu = relationship("Menu", back_populates="menu_items")
-    ingredients = relationship("ItemIngredient", back_populates="menu_item")
-    nutrition = relationship("NutritionEstimate", back_populates="menu_item", uselist=False)
+    ingredients = relationship("ItemIngredient", back_populates="menu_item", cascade="all, delete-orphan")
+    nutrition_estimate = relationship("NutritionEstimate", back_populates="menu_item", uselist=False, cascade="all, delete-orphan")
 
     story = relationship("Story", back_populates="menu_item", uselist=False)
     
@@ -75,7 +79,7 @@ class NutritionEstimate(Base):
     confidence = Column(DECIMAL)
     last_computed_at = Column(DateTime, default=datetime.now)
     
-    menu_item = relationship("MenuItem", back_populates="nutrition")
+    menu_item = relationship("MenuItem", back_populates="nutrition_estimate")
 
 class Story(Base):
     __tablename__ = "stories"
