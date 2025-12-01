@@ -6,6 +6,7 @@ from dotenv import load_dotenv
 from .routes.seasonal_story import router as seasonal_story_router
 from .routes.recommendation_router import router as recommendation_router
 from .routes.story_router import router as story_router
+from .routes.nutrition_router import router as nutrition_router
 
 # .env 파일 로드
 load_dotenv()
@@ -29,6 +30,7 @@ def predict(item: dict):
 app.include_router(seasonal_story_router, prefix="/api/v1/seasonal-story", tags=["Seasonal Story"])
 app.include_router(recommendation_router, prefix="/api/v1", tags=["Recommendations"])
 app.include_router(story_router, prefix="/api/v1", tags=["Story"])
+app.include_router(nutrition_router, prefix="/api/v1/nutrition", tags=["Nutrition"]) 
 
 
 # uvicorn 실행 (개발 환경용)

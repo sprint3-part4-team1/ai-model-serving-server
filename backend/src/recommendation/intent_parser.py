@@ -3,7 +3,7 @@
 GPT-5.1을 사용하여 자연어를 구조화된 필터 조건으로 변환
 """
 
-from ..llm.llm_router import get_llm_router
+from ..llm import get_llm_router
 from ..constants import (
     MAX_RECOMMENDATIONS,
     CALORIE_LOW_THRESHOLD,
