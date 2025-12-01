@@ -59,6 +59,8 @@ class MenuItem(Base):
     price = Column(DECIMAL(10, 2))
     is_available = Column(Boolean, default=True)
     image_url = Column(String(500))
+    is_ai_generated_image = Column(Boolean, default=False)
+    is_ai_generated_description = Column(Boolean, default=False)
     created_at = Column(DateTime, default=datetime.utcnow)
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
 

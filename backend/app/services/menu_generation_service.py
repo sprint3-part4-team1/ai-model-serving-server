@@ -245,7 +245,9 @@ class MenuGenerationService:
             description=description,
             price=price,
             image_url=image_url,
-            is_available=True
+            is_available=True,
+            is_ai_generated_image=is_ai_generated_image,
+            is_ai_generated_description=is_ai_generated_description
         )
         db.add(menu_item)
         db.flush()  # ID 생성을 위해 flush
