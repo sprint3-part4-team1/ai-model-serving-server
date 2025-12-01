@@ -38,20 +38,25 @@ interface MenuItem {
   icon: JSX.Element
 }
 
+// 주요 메뉴만 표시 (앱 개발용)
 const menuItems: MenuItem[] = [
   { path: '/', label: '홈', icon: <HomeIcon /> },
   { path: '/store-management', label: '매장 생성', icon: <StoreIcon /> },
   { path: '/menu-generation', label: '메뉴판 생성', icon: <AddBoxIcon /> },
   { path: '/menu-board', label: 'AI 메뉴판', icon: <RestaurantIcon /> },
   { path: '/customer-menu', label: '고객 메뉴판', icon: <MenuBookIcon /> },
-  { path: '/ad-copy', label: '광고 문구 생성', icon: <ArticleIcon /> },
-  { path: '/image-generator', label: '이미지 생성', icon: <ImageIcon /> },
-  { path: '/background-editor', label: '배경 편집', icon: <AutoFixHighIcon /> },
-  { path: '/gallery', label: '갤러리', icon: <PhotoLibraryIcon /> },
-  { path: '/seasonal-story', label: '시즈널 스토리', icon: <SparklesIcon /> },
-  { path: '/menu-recommendation', label: 'AI 메뉴 추천', icon: <FilterListIcon /> },
-  { path: '/menu-storytelling', label: '메뉴 스토리텔링', icon: <MenuBookIcon /> },
 ]
+
+// 보류/미사용 메뉴 (필요 시 아래 주석 해제)
+// const unusedMenuItems: MenuItem[] = [
+//   { path: '/ad-copy', label: '광고 문구 생성', icon: <ArticleIcon /> },
+//   { path: '/image-generator', label: '이미지 생성', icon: <ImageIcon /> },
+//   { path: '/background-editor', label: '배경 편집', icon: <AutoFixHighIcon /> },
+//   { path: '/gallery', label: '갤러리', icon: <PhotoLibraryIcon /> },
+//   { path: '/seasonal-story', label: '시즈널 스토리', icon: <SparklesIcon /> },
+//   { path: '/menu-recommendation', label: 'AI 메뉴 추천', icon: <FilterListIcon /> },
+//   { path: '/menu-storytelling', label: '메뉴 스토리텔링', icon: <MenuBookIcon /> },
+// ]
 
 export default function Layout() {
   const [mobileOpen, setMobileOpen] = useState(false)
