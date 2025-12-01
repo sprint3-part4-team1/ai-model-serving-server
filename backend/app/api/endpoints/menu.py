@@ -129,7 +129,8 @@ async def get_store_menus(store_id: int, db: Session = Depends(get_db)):
                         "description": item.description,
                         "price": float(item.price) if item.price else None,
                         "image_url": item.image_url,
-                        "is_available": item.is_available
+                        "is_available": item.is_available,
+                        "ingredients": [ing.ingredient_name for ing in item.ingredients] if item.ingredients else []
                     }
                     for item in items
                 ]

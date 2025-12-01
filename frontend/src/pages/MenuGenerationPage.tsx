@@ -275,6 +275,9 @@ function MenuGenerationPage() {
           })),
         })),
       })
+      // 입력 폼에도 샘플 메뉴 채우기
+      setCategories(DEFAULT_CATEGORIES)
+      setStoreId('0')
       setError(null)
       return
     }
@@ -289,12 +292,31 @@ function MenuGenerationPage() {
       if (response.data.categories.length === 0) {
         setError(`매장 ID ${id}번의 메뉴가 없습니다. 먼저 메뉴를 생성해주세요.`)
         setDisplayMenus(null)
+        setCategories(DEFAULT_CATEGORIES)
       } else {
+        // 조회된 메뉴를 displayMenus에 설정 (이미지 포함한 전체 정보)
         setDisplayMenus({ categories: response.data.categories })
+
+        // 입력 폼에 기존 메뉴 채우기 (카테고리, 메뉴명, 가격, 재료만)
+        const loadedCategories: MenuCategoryCreate[] = response.data.categories.map((cat: any) => ({
+          category_name: cat.name,
+          category_description: cat.description || '',
+          items: cat.items.map((item: any) => ({
+            name: item.name,
+            price: item.price,
+            description: undefined, // 설명은 AI가 다시 생성하도록
+            image_url: undefined,   // 이미지는 AI가 다시 생성하도록
+            ingredients: item.ingredients || []
+          }))
+        }))
+
+        setCategories(loadedCategories)
+        setStoreId(id.toString())
       }
     } catch (err: any) {
       setError(err.message || '메뉴 조회 중 오류가 발생했습니다.')
       setDisplayMenus(null)
+      setCategories(DEFAULT_CATEGORIES)
     } finally {
       setIsLoadingMenus(false)
     }
