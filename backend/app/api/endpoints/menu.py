@@ -130,6 +130,8 @@ async def get_store_menus(store_id: int, db: Session = Depends(get_db)):
                         "price": float(item.price) if item.price else None,
                         "image_url": item.image_url,
                         "is_available": item.is_available,
+                        "is_ai_generated_image": item.is_ai_generated_image if hasattr(item, 'is_ai_generated_image') else False,
+                        "is_ai_generated_description": item.is_ai_generated_description if hasattr(item, 'is_ai_generated_description') else False,
                         "ingredients": [ing.ingredient_name for ing in item.ingredients] if item.ingredients else []
                     }
                     for item in items

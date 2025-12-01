@@ -661,6 +661,9 @@ function MenuGenerationPage() {
                             <Typography variant="h5" fontWeight="bold">
                               {item.name}
                             </Typography>
+                            {item.is_ai_generated_image && (
+                              <Chip label="AI 이미지" size="small" color="primary" />
+                            )}
                           </Box>
 
                           {item.price && (
@@ -670,9 +673,14 @@ function MenuGenerationPage() {
                           )}
 
                           {item.description && (
-                            <Typography variant="body1" color="text.secondary" sx={{ lineHeight: 1.7 }}>
-                              {item.description}
-                            </Typography>
+                            <Box>
+                              <Typography variant="body1" color="text.secondary" sx={{ lineHeight: 1.7 }}>
+                                {item.description}
+                              </Typography>
+                              {item.is_ai_generated_description && (
+                                <Chip label="AI 설명" size="small" sx={{ mt: 1.5 }} color="secondary" />
+                              )}
+                            </Box>
                           )}
                         </Box>
                       </Paper>
