@@ -251,6 +251,7 @@ export default function CustomerMenuPage() {
               description: item.description || '',
               image_url: item.image_url,
               ingredients: [],
+              nutrition: item.nutrition,
             })
           })
         })
