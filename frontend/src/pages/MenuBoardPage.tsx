@@ -224,8 +224,9 @@ export default function MenuBoardPage() {
       setDisplayedMenus(MOCK_MENUS)
       setFilterExplanation('')
       setError(null)
-      // 기본 시즈널 스토리 로드
-      await loadSeasonalStory(1, '행복한 카페')
+      // 기본 시즈널 스토리 로드 (샘플 메뉴 카테고리 사용)
+      const sampleCategories = ['커피', '디저트', '샌드위치']
+      await loadSeasonalStory(0, '샘플 카페', sampleCategories)
       return
     }
 
@@ -280,16 +281,41 @@ export default function MenuBoardPage() {
     }
   }
 
+  // 카테고리 기반 매장 타입 추론
+  const inferStoreType = (categories: string[]): string => {
+    const categoryStr = categories.join(',').toLowerCase()
+
+    if (categoryStr.includes('한식') || categoryStr.includes('찌개') || categoryStr.includes('국') || categoryStr.includes('밥')) {
+      return '한식당'
+    } else if (categoryStr.includes('커피') || categoryStr.includes('음료') || categoryStr.includes('디저트')) {
+      return '카페'
+    } else if (categoryStr.includes('중국') || categoryStr.includes('중식')) {
+      return '중국집'
+    } else if (categoryStr.includes('일식') || categoryStr.includes('초밥') || categoryStr.includes('돈까스')) {
+      return '일식당'
+    } else if (categoryStr.includes('양식') || categoryStr.includes('파스타') || categoryStr.includes('스테이크')) {
+      return '양식당'
+    } else if (categoryStr.includes('분식') || categoryStr.includes('떡볶이') || categoryStr.includes('라면')) {
+      return '분식점'
+    } else if (categoryStr.includes('치킨') || categoryStr.includes('버거')) {
+      return '치킨/패스트푸드'
+    } else {
+      return '레스토랑'
+    }
+  }
+
   const loadSeasonalStory = async (
     id: number,
     storeName: string,
     categories: string[] = ['커피', '디저트', '브런치']
   ) => {
     try {
+      const storeType = inferStoreType(categories)
+
       const response = await seasonalStoryApi.generate({
         store_id: id,
         store_name: storeName,
-        store_type: '카페',
+        store_type: storeType,
         location: 'Seoul',
         menu_categories: categories,
       })

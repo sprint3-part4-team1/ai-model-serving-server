@@ -314,48 +314,60 @@ export default function CustomerMenuPage() {
     }
   }
 
-  // 영양소 필터링 적용
+  // 영양소 필터링 적용 (카테고리 순서 유지)
   const applyNutritionFilter = (filterType: 'protein' | 'fat' | 'sugar') => {
     setActiveFilter(filterType)
 
-    // 영양소 정보가 있는 메뉴만 필터링
-    const menusWithNutrition = menus.filter(menu => menu.nutrition)
-
-    // 정렬 로직
-    const sorted = [...menusWithNutrition].sort((a, b) => {
-      if (!a.nutrition || !b.nutrition) return 0
-
-      if (calorieRatioMode) {
-        // 칼로리 비율 모드: 영양소/칼로리
-        const ratioA = filterType === 'protein'
-          ? (a.nutrition.protein_g || 0) / (a.nutrition.calories || 1)
-          : filterType === 'fat'
-          ? (a.nutrition.fat_g || 0) / (a.nutrition.calories || 1)
-          : (a.nutrition.sugar_g || 0) / (a.nutrition.calories || 1)
-
-        const ratioB = filterType === 'protein'
-          ? (b.nutrition.protein_g || 0) / (b.nutrition.calories || 1)
-          : filterType === 'fat'
-          ? (b.nutrition.fat_g || 0) / (b.nutrition.calories || 1)
-          : (b.nutrition.sugar_g || 0) / (b.nutrition.calories || 1)
-
-        return ratioB - ratioA
-      } else {
-        // 절대값 모드: 영양소 수치
-        const valueA = filterType === 'protein'
-          ? (a.nutrition.protein_g || 0)
-          : filterType === 'fat'
-          ? (a.nutrition.fat_g || 0)
-          : (a.nutrition.sugar_g || 0)
-
-        const valueB = filterType === 'protein'
-          ? (b.nutrition.protein_g || 0)
-          : filterType === 'fat'
-          ? (b.nutrition.fat_g || 0)
-          : (b.nutrition.sugar_g || 0)
-
-        return valueB - valueA
+    // 카테고리별로 그룹화
+    const categoryGroups: { [key: string]: MenuItem[] } = {}
+    menus.forEach(menu => {
+      if (menu.nutrition) {  // 영양소 정보가 있는 메뉴만
+        if (!categoryGroups[menu.category]) {
+          categoryGroups[menu.category] = []
+        }
+        categoryGroups[menu.category].push(menu)
       }
+    })
+
+    // 각 카테고리 내에서 정렬
+    const sorted: MenuItem[] = []
+    Object.keys(categoryGroups).forEach(category => {
+      const categoryMenus = [...categoryGroups[category]].sort((a, b) => {
+        if (!a.nutrition || !b.nutrition) return 0
+
+        if (calorieRatioMode) {
+          // 칼로리 비율 모드: 영양소/칼로리
+          const ratioA = filterType === 'protein'
+            ? (a.nutrition.protein_g || 0) / (a.nutrition.calories || 1)
+            : filterType === 'fat'
+            ? (a.nutrition.fat_g || 0) / (a.nutrition.calories || 1)
+            : (a.nutrition.sugar_g || 0) / (a.nutrition.calories || 1)
+
+          const ratioB = filterType === 'protein'
+            ? (b.nutrition.protein_g || 0) / (b.nutrition.calories || 1)
+            : filterType === 'fat'
+            ? (b.nutrition.fat_g || 0) / (b.nutrition.calories || 1)
+            : (b.nutrition.sugar_g || 0) / (b.nutrition.calories || 1)
+
+          return ratioB - ratioA
+        } else {
+          // 절대값 모드: 영양소 수치
+          const valueA = filterType === 'protein'
+            ? (a.nutrition.protein_g || 0)
+            : filterType === 'fat'
+            ? (a.nutrition.fat_g || 0)
+            : (a.nutrition.sugar_g || 0)
+
+          const valueB = filterType === 'protein'
+            ? (b.nutrition.protein_g || 0)
+            : filterType === 'fat'
+            ? (b.nutrition.fat_g || 0)
+            : (b.nutrition.sugar_g || 0)
+
+          return valueB - valueA
+        }
+      })
+      sorted.push(...categoryMenus)
     })
 
     setDisplayedMenus(sorted)
@@ -363,7 +375,7 @@ export default function CustomerMenuPage() {
     // 설명 문구 설정
     const filterName = filterType === 'protein' ? '고단백' : filterType === 'fat' ? '기름진' : '달콤한'
     const modeText = calorieRatioMode ? '칼로리 대비 비율' : '절대값'
-    setFilterExplanation(`${filterName} 메뉴를 ${modeText} 기준으로 정렬했습니다.`)
+    setFilterExplanation(`${filterName} 메뉴를 각 카테고리 내에서 ${modeText} 기준으로 정렬했습니다.`)
   }
 
   const handleCustomerQuery = async () => {

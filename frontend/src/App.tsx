@@ -29,6 +29,7 @@ function App() {
           <Route index element={<HomePage />} />
           <Route path="store-management" element={<StoreManagementPage />} />
           <Route path="menu-generation" element={<MenuGenerationPage />} />
+          <Route path="menu-board" element={<MenuBoardPage />} />
           <Route path="menu-board/:storeId" element={<MenuBoardPage />} />
           <Route path="nutrition-storytelling" element={<NutritionStorytellingPage />} />
           <Route path="ad-copy" element={<AdCopyGeneratorPage />} />
