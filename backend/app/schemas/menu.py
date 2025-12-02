@@ -93,6 +93,7 @@ class MenuItemUpdateRequest(BaseModel):
     description: Optional[str] = Field(None, description="메뉴 설명")
     price: Optional[float] = Field(None, description="가격")
     image_url: Optional[str] = Field(None, description="이미지 URL (상대경로)")
+    ingredients: Optional[List[str]] = Field(None, description="재료 목록")
 
     class Config:
         json_schema_extra = {

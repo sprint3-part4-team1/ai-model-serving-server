@@ -13,7 +13,7 @@ from app.schemas.menu import (
 from app.services.menu_filter_service import menu_filter_service
 from app.core.logging import app_logger as logger
 from app.core.database import get_db
-from app.models.menu import Menu, MenuItem, Store
+from app.models.menu import Menu, MenuItem, Store, ItemIngredient
 import os
 import uuid
 from pathlib import Path
@@ -220,6 +220,19 @@ async def update_menu_item(
         if request.image_url is not None:
             menu_item.image_url = request.image_url
 
+        # 재료 업데이트
+        if request.ingredients is not None:
+            # 기존 재료 삭제
+            db.query(ItemIngredient).filter(ItemIngredient.item_id == item_id).delete()
+            # 새 재료 추가
+            for ingredient_name in request.ingredients:
+                if ingredient_name.strip():  # 빈 문자열 제외
+                    new_ingredient = ItemIngredient(
+                        item_id=item_id,
+                        ingredient_name=ingredient_name.strip()
+                    )
+                    db.add(new_ingredient)
+
         # DB 저장
         db.commit()
         db.refresh(menu_item)
@@ -233,7 +246,8 @@ async def update_menu_item(
                 "name": menu_item.name,
                 "description": menu_item.description,
                 "price": float(menu_item.price) if menu_item.price else None,
-                "image_url": menu_item.image_url
+                "image_url": menu_item.image_url,
+                "ingredients": [ing.ingredient_name for ing in menu_item.ingredients] if menu_item.ingredients else []
             }
         )
 
