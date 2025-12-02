@@ -441,32 +441,34 @@ export default function MenuBoardPage() {
 
   return (
     <Container maxWidth="lg" sx={{ py: 4 }}>
-      {/* 매장 선택 섹션 */}
-      <Paper elevation={2} sx={{ p: 2, mb: 3 }}>
-        <Typography variant="subtitle1" fontWeight="bold" mb={2}>
-          매장 선택
-        </Typography>
-        <Box display="flex" gap={2} alignItems="center">
-          <TextField
-            label="매장 ID"
-            placeholder="0: 샘플, 1~: DB 메뉴"
-            value={inputStoreId}
-            onChange={(e) => setInputStoreId(e.target.value)}
-            onKeyPress={(e) => e.key === 'Enter' && navigate(`/menu-board/${inputStoreId}`)}
-            variant="outlined"
-            size="small"
-            sx={{ width: 200 }}
-            type="number"
-          />
-          <Button
-            variant="contained"
-            onClick={() => navigate(`/menu-board/${inputStoreId}`)}
-            disabled={loading || menuLoading}
-          >
-            {loading || menuLoading ? <CircularProgress size={24} /> : '매장 정보 불러오기'}
-          </Button>
-        </Box>
-      </Paper>
+      {/* 매장 선택 섹션 - 기본 URL에서만 표시 */}
+      {!storeId && (
+        <Paper elevation={2} sx={{ p: 2, mb: 3 }}>
+          <Typography variant="subtitle1" fontWeight="bold" mb={2}>
+            매장 선택
+          </Typography>
+          <Box display="flex" gap={2} alignItems="center">
+            <TextField
+              label="매장 ID"
+              placeholder="0: 샘플, 1~: DB 메뉴"
+              value={inputStoreId}
+              onChange={(e) => setInputStoreId(e.target.value)}
+              onKeyPress={(e) => e.key === 'Enter' && navigate(`/menu-board/${inputStoreId}`)}
+              variant="outlined"
+              size="small"
+              sx={{ width: 200 }}
+              type="number"
+            />
+            <Button
+              variant="contained"
+              onClick={() => navigate(`/menu-board/${inputStoreId}`)}
+              disabled={loading || menuLoading}
+            >
+              {loading || menuLoading ? <CircularProgress size={24} /> : '매장 정보 불러오기'}
+            </Button>
+          </Box>
+        </Paper>
+      )}
 
       {/* 시즈널 스토리 섹션 */}
       <Paper elevation={3} sx={{ p: 3, mb: 4, background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)', color: 'white' }}>
