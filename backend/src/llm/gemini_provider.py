@@ -3,7 +3,7 @@ Gemini 2.5 Flash Provider
 """
 
 import os
-from google import genai
+import google.generativeai as genai
 from .base_provider import BaseLLMProvider
 from ..constants import GEMINI_MODEL
 
