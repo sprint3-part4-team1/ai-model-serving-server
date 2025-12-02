@@ -20,6 +20,8 @@ import {
   DialogContent,
   DialogActions,
   IconButton,
+  FormControlLabel,
+  Switch,
 } from '@mui/material'
 import { Restaurant, Store, WbSunny, Star, Search, Close } from '@mui/icons-material'
 import { menuApi, seasonalStoryApi } from '../services/api'
@@ -215,6 +217,9 @@ export default function CustomerMenuPage() {
   const [filterExplanation, setFilterExplanation] = useState<string>('')
   const [selectedMenu, setSelectedMenu] = useState<MenuItem | null>(null)
   const [dialogOpen, setDialogOpen] = useState(false)
+  // 필터링 상태
+  const [calorieRatioMode, setCalorieRatioMode] = useState(false)
+  const [activeFilter, setActiveFilter] = useState<'protein' | 'fat' | 'sugar' | null>(null)
 
   useEffect(() => {
     if (storeId) {
@@ -309,6 +314,58 @@ export default function CustomerMenuPage() {
     }
   }
 
+  // 영양소 필터링 적용
+  const applyNutritionFilter = (filterType: 'protein' | 'fat' | 'sugar') => {
+    setActiveFilter(filterType)
+
+    // 영양소 정보가 있는 메뉴만 필터링
+    const menusWithNutrition = menus.filter(menu => menu.nutrition)
+
+    // 정렬 로직
+    const sorted = [...menusWithNutrition].sort((a, b) => {
+      if (!a.nutrition || !b.nutrition) return 0
+
+      if (calorieRatioMode) {
+        // 칼로리 비율 모드: 영양소/칼로리
+        const ratioA = filterType === 'protein'
+          ? (a.nutrition.protein_g || 0) / (a.nutrition.calories || 1)
+          : filterType === 'fat'
+          ? (a.nutrition.fat_g || 0) / (a.nutrition.calories || 1)
+          : (a.nutrition.sugar_g || 0) / (a.nutrition.calories || 1)
+
+        const ratioB = filterType === 'protein'
+          ? (b.nutrition.protein_g || 0) / (b.nutrition.calories || 1)
+          : filterType === 'fat'
+          ? (b.nutrition.fat_g || 0) / (b.nutrition.calories || 1)
+          : (b.nutrition.sugar_g || 0) / (b.nutrition.calories || 1)
+
+        return ratioB - ratioA
+      } else {
+        // 절대값 모드: 영양소 수치
+        const valueA = filterType === 'protein'
+          ? (a.nutrition.protein_g || 0)
+          : filterType === 'fat'
+          ? (a.nutrition.fat_g || 0)
+          : (a.nutrition.sugar_g || 0)
+
+        const valueB = filterType === 'protein'
+          ? (b.nutrition.protein_g || 0)
+          : filterType === 'fat'
+          ? (b.nutrition.fat_g || 0)
+          : (b.nutrition.sugar_g || 0)
+
+        return valueB - valueA
+      }
+    })
+
+    setDisplayedMenus(sorted)
+
+    // 설명 문구 설정
+    const filterName = filterType === 'protein' ? '고단백' : filterType === 'fat' ? '기름진' : '달콤한'
+    const modeText = calorieRatioMode ? '칼로리 대비 비율' : '절대값'
+    setFilterExplanation(`${filterName} 메뉴를 ${modeText} 기준으로 정렬했습니다.`)
+  }
+
   const handleCustomerQuery = async () => {
     if (!customerQuery.trim()) return
 
@@ -343,6 +400,7 @@ export default function CustomerMenuPage() {
     setDisplayedMenus(menus)
     setCustomerQuery('')
     setFilterExplanation('')
+    setActiveFilter(null)
   }
 
   const handleMenuClick = (menu: MenuItem) => {
@@ -491,35 +549,64 @@ export default function CustomerMenuPage() {
           </Paper>
         )}
 
-        {/* 메뉴 검색 섹션 */}
-        <Paper elevation={2} sx={{ p: 2, mb: 4 }}>
-          <Box display="flex" gap={2} alignItems="center" mb={filterExplanation ? 2 : 0}>
-            <TextField
-              fullWidth
-              placeholder="예: 칼로리 낮은 음료 추천, 달콤한 디저트 찾기..."
-              value={customerQuery}
-              onChange={(e) => setCustomerQuery(e.target.value)}
-              onKeyPress={(e) => e.key === 'Enter' && handleCustomerQuery()}
-              variant="outlined"
-              size="small"
+        {/* 영양소 필터링 섹션 */}
+        <Paper elevation={2} sx={{ p: 3, mb: 4 }}>
+          <Typography variant="h6" fontWeight="bold" gutterBottom>
+            영양소 필터
+          </Typography>
+
+          {/* 1차 필터: 칼로리 비율 ON/OFF */}
+          <Box mb={2}>
+            <FormControlLabel
+              control={
+                <Switch
+                  checked={calorieRatioMode}
+                  onChange={(e) => setCalorieRatioMode(e.target.checked)}
+                />
+              }
+              label={calorieRatioMode ? "칼로리 비율 기준" : "절대값 기준"}
             />
+            <Typography variant="caption" display="block" color="text.secondary" sx={{ ml: 4 }}>
+              {calorieRatioMode
+                ? "영양소/칼로리 비율이 높은 순으로 정렬"
+                : "영양소 절대값이 높은 순으로 정렬"}
+            </Typography>
+          </Box>
+
+          {/* 2차 필터: 영양소 종류 선택 */}
+          <Box display="flex" gap={2} flexWrap="wrap">
             <Button
-              variant="contained"
-              startIcon={<Search />}
-              onClick={handleCustomerQuery}
-              disabled={!customerQuery.trim() || loading}
+              variant={activeFilter === 'protein' ? 'contained' : 'outlined'}
+              onClick={() => applyNutritionFilter('protein')}
+              sx={{ minWidth: 100 }}
             >
-              검색
+              고단백
             </Button>
-            {displayedMenus.length < menus.length && (
+            <Button
+              variant={activeFilter === 'fat' ? 'contained' : 'outlined'}
+              onClick={() => applyNutritionFilter('fat')}
+              sx={{ minWidth: 100 }}
+            >
+              기름진
+            </Button>
+            <Button
+              variant={activeFilter === 'sugar' ? 'contained' : 'outlined'}
+              onClick={() => applyNutritionFilter('sugar')}
+              sx={{ minWidth: 100 }}
+            >
+              달콤한
+            </Button>
+            {activeFilter && (
               <Button
                 variant="outlined"
                 onClick={handleResetFilter}
+                color="secondary"
               >
-                전체보기
+                초기화
               </Button>
             )}
           </Box>
+
           {filterExplanation && (
             <Alert severity="info" sx={{ mt: 2 }}>
               {filterExplanation}

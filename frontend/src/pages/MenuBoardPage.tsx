@@ -472,7 +472,19 @@ export default function MenuBoardPage() {
 
       {/* 시즈널 스토리 섹션 */}
       <Paper elevation={3} sx={{ p: 3, mb: 4, background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)', color: 'white' }}>
-        {loading ? (
+        {!storeId ? (
+          <Box textAlign="center" py={4}>
+            <Typography variant="h5" fontWeight="bold" gutterBottom>
+              AI 메뉴판 관리
+            </Typography>
+            <Typography variant="body1" sx={{ mt: 2, opacity: 0.9 }}>
+              위에서 매장 ID를 입력하여 메뉴를 확인하세요
+            </Typography>
+            <Typography variant="body2" sx={{ mt: 1, opacity: 0.7 }}>
+              매장 ID 0: 샘플 메뉴 | 1번 이상: 실제 생성된 메뉴
+            </Typography>
+          </Box>
+        ) : loading ? (
           <Box display="flex" justifyContent="center" alignItems="center" minHeight="100px">
             <CircularProgress color="inherit" />
           </Box>
@@ -531,18 +543,20 @@ export default function MenuBoardPage() {
         ) : null}
       </Paper>
 
-      {/* 메뉴 그리드 */}
-      <Box display="flex" justifyContent="space-between" alignItems="center" mb={3}>
-        <Typography variant="h5" fontWeight="bold">
-          메뉴
-        </Typography>
-        <Typography variant="body2" color="text.secondary">
-          {displayedMenus.length}개의 메뉴
-        </Typography>
-      </Box>
+      {/* 메뉴 그리드 - 매장이 선택된 경우에만 표시 */}
+      {storeId && (
+        <>
+          <Box display="flex" justifyContent="space-between" alignItems="center" mb={3}>
+            <Typography variant="h5" fontWeight="bold">
+              메뉴
+            </Typography>
+            <Typography variant="body2" color="text.secondary">
+              {displayedMenus.length}개의 메뉴
+            </Typography>
+          </Box>
 
-      <Grid container spacing={3}>
-        {displayedMenus.map((menu) => (
+          <Grid container spacing={3}>
+            {displayedMenus.map((menu) => (
           <Grid item xs={12} sm={6} md={4} key={menu.id}>
             <Card elevation={2} sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
               <CardActionArea onClick={() => handleMenuClick(menu)} sx={{ flexGrow: 1 }}>
@@ -572,8 +586,10 @@ export default function MenuBoardPage() {
               </CardActionArea>
             </Card>
           </Grid>
-        ))}
-      </Grid>
+            ))}
+          </Grid>
+        </>
+      )}
 
       {/* 메뉴 스토리텔링 다이얼로그 */}
       <Dialog
