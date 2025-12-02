@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react'
+import QRCode from 'qrcode.react'
 import {
   Box,
   Container,
@@ -168,6 +169,7 @@ function MenuGenerationPage() {
   const [error, setError] = useState<string | null>(null)
   const [result, setResult] = useState<MenuGenerationResponse | null>(null)
   const [displayMenus, setDisplayMenus] = useState<any>(null)
+  const [generatedStoreId, setGeneratedStoreId] = useState<number | null>(null)
 
   // 카테고리 추가
   const handleAddCategory = () => {
@@ -344,6 +346,7 @@ function MenuGenerationPage() {
       })
 
       setResult(response)
+      setGeneratedStoreId(id)
     } catch (err: any) {
       setError(err.message || '메뉴판 생성 중 오류가 발생했습니다.')
     } finally {
@@ -694,74 +697,74 @@ function MenuGenerationPage() {
       )}
 
       {/* 결과 */}
-      {result && (
+      {result && generatedStoreId && (
         <Card>
           <CardContent>
-            <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
-              <CheckCircle sx={{ color: 'success.main', mr: 1 }} />
-              <Typography variant="h6">생성 완료!</Typography>
+            <Box sx={{ display: 'flex', alignItems: 'center', mb: 3 }}>
+              <CheckCircle sx={{ color: 'success.main', mr: 1, fontSize: 40 }} />
+              <Typography variant="h4" fontWeight="bold">메뉴판 생성 완료!</Typography>
             </Box>
 
-            <Alert severity="success" sx={{ mb: 2 }}>
+            <Alert severity="success" sx={{ mb: 4 }}>
               {result.data.total_categories}개 카테고리, {result.data.total_items}개 메뉴 생성 완료
               (소요시간: {result.data.generation_time.toFixed(2)}초)
             </Alert>
 
-            {result.data.categories.map((category, index) => (
-              <Box key={index} sx={{ mb: 3 }}>
-                <Typography variant="h6" gutterBottom>
-                  {category.name}
+            <Divider sx={{ my: 3 }} />
+
+            {/* URL 및 QR 코드 섹션 */}
+            <Box sx={{ textAlign: 'center' }}>
+              <Typography variant="h5" fontWeight="bold" gutterBottom sx={{ mb: 3 }}>
+                AI 메뉴판 관리 페이지
+              </Typography>
+
+              {/* URL 표시 */}
+              <Paper elevation={3} sx={{ p: 3, mb: 4, bgcolor: 'grey.50' }}>
+                <Typography variant="body2" color="text.secondary" gutterBottom>
+                  아래 URL로 접속하여 메뉴를 관리하세요
                 </Typography>
-                {category.description && (
-                  <Typography variant="body2" color="text.secondary" gutterBottom>
-                    {category.description}
-                  </Typography>
-                )}
+                <Typography
+                  variant="h6"
+                  sx={{
+                    mt: 1,
+                    p: 2,
+                    bgcolor: 'white',
+                    borderRadius: 1,
+                    fontFamily: 'monospace',
+                    wordBreak: 'break-all'
+                  }}
+                >
+                  {window.location.origin}/menu-board/{generatedStoreId}
+                </Typography>
+                <Button
+                  variant="contained"
+                  sx={{ mt: 2 }}
+                  onClick={() => {
+                    navigator.clipboard.writeText(`${window.location.origin}/menu-board/${generatedStoreId}`)
+                    alert('URL이 복사되었습니다!')
+                  }}
+                >
+                  URL 복사
+                </Button>
+              </Paper>
 
-                <Grid container spacing={2} sx={{ mt: 1 }}>
-                  {category.items.map((item, itemIndex) => (
-                    <Grid item xs={12} key={itemIndex}>
-                      <Paper sx={{ p: 3, display: 'flex', gap: 3, alignItems: 'center' }}>
-                        {/* 이미지 (왼쪽 끝에 크게) */}
-                        <MenuItemImage imageUrl={item.image_url} menuName={item.name} />
-
-                        {/* 메뉴 정보 (오른쪽) */}
-                        <Box sx={{ flex: 1, minWidth: 0 }}>
-                          {/* 메뉴명 */}
-                          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1.5 }}>
-                            <Typography variant="h5" fontWeight="bold">
-                              {item.name}
-                            </Typography>
-                            {item.is_ai_generated_image && (
-                              <Chip label="AI 이미지" size="small" color="primary" />
-                            )}
-                          </Box>
-
-                          {/* 가격 */}
-                          {item.price && (
-                            <Typography variant="h6" color="primary" fontWeight="bold" sx={{ mb: 2 }}>
-                              {item.price.toLocaleString()}원
-                            </Typography>
-                          )}
-
-                          {/* 메뉴 설명 */}
-                          {item.description && (
-                            <Box>
-                              <Typography variant="body1" color="text.secondary" sx={{ lineHeight: 1.7 }}>
-                                {item.description}
-                              </Typography>
-                              {item.is_ai_generated_description && (
-                                <Chip label="AI 설명" size="small" sx={{ mt: 1.5 }} color="secondary" />
-                              )}
-                            </Box>
-                          )}
-                        </Box>
-                      </Paper>
-                    </Grid>
-                  ))}
-                </Grid>
+              {/* QR 코드 */}
+              <Box sx={{ display: 'inline-block', p: 3, bgcolor: 'white', borderRadius: 2, boxShadow: 3 }}>
+                <Typography variant="h6" gutterBottom>
+                  QR 코드로 빠른 접속
+                </Typography>
+                <Box sx={{ mt: 2 }}>
+                  <QRCode
+                    value={`${window.location.origin}/menu-board/${generatedStoreId}`}
+                    size={256}
+                    level="H"
+                  />
+                </Box>
+                <Typography variant="body2" color="text.secondary" sx={{ mt: 2 }}>
+                  QR 코드를 스캔하여 메뉴판에 바로 접속하세요
+                </Typography>
               </Box>
-            ))}
+            </Box>
           </CardContent>
         </Card>
       )}

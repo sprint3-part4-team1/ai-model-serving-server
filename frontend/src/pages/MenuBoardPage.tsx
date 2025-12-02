@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react'
+import { useParams, useNavigate } from 'react-router-dom'
 import {
   Box,
   Container,
@@ -182,6 +183,8 @@ function generateHealthStory(menu: MenuItem): string {
 }
 
 export default function MenuBoardPage() {
+  const { storeId } = useParams<{ storeId: string }>()
+  const navigate = useNavigate()
   const [seasonalStory, setSeasonalStory] = useState<SeasonalStoryResponse | null>(null)
   const [selectedMenu, setSelectedMenu] = useState<MenuItem | null>(null)
   const [menuStorytelling, setMenuStorytelling] = useState<MenuStorytellingResponse | null>(null)
@@ -190,9 +193,9 @@ export default function MenuBoardPage() {
   const [menuLoading, setMenuLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [dialogOpen, setDialogOpen] = useState(false)
-  const [storeId, setStoreId] = useState<string>('0')
   const [displayedMenus, setDisplayedMenus] = useState<MenuItem[]>(MOCK_MENUS)
   const [filterExplanation, setFilterExplanation] = useState<string>('')
+  const [inputStoreId, setInputStoreId] = useState<string>(storeId || '0')
 
   // 편집 모드 상태
   const [editMode, setEditMode] = useState(false)
@@ -202,14 +205,17 @@ export default function MenuBoardPage() {
   const [uploadingImage, setUploadingImage] = useState(false)
   const [savingChanges, setSavingChanges] = useState(false)
 
-  // 초기 로드
+  // URL의 storeId가 변경될 때마다 데이터 로드
   useEffect(() => {
-    loadStoreData()
-  }, [])
+    if (storeId) {
+      setInputStoreId(storeId)
+      loadStoreData()
+    }
+  }, [storeId])
 
   // 매장 데이터 로드 (시즈널 스토리 + 메뉴)
   const loadStoreData = async () => {
-    const id = parseInt(storeId)
+    const id = parseInt(storeId || '0')
 
     // 매장 ID 0: 디폴트 샘플 메뉴 + 기본 스토리
     if (id === 0) {
@@ -431,9 +437,9 @@ export default function MenuBoardPage() {
           <TextField
             label="매장 ID"
             placeholder="0: 샘플, 1~: DB 메뉴"
-            value={storeId}
-            onChange={(e) => setStoreId(e.target.value)}
-            onKeyPress={(e) => e.key === 'Enter' && loadStoreData()}
+            value={inputStoreId}
+            onChange={(e) => setInputStoreId(e.target.value)}
+            onKeyPress={(e) => e.key === 'Enter' && navigate(`/menu-board/${inputStoreId}`)}
             variant="outlined"
             size="small"
             sx={{ width: 200 }}
@@ -441,7 +447,7 @@ export default function MenuBoardPage() {
           />
           <Button
             variant="contained"
-            onClick={loadStoreData}
+            onClick={() => navigate(`/menu-board/${inputStoreId}`)}
             disabled={loading || menuLoading}
           >
             {loading || menuLoading ? <CircularProgress size={24} /> : '매장 정보 불러오기'}
