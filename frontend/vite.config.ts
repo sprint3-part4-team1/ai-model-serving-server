@@ -17,6 +17,7 @@ export default defineConfig({
     },
   },
   server: {
+    host: '0.0.0.0', // 외부 접근 허용
     port: 8005,
     proxy: {
       '/api': {
