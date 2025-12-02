@@ -238,6 +238,9 @@ export default function MenuBoardPage() {
         // DB 메뉴를 MenuItem 형식으로 변환
         const menus: MenuItem[] = []
         const categories: string[] = []
+        const data = response.data as any
+        const storeName = data.store_name || `매장 ${id}`
+
         response.data.categories.forEach((category: any) => {
           categories.push(category.name)
           category.items.forEach((item: any) => {
@@ -254,10 +257,10 @@ export default function MenuBoardPage() {
           })
         })
         setDisplayedMenus(menus)
-        setFilterExplanation(`매장 ID ${id}번의 메뉴 ${menus.length}개`)
+        setFilterExplanation(`${storeName}의 메뉴 ${menus.length}개`)
 
         // 해당 매장의 시즈널 스토리 로드 (실제 매장 정보로)
-        await loadSeasonalStory(id, `매장 ${id}`, categories)
+        await loadSeasonalStory(id, storeName, categories)
       }
     } catch (err: any) {
       setError(err.message || '메뉴 조회 중 오류가 발생했습니다.')
