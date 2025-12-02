@@ -137,41 +137,47 @@ class StoryGeneratorService:
         # 메뉴 정보
         if menu_text:
             # 실제 메뉴 정보가 있으면 사용
-            menu_info = f"추천 메뉴: {menu_text}"
+            menu_info = f"이 매장의 실제 메뉴:\n{menu_text}"
         else:
             # 없으면 메뉴 카테고리 사용
             menu_str = ", ".join(menu_categories) if menu_categories else "음료"
-            menu_info = f"주요 메뉴: {menu_str}"
+            menu_info = f"메뉴 카테고리: {menu_str}"
 
         # 매장 타입별 예시 생성
         examples = self._get_examples_by_store_type(store_type)
 
-        prompt = f"""다음 정보를 바탕으로 고객의 마음을 사로잡는 감성적인 추천 문구를 1-2문장으로 작성해주세요.
+        prompt = f"""당신은 {store_type}의 마케팅 담당자입니다. 현재 상황에 맞는 메뉴 추천 문구를 작성해주세요.
 
-**매장 정보:**
+**이 매장 정보:**
 - 매장 이름: {store_name or store_type}
 - 매장 타입: {store_type}
 - {menu_info}
 
-**현재 상황:**
-- 날씨: {weather_desc}, 온도 {temperature}도
-- 계절: {season_kr}
+**현재 날씨와 시간:**
+- 날씨: {weather_desc}
+- 온도: {temperature}도 ({season_kr})
 - 시간대: {period_kr} ({time_str})
-{f'- 인기 트렌드: {trend_str}' if trend_str else ''}
+{f'- 트렌드: {trend_str}' if trend_str else ''}
 
-**필수 작성 규칙:**
-1. ⚠️ 반드시 위에 제공된 메뉴 목록에 있는 메뉴만 추천할 것 (절대로 없는 메뉴 언급 금지)
-2. ⚠️ 현재 날씨와 온도에 맞는 메뉴를 추천할 것 (추운 날씨에는 따뜻한 메뉴, 더운 날씨에는 시원한 메뉴)
-3. 자연스럽고 친근한 톤으로 작성
-4. 현재 날씨, 계절, 시간대를 자연스럽게 녹여내기
-5. 1-2문장으로 간결하게 (최대 50자)
-6. 이모지는 사용하지 말 것
-7. 논리적으로 말이 되는 조합만 추천할 것 (예: 냉면과 디저트는 어울리지 않음)
+**⚠️ 절대 규칙 (반드시 지켜야 함):**
+1. 위에 나열된 실제 메뉴 중에서만 추천하세요. 메뉴에 없는 음료나 음식은 절대 언급하지 마세요.
+2. 온도에 맞게 추천하세요:
+   - 10도 이하 추운 날씨: 따뜻한 메뉴만 (예: 국물요리, 따뜻한 음료)
+   - 25도 이상 더운 날씨: 시원한 메뉴만 (예: 냉면, 아이스 음료)
+   - 10-25도: 자유롭게 추천
+3. 매장 타입({store_type})에 맞는 메뉴만 추천하세요.
+4. 이모지 사용 금지
+5. 최대 2문장, 50자 이내
 
-{store_type}에 적합한 예시:
+**좋은 예시:**
 {examples}
 
-문구:"""
+**나쁜 예시 (절대 하지 말 것):**
+- "겨울 밤, 따뜻한 음료 한 잔" ← 음료가 메뉴에 없으면 안됨
+- "냉면과 디저트" ← 논리적으로 어울리지 않음
+- "추운 날씨에 아이스커피" ← 온도에 맞지 않음
+
+위 규칙을 반드시 지켜서 1-2문장의 추천 문구를 작성하세요:"""
 
         return prompt
 
