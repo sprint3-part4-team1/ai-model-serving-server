@@ -20,6 +20,11 @@ import type {
   MenuFilterResponse,
   MenuGenerationRequest,
   MenuGenerationResponse,
+  NutritionAnalyzeRequest,
+  NutritionAnalyzeResponse,
+  NutritionStorytellingRequest,
+  NutritionStorytellingResponse,
+  MenuItemWithNutrition,
 } from '@types/index'
 
 // Axios 인스턴스 생성
@@ -554,6 +559,76 @@ export const menuGenerationApi = {
         'Content-Type': 'multipart/form-data',
       },
     })
+    return data
+  },
+}
+
+// ============ 영양소 분석 API ============
+export const nutritionApi = {
+  /**
+   * 매장 메뉴 영양소 분석 (비동기, 권장)
+   */
+  async analyzeStore(storeId: number, batchSize: number = 10): Promise<NutritionAnalyzeResponse> {
+    const { data } = await api.post<NutritionAnalyzeResponse>(
+      `/api/v1/nutrition/analyze/${storeId}/async`,
+      null,
+      {
+        params: { batch_size: batchSize }
+      }
+    )
+    return data
+  },
+
+  /**
+   * 매장 메뉴 영양소 분석 (동기)
+   */
+  async analyzeStoreSync(storeId: number, batchSize: number = 10): Promise<NutritionAnalyzeResponse> {
+    const { data } = await api.post<NutritionAnalyzeResponse>(
+      `/api/v1/nutrition/analyze/${storeId}`,
+      null,
+      {
+        params: { batch_size: batchSize }
+      }
+    )
+    return data
+  },
+
+  /**
+   * 낮은 신뢰도 메뉴 재분석
+   */
+  async reanalyze(storeId: number, minConfidence: number = 0.7, batchSize: number = 10): Promise<NutritionAnalyzeResponse> {
+    const { data } = await api.post<NutritionAnalyzeResponse>(
+      `/api/v1/nutrition/reanalyze/${storeId}`,
+      null,
+      {
+        params: {
+          min_confidence: minConfidence,
+          batch_size: batchSize
+        }
+      }
+    )
+    return data
+  },
+
+  /**
+   * 영양소 분석 상태 조회
+   */
+  async getStatus(storeId: number): Promise<{ status: string; progress?: number; message?: string }> {
+    const { data } = await api.get(`/api/v1/nutrition/analyze/${storeId}/status`)
+    return data
+  },
+
+  /**
+   * 매장의 메뉴별 영양소 정보 조회
+   */
+  async getStoreNutrition(storeId: number): Promise<{
+    success: boolean
+    data: {
+      store_id: number
+      menus: MenuItemWithNutrition[]
+    }
+  }> {
+    const { data } = await api.get(`/api/v1/menu/store/${storeId}`)
     return data
   },
 }

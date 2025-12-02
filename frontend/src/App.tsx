@@ -14,6 +14,7 @@ import MenuGenerationPage from '@pages/MenuGenerationPage'
 import StoreManagementPage from '@pages/StoreManagementPage'
 import CustomerMenuPage from '@pages/CustomerMenuPage'
 import CustomerMenuListPage from '@pages/CustomerMenuListPage'
+import NutritionStorytellingPage from '@pages/NutritionStorytellingPage'
 
 function App() {
   return (
@@ -29,6 +30,7 @@ function App() {
           <Route path="store-management" element={<StoreManagementPage />} />
           <Route path="menu-generation" element={<MenuGenerationPage />} />
           <Route path="menu-board" element={<MenuBoardPage />} />
+          <Route path="nutrition-storytelling" element={<NutritionStorytellingPage />} />
           <Route path="ad-copy" element={<AdCopyGeneratorPage />} />
           <Route path="image-generator" element={<ImageGeneratorPage />} />
           <Route path="background-editor" element={<BackgroundEditorPage />} />

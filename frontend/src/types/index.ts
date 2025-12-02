@@ -278,6 +278,50 @@ export interface MenuGenerationResponse {
   }
 }
 
+// ============ 영양소 분석 & 스토리텔링 ============
+export interface NutritionAnalyzeRequest {
+  store_id: number
+  batch_size?: number
+}
+
+export interface NutritionAnalyzeResponse {
+  success: boolean
+  store_id: number
+  message: string
+  total_items?: number
+}
+
+export interface NutritionEstimate {
+  calories?: number
+  sugar_g?: number
+  caffeine_mg?: number
+  protein_g?: number
+  fat_g?: number
+  carbs_g?: number
+  confidence: number
+}
+
+export interface MenuItemWithNutrition extends MenuItem {
+  nutrition?: NutritionEstimate
+}
+
+export interface NutritionStorytellingRequest {
+  menu_id: number
+  include_health_benefits?: boolean
+}
+
+export interface NutritionStorytellingResponse {
+  success: boolean
+  data: {
+    menu_id: number
+    menu_name: string
+    nutrition: NutritionEstimate
+    storytelling: string
+    health_benefits?: string[]
+    generated_at: string
+  }
+}
+
 // ============ UI 상태 관리 ============
 export interface GenerationState {
   isLoading: boolean
