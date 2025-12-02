@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import QRCode from 'qrcode.react'
+import { QRCodeCanvas } from 'qrcode.react'
 import {
   Box,
   Container,
@@ -754,7 +754,7 @@ function MenuGenerationPage() {
                   QR 코드로 빠른 접속
                 </Typography>
                 <Box sx={{ mt: 2 }}>
-                  <QRCode
+                  <QRCodeCanvas
                     value={`${window.location.origin}/menu-board/${generatedStoreId}`}
                     size={256}
                     level="H"
