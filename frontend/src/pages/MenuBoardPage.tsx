@@ -265,6 +265,7 @@ export default function MenuBoardPage() {
               description: item.description || '',
               image_url: item.image_url,
               ingredients: [],
+              nutrition: item.nutrition, // 🆕 영양소 정보 추가!
             })
           })
         })
