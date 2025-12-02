@@ -202,6 +202,8 @@ export default function MenuBoardPage() {
   const [editedName, setEditedName] = useState('')
   const [editedDescription, setEditedDescription] = useState('')
   const [editedPrice, setEditedPrice] = useState<number>(0)
+  const [editedIngredients, setEditedIngredients] = useState<string[]>([])
+  const [newIngredient, setNewIngredient] = useState('')
   const [uploadingImage, setUploadingImage] = useState(false)
   const [savingChanges, setSavingChanges] = useState(false)
 
@@ -257,7 +259,7 @@ export default function MenuBoardPage() {
               price: item.price || 0,
               description: item.description || '',
               image_url: item.image_url,
-              ingredients: [],
+              ingredients: item.ingredients || [],
               nutrition: item.nutrition,
             })
           })
@@ -310,6 +312,8 @@ export default function MenuBoardPage() {
     setEditedName(menu.name)
     setEditedDescription(menu.description || '')
     setEditedPrice(menu.price)
+    setEditedIngredients(menu.ingredients || [])
+    setNewIngredient('')
 
     try {
       const response = await seasonalStoryApi.generateMenuStorytelling({
@@ -342,6 +346,8 @@ export default function MenuBoardPage() {
         setEditedName(selectedMenu.name)
         setEditedDescription(selectedMenu.description || '')
         setEditedPrice(selectedMenu.price)
+        setEditedIngredients(selectedMenu.ingredients || [])
+        setNewIngredient('')
       }
     }
     setEditMode(!editMode)
@@ -393,6 +399,12 @@ export default function MenuBoardPage() {
       if (editedDescription !== selectedMenu.description) updates.description = editedDescription
       if (editedPrice !== selectedMenu.price) updates.price = editedPrice
 
+      // 재료 변경 확인
+      const ingredientsChanged = JSON.stringify(editedIngredients.sort()) !== JSON.stringify((selectedMenu.ingredients || []).sort())
+      if (ingredientsChanged) {
+        updates.ingredients = editedIngredients
+      }
+
       if (Object.keys(updates).length > 0) {
         await menuGenerationApi.updateMenuItem(selectedMenu.id, updates)
 
@@ -400,7 +412,7 @@ export default function MenuBoardPage() {
         setDisplayedMenus((prevMenus) =>
           prevMenus.map((m) =>
             m.id === selectedMenu.id
-              ? { ...m, name: editedName, description: editedDescription, price: editedPrice }
+              ? { ...m, name: editedName, description: editedDescription, price: editedPrice, ingredients: editedIngredients }
               : m
           )
         )
@@ -411,6 +423,7 @@ export default function MenuBoardPage() {
           name: editedName,
           description: editedDescription,
           price: editedPrice,
+          ingredients: editedIngredients,
         })
 
         alert('변경사항이 저장되었습니다!')
@@ -742,17 +755,62 @@ export default function MenuBoardPage() {
                 </Typography>
               )}
 
-              {selectedMenu.ingredients && selectedMenu.ingredients.length > 0 && (
+              {/* 재료 섹션 */}
+              {(editMode || (selectedMenu.ingredients && selectedMenu.ingredients.length > 0)) && (
                 <>
                   <Divider sx={{ my: 2 }} />
                   <Typography variant="h6" fontWeight="bold" gutterBottom>
                     재료
                   </Typography>
-                  <Box display="flex" gap={1} flexWrap="wrap">
-                    {selectedMenu.ingredients.map((ingredient, idx) => (
-                      <Chip key={idx} label={ingredient} size="small" variant="outlined" />
-                    ))}
-                  </Box>
+                  {editMode ? (
+                    <Box>
+                      <Box display="flex" gap={1} flexWrap="wrap" mb={2}>
+                        {editedIngredients.map((ingredient, idx) => (
+                          <Chip
+                            key={idx}
+                            label={ingredient}
+                            size="small"
+                            onDelete={() => {
+                              setEditedIngredients(editedIngredients.filter((_, i) => i !== idx))
+                            }}
+                          />
+                        ))}
+                      </Box>
+                      <Box display="flex" gap={1}>
+                        <TextField
+                          size="small"
+                          placeholder="재료 입력"
+                          value={newIngredient}
+                          onChange={(e) => setNewIngredient(e.target.value)}
+                          onKeyPress={(e) => {
+                            if (e.key === 'Enter' && newIngredient.trim()) {
+                              setEditedIngredients([...editedIngredients, newIngredient.trim()])
+                              setNewIngredient('')
+                            }
+                          }}
+                          sx={{ flexGrow: 1 }}
+                        />
+                        <Button
+                          variant="outlined"
+                          size="small"
+                          onClick={() => {
+                            if (newIngredient.trim()) {
+                              setEditedIngredients([...editedIngredients, newIngredient.trim()])
+                              setNewIngredient('')
+                            }
+                          }}
+                        >
+                          추가
+                        </Button>
+                      </Box>
+                    </Box>
+                  ) : (
+                    <Box display="flex" gap={1} flexWrap="wrap">
+                      {selectedMenu.ingredients?.map((ingredient, idx) => (
+                        <Chip key={idx} label={ingredient} size="small" variant="outlined" />
+                      ))}
+                    </Box>
+                  )}
                 </>
               )}
 
