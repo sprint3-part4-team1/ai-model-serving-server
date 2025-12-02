@@ -3,7 +3,7 @@ Gemini 2.5 Flash Provider
 """
 
 import os
-from google import genai
+import google.generativeai as genai
 from .base_provider import BaseLLMProvider
 from ..constants import GEMINI_MODEL
 
@@ -12,33 +12,30 @@ class GeminiProvider(BaseLLMProvider):
     """Gemini Provider"""
 
     def __init__(self, api_key=None):
-        self.api_key = api_key or os.getenv("GENINI_API_KEY")
-        self.model = GEMINI_MODEL
-        self.client = genai.Client(api_key=self.api_key)
+        self.api_key = api_key or os.getenv("GEMINI_API_KEY")
+        self.model_name = GEMINI_MODEL
+        # Configure API key
+        genai.configure(api_key=self.api_key)
+        # Create model instance
+        self.model = genai.GenerativeModel(self.model_name)
 
     def create_response(self, prompt, **kwargs) -> str:
         """Gemini 응답 생성"""
         try:
-            response = self.client.models.generate_content(
-                model=self.model,
-                contents=prompt
-            )
+            response = self.model.generate_content(prompt)
             return response.text
-        
+
         except Exception as e:
             raise Exception(f"{GEMINI_MODEL} API 호출 실패: {str(e)}")
         
     def get_model_name(self) -> str:
-        return GEMINI_MODEL
-    
+        return self.model_name
+
     def is_available(self) -> bool:
         """Health check"""
         try:
             # 간단한 테스트 요청
-            response = self.client.models.generate_content(
-                model=self.model,
-                contents="test"
-            )
+            response = self.model.generate_content("test")
             return True
         except:
             return False

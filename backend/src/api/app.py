@@ -14,6 +14,7 @@ sys.path.insert(0, str(backend_path))
 from .routes.seasonal_story import router as seasonal_story_router
 from .routes.recommendation_router import router as recommendation_router
 from .routes.story_router import router as story_router
+from .routes.nutrition_router import router as nutrition_router
 
 # backend/app의 라우터들 import
 from app.api.endpoints import menu, menu_ocr, menu_generation, ad_copy, text_to_image, background
@@ -35,6 +36,10 @@ tags_metadata = [
     {
         "name": "3️⃣ 메뉴 조회",
         "description": "매장별 메뉴 조회 및 AI 필터링"
+    },
+    {
+        "name": "4️⃣ 영양소 분석",
+        "description": "메뉴 영양소 분석 및 스토리텔링"
     },
     # === 보류/미사용 API ===
     {
@@ -112,6 +117,7 @@ app.mount("/static", StaticFiles(directory=str(static_dir)), name="static")
 # === 주요 API 등록 ===
 app.include_router(menu.router, prefix="/api/v1/menu", tags=["1️⃣ 매장 관리", "3️⃣ 메뉴 조회"])
 app.include_router(menu_generation.router, prefix="/api/v1/menu-generation", tags=["2️⃣ 메뉴판 생성"])
+app.include_router(nutrition_router, prefix="/api/v1/nutrition", tags=["4️⃣ 영양소 분석"])
 
 # === 보류/미사용 API 등록 ===
 app.include_router(seasonal_story_router, prefix="/api/v1/seasonal-story", tags=["🔒 (보류) Seasonal Story"])

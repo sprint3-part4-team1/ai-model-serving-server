@@ -31,6 +31,13 @@ compel==2.0.2
 # OpenAI
 openai==2.8.1
 
+# Google Generative AI
+google-generativeai==0.8.3
+
+# LangChain
+langchain-openai==0.2.10
+langchain-core==0.3.29
+
 # 이미지 처리
 Pillow==10.1.0
 opencv-python==4.12.0.88
