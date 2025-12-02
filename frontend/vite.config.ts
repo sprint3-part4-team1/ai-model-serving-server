@@ -24,6 +24,10 @@ export default defineConfig({
         target: 'http://34.28.223.101:9090',
         changeOrigin: true,
       },
+      '/data': {
+        target: 'http://34.28.223.101:9090',
+        changeOrigin: true,
+      },
     },
   },
   build: {
