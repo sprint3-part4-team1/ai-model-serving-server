@@ -8,6 +8,7 @@ from typing import List, Dict, Optional, Tuple
 import time
 import asyncio
 import os
+import sys
 from pathlib import Path
 from openai import OpenAI
 import json
@@ -26,6 +27,12 @@ from app.schemas.menu_generation import (
 )
 from app.services.sd_service import sd_service
 from app.schemas.image import TextToImageRequest, ImageStyle, AspectRatio
+
+# Add backend/src to Python path for nutrition module
+backend_path = Path(__file__).parent.parent.parent
+sys.path.insert(0, str(backend_path))
+
+from src.nutrition.nutrition_analyzer import NutritionAnalyzer
 
 
 class MenuGenerationService:
@@ -117,6 +124,16 @@ class MenuGenerationService:
 
             # 변경사항 커밋
             db.commit()
+
+            # 🆕 영양소 분석 자동 실행
+            try:
+                logger.info(f"🔬 영양소 분석 시작 - Store ID: {request.store_id}")
+                analyzer = NutritionAnalyzer(batch_size=10)
+                analyzer.analyze_store(request.store_id)
+                logger.info(f"✅ 영양소 분석 완료")
+            except Exception as e:
+                logger.error(f"⚠️ 영양소 분석 실패 (메뉴 생성은 완료됨): {e}")
+                # 영양소 분석 실패해도 메뉴 생성은 성공으로 처리
 
             generation_time = time.time() - start_time
             logger.info(f"메뉴판 생성 완료 - {len(generated_categories)}개 카테고리, {generation_time:.2f}초")

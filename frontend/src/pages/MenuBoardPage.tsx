@@ -121,6 +121,66 @@ const getWeatherIcon = (condition: string) => {
   }
 }
 
+// 헬스 스토리 생성 함수
+function generateHealthStory(menu: MenuItem): string {
+  if (!menu.nutrition) {
+    return `${menu.name}은(는) 신선한 재료로 만들어진 특별한 메뉴입니다.`
+  }
+
+  const { calories, protein_g, carbs_g, fat_g, sugar_g, caffeine_mg } = menu.nutrition
+  const stories: string[] = []
+
+  // 칼로리 기반 스토리
+  if (calories) {
+    if (calories < 200) {
+      stories.push('가벼운 한 끼로 부담 없이 즐기기 좋습니다.')
+    } else if (calories < 400) {
+      stories.push('적당한 칼로리로 균형 잡힌 식사를 제공합니다.')
+    } else if (calories < 600) {
+      stories.push('든든한 한 끼로 에너지를 충전하기에 좋습니다.')
+    } else {
+      stories.push('풍부한 영양으로 하루의 활력을 채워줍니다.')
+    }
+  }
+
+  // 단백질 기반 스토리
+  if (protein_g && protein_g > 10) {
+    stories.push(`${protein_g}g의 단백질이 근육 건강과 체력 향상에 도움을 줍니다.`)
+  }
+
+  // 탄수화물 기반 스토리
+  if (carbs_g && carbs_g > 30) {
+    stories.push('탄수화물이 빠른 에너지 공급원이 되어 활동적인 하루를 지원합니다.')
+  }
+
+  // 당류 기반 스토리
+  if (sugar_g) {
+    if (sugar_g < 10) {
+      stories.push('당류가 적어 건강하게 즐길 수 있습니다.')
+    } else if (sugar_g > 20) {
+      stories.push('달콤한 맛이 기분을 좋게 만들어줍니다.')
+    }
+  }
+
+  // 카페인 기반 스토리
+  if (caffeine_mg && caffeine_mg > 0) {
+    if (caffeine_mg < 50) {
+      stories.push('소량의 카페인이 부드러운 각성 효과를 제공합니다.')
+    } else if (caffeine_mg < 150) {
+      stories.push(`${caffeine_mg}mg의 카페인이 집중력 향상에 도움을 줍니다.`)
+    } else {
+      stories.push('카페인이 풍부하여 피로 회복과 집중력 향상에 효과적입니다.')
+    }
+  }
+
+  // 스토리가 없으면 기본 메시지
+  if (stories.length === 0) {
+    return `${menu.name}은(는) 균형 잡힌 영양으로 건강한 식사를 제공합니다.`
+  }
+
+  return stories.join(' ')
+}
+
 export default function MenuBoardPage() {
   const [seasonalStory, setSeasonalStory] = useState<SeasonalStoryResponse | null>(null)
   const [selectedMenu, setSelectedMenu] = useState<MenuItem | null>(null)
@@ -643,7 +703,71 @@ export default function MenuBoardPage() {
 
               <Divider sx={{ my: 2 }} />
 
-              {storytellingLoading ? (
+              {/* 🆕 영양소 정보 + 헬스 스토리 */}
+              {selectedMenu.nutrition ? (
+                <Box>
+                  <Typography variant="h6" fontWeight="bold" gutterBottom>
+                    영양 성분
+                  </Typography>
+                  <Grid container spacing={1} sx={{ mb: 2 }}>
+                    {selectedMenu.nutrition.calories && (
+                      <Grid item xs={6} sm={4}>
+                        <Paper elevation={0} sx={{ p: 1.5, bgcolor: 'grey.50', textAlign: 'center' }}>
+                          <Typography variant="body2" color="text.secondary">칼로리</Typography>
+                          <Typography variant="h6" fontWeight="bold">{selectedMenu.nutrition.calories} kcal</Typography>
+                        </Paper>
+                      </Grid>
+                    )}
+                    {selectedMenu.nutrition.protein_g && (
+                      <Grid item xs={6} sm={4}>
+                        <Paper elevation={0} sx={{ p: 1.5, bgcolor: 'grey.50', textAlign: 'center' }}>
+                          <Typography variant="body2" color="text.secondary">단백질</Typography>
+                          <Typography variant="h6" fontWeight="bold">{selectedMenu.nutrition.protein_g}g</Typography>
+                        </Paper>
+                      </Grid>
+                    )}
+                    {selectedMenu.nutrition.carbs_g && (
+                      <Grid item xs={6} sm={4}>
+                        <Paper elevation={0} sx={{ p: 1.5, bgcolor: 'grey.50', textAlign: 'center' }}>
+                          <Typography variant="body2" color="text.secondary">탄수화물</Typography>
+                          <Typography variant="h6" fontWeight="bold">{selectedMenu.nutrition.carbs_g}g</Typography>
+                        </Paper>
+                      </Grid>
+                    )}
+                    {selectedMenu.nutrition.fat_g && (
+                      <Grid item xs={6} sm={4}>
+                        <Paper elevation={0} sx={{ p: 1.5, bgcolor: 'grey.50', textAlign: 'center' }}>
+                          <Typography variant="body2" color="text.secondary">지방</Typography>
+                          <Typography variant="h6" fontWeight="bold">{selectedMenu.nutrition.fat_g}g</Typography>
+                        </Paper>
+                      </Grid>
+                    )}
+                    {selectedMenu.nutrition.sugar_g && (
+                      <Grid item xs={6} sm={4}>
+                        <Paper elevation={0} sx={{ p: 1.5, bgcolor: 'grey.50', textAlign: 'center' }}>
+                          <Typography variant="body2" color="text.secondary">당류</Typography>
+                          <Typography variant="h6" fontWeight="bold">{selectedMenu.nutrition.sugar_g}g</Typography>
+                        </Paper>
+                      </Grid>
+                    )}
+                    {selectedMenu.nutrition.caffeine_mg && selectedMenu.nutrition.caffeine_mg > 0 && (
+                      <Grid item xs={6} sm={4}>
+                        <Paper elevation={0} sx={{ p: 1.5, bgcolor: 'grey.50', textAlign: 'center' }}>
+                          <Typography variant="body2" color="text.secondary">카페인</Typography>
+                          <Typography variant="h6" fontWeight="bold">{selectedMenu.nutrition.caffeine_mg}mg</Typography>
+                        </Paper>
+                      </Grid>
+                    )}
+                  </Grid>
+
+                  <Typography variant="h6" fontWeight="bold" gutterBottom sx={{ mt: 2 }}>
+                    헬스 스토리
+                  </Typography>
+                  <Typography variant="body1" paragraph sx={{ fontStyle: 'italic', color: 'text.secondary', lineHeight: 1.7 }}>
+                    {generateHealthStory(selectedMenu)}
+                  </Typography>
+                </Box>
+              ) : storytellingLoading ? (
                 <Box display="flex" justifyContent="center" py={3}>
                   <CircularProgress />
                 </Box>

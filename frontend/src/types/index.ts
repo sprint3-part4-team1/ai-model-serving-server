@@ -226,6 +226,15 @@ export interface MenuItem {
   ingredients?: string[]
   origin?: string
   history?: string
+  nutrition?: {
+    calories?: number
+    sugar_g?: number
+    caffeine_mg?: number
+    protein_g?: number
+    fat_g?: number
+    carbs_g?: number
+    confidence?: number
+  }
 }
 
 // ============ 메뉴판 생성 ============
