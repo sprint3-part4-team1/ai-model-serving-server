@@ -367,11 +367,11 @@ function MenuGenerationPage() {
         </Typography>
       </Box>
 
-      {/* 매장 메뉴 조회 */}
+      {/* 매장 조회 */}
       <Card sx={{ mb: 2, bgcolor: 'primary.50' }}>
         <CardContent>
           <Typography variant="h6" gutterBottom>
-            매장 메뉴 조회
+            매장 조회
           </Typography>
           <Typography variant="body2" color="text.secondary" gutterBottom>
             매장 ID 0번: 샘플 메뉴판 / 1번 이상: 실제 생성된 메뉴판
@@ -395,12 +395,63 @@ function MenuGenerationPage() {
                 disabled={isLoadingMenus}
                 startIcon={isLoadingMenus ? <CircularProgress size={20} /> : <Search />}
               >
-                {isLoadingMenus ? '조회 중...' : '메뉴 조회'}
+                {isLoadingMenus ? '조회 중...' : '매장 조회'}
               </Button>
             </Grid>
           </Grid>
         </CardContent>
       </Card>
+
+      {/* 매장 QR 코드 - 메뉴가 1개 이상 있을 때만 표시 */}
+      {parseInt(viewStoreId) > 0 && displayMenus && displayMenus.categories && displayMenus.categories.length > 0 && (
+        <Card sx={{ mb: 2, bgcolor: 'success.50' }}>
+          <CardContent>
+            <Box sx={{ textAlign: 'center' }}>
+              <Typography variant="h6" fontWeight="bold" gutterBottom>
+                매장 QR 코드
+              </Typography>
+              <Typography variant="body2" color="text.secondary" gutterBottom sx={{ mb: 2 }}>
+                고객이 스캔할 수 있도록 QR 코드를 제공하세요
+              </Typography>
+
+              <Box sx={{ display: 'inline-block', p: 2, bgcolor: 'white', borderRadius: 2, boxShadow: 2 }}>
+                <QRCodeCanvas
+                  value={`${window.location.origin}/menu-board/${viewStoreId}`}
+                  size={180}
+                  level="H"
+                />
+              </Box>
+
+              <Paper elevation={1} sx={{ p: 2, mt: 2, bgcolor: 'white' }}>
+                <Typography variant="body2" color="text.secondary" gutterBottom>
+                  AI 메뉴판 URL
+                </Typography>
+                <Typography
+                  variant="body2"
+                  sx={{
+                    fontFamily: 'monospace',
+                    wordBreak: 'break-all',
+                    color: 'primary.main',
+                    mb: 1
+                  }}
+                >
+                  {window.location.origin}/menu-board/{viewStoreId}
+                </Typography>
+                <Button
+                  variant="outlined"
+                  size="small"
+                  onClick={() => {
+                    navigator.clipboard.writeText(`${window.location.origin}/menu-board/${viewStoreId}`)
+                    alert('URL이 복사되었습니다!')
+                  }}
+                >
+                  URL 복사
+                </Button>
+              </Paper>
+            </Box>
+          </CardContent>
+        </Card>
+      )}
 
       {/* 설정 */}
       <Card sx={{ mb: 2 }}>
