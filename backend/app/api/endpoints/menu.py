@@ -302,8 +302,9 @@ async def upload_menu_image(
                 }
             )
 
-        # 저장 경로 설정
-        upload_dir = Path("backend/data/uploads")
+        # 저장 경로 설정 (절대 경로 사용)
+        backend_root = Path(__file__).parent.parent.parent.parent
+        upload_dir = backend_root / "data" / "uploads"
         upload_dir.mkdir(parents=True, exist_ok=True)
 
         # 고유한 파일명 생성
