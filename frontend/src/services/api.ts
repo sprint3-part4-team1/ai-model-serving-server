@@ -29,7 +29,7 @@ import type {
 
 // Axios 인스턴스 생성
 const api: AxiosInstance = axios.create({
-  baseURL: import.meta.env.VITE_API_URL || 'http://34.28.223.101:9091',
+  baseURL: import.meta.env.VITE_API_URL || 'http://34.28.223.101:9090',
   timeout: 300000, // 5분 (이미지 생성은 시간이 오래 걸릴 수 있음)
   headers: {
     'Content-Type': 'application/json',
@@ -110,7 +110,7 @@ export const textToImageApi = {
     )
 
     // 상대 경로 이미지 URL을 절대 경로로 변환
-    const baseURL = import.meta.env.VITE_API_URL || 'http://34.28.223.101:9091'
+    const baseURL = import.meta.env.VITE_API_URL || 'http://34.28.223.101:9090'
     if (data.images) {
       data.images = data.images.map(url => {
         if (url.startsWith('/')) {
@@ -383,7 +383,7 @@ export const menuApi = {
     const { data } = await api.get(`/api/v1/menu/store/${storeId}`)
 
     // 상대 경로 이미지 URL을 절대 경로로 변환
-    const baseURL = import.meta.env.VITE_API_URL || 'http://34.28.223.101:9091'
+    const baseURL = import.meta.env.VITE_API_URL || 'http://34.28.223.101:9090'
     if (data.data?.categories) {
       data.data.categories.forEach(category => {
         category.items?.forEach(item => {
@@ -521,7 +521,7 @@ export const menuGenerationApi = {
     )
 
     // 상대 경로 이미지 URL을 절대 경로로 변환
-    const baseURL = import.meta.env.VITE_API_URL || 'http://34.28.223.101:9091'
+    const baseURL = import.meta.env.VITE_API_URL || 'http://34.28.223.101:9090'
     if (data.data?.categories) {
       data.data.categories.forEach(category => {
         category.items?.forEach(item => {

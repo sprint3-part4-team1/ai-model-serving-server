@@ -17,10 +17,10 @@ export default defineConfig({
     },
   },
   server: {
-    port: 8030,
+    port: 8005,
     proxy: {
       '/api': {
-        target: 'http://34.28.223.101:9091',
+        target: 'http://34.28.223.101:9090',
         changeOrigin: true,
       },
     },
