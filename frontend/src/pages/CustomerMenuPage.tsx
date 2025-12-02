@@ -758,6 +758,9 @@ export default function CustomerMenuPage() {
 
           <DialogActions>
             <Button onClick={handleDialogClose}>닫기</Button>
+            <Button variant="contained" onClick={() => alert('주문 기능은 다음 단계에서 구현됩니다!')}>
+              주문하기
+            </Button>
           </DialogActions>
         </Dialog>
       </Container>

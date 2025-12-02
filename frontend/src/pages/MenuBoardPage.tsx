@@ -829,7 +829,7 @@ export default function MenuBoardPage() {
 
         <DialogActions>
           <Button onClick={handleDialogClose}>닫기</Button>
-          {editMode ? (
+          {editMode && (
             <Button
               variant="contained"
               startIcon={<Save />}
@@ -837,10 +837,6 @@ export default function MenuBoardPage() {
               disabled={savingChanges}
             >
               {savingChanges ? '저장 중...' : '저장'}
-            </Button>
-          ) : (
-            <Button variant="contained" onClick={() => alert('주문 기능은 다음 단계에서 구현됩니다!')}>
-              주문하기
             </Button>
           )}
         </DialogActions>
