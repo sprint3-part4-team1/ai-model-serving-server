@@ -132,7 +132,16 @@ async def get_store_menus(store_id: int, db: Session = Depends(get_db)):
                         "is_available": item.is_available,
                         "is_ai_generated_image": item.is_ai_generated_image if hasattr(item, 'is_ai_generated_image') else False,
                         "is_ai_generated_description": item.is_ai_generated_description if hasattr(item, 'is_ai_generated_description') else False,
-                        "ingredients": [ing.ingredient_name for ing in item.ingredients] if item.ingredients else []
+                        "ingredients": [ing.ingredient_name for ing in item.ingredients] if item.ingredients else [],
+                        "nutrition": {
+                            "calories": float(item.nutrition_estimate.calories) if item.nutrition_estimate and item.nutrition_estimate.calories else None,
+                            "sugar_g": float(item.nutrition_estimate.sugar_g) if item.nutrition_estimate and item.nutrition_estimate.sugar_g else None,
+                            "caffeine_mg": float(item.nutrition_estimate.caffeine_mg) if item.nutrition_estimate and item.nutrition_estimate.caffeine_mg else None,
+                            "protein_g": float(item.nutrition_estimate.protein_g) if item.nutrition_estimate and item.nutrition_estimate.protein_g else None,
+                            "fat_g": float(item.nutrition_estimate.fat_g) if item.nutrition_estimate and item.nutrition_estimate.fat_g else None,
+                            "carbs_g": float(item.nutrition_estimate.carbs_g) if item.nutrition_estimate and item.nutrition_estimate.carbs_g else None,
+                            "confidence": float(item.nutrition_estimate.confidence) if item.nutrition_estimate and item.nutrition_estimate.confidence else None,
+                        } if item.nutrition_estimate else None
                     }
                     for item in items
                 ]

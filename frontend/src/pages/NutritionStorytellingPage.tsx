@@ -58,6 +58,7 @@ export default function NutritionStorytellingPage() {
             price: item.price || 0,
             description: item.description,
             image_url: item.image_url,
+            nutrition: item.nutrition,
           })
         })
       })
@@ -89,11 +90,24 @@ export default function NutritionStorytellingPage() {
       const response = await nutritionApi.analyzeStore(parseInt(storeId))
 
       if (response.success) {
-        alert(response.message + '\n분석이 완료되면 메뉴를 다시 조회해주세요.')
+        alert(response.message + '\n20초 후 자동으로 메뉴를 다시 불러옵니다.')
+
+        // 20초 후 자동으로 메뉴 다시 불러오기
+        setTimeout(async () => {
+          try {
+            await loadStoreMenus()
+            alert('영양소 분석이 완료되어 메뉴를 다시 불러왔습니다!')
+          } catch (err) {
+            console.error('메뉴 자동 새로고침 실패:', err)
+          } finally {
+            setAnalyzing(false)
+          }
+        }, 20000)
+      } else {
+        setAnalyzing(false)
       }
     } catch (err: any) {
       setError(err.message || '영양소 분석 중 오류가 발생했습니다.')
-    } finally {
       setAnalyzing(false)
     }
   }

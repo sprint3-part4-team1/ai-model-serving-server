@@ -367,6 +367,15 @@ export const menuApi = {
           price?: number
           image_url?: string
           is_available: boolean
+          nutrition?: {
+            calories?: number
+            sugar_g?: number
+            caffeine_mg?: number
+            protein_g?: number
+            fat_g?: number
+            carbs_g?: number
+            confidence?: number
+          }
         }>
       }>
     }
