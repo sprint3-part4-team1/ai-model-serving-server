@@ -185,15 +185,14 @@ export default function MenuBoardPage() {
   const [seasonalStory, setSeasonalStory] = useState<SeasonalStoryResponse | null>(null)
   const [selectedMenu, setSelectedMenu] = useState<MenuItem | null>(null)
   const [menuStorytelling, setMenuStorytelling] = useState<MenuStorytellingResponse | null>(null)
-  const [customerQuery, setCustomerQuery] = useState('')
   const [loading, setLoading] = useState(false)
   const [storytellingLoading, setStorytellingLoading] = useState(false)
   const [menuLoading, setMenuLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [dialogOpen, setDialogOpen] = useState(false)
+  const [storeId, setStoreId] = useState<string>('0')
   const [displayedMenus, setDisplayedMenus] = useState<MenuItem[]>(MOCK_MENUS)
   const [filterExplanation, setFilterExplanation] = useState<string>('')
-  const [storeId, setStoreId] = useState<string>('0')
 
   // 편집 모드 상태
   const [editMode, setEditMode] = useState(false)
@@ -203,49 +202,32 @@ export default function MenuBoardPage() {
   const [uploadingImage, setUploadingImage] = useState(false)
   const [savingChanges, setSavingChanges] = useState(false)
 
-  // 시즈널 스토리 로드
+  // 초기 로드
   useEffect(() => {
-    loadSeasonalStory()
+    loadStoreData()
   }, [])
 
-  const loadSeasonalStory = async () => {
-    try {
-      setLoading(true)
-      setError(null)
-
-      const response = await seasonalStoryApi.generate({
-        store_id: 1,
-        store_name: '행복한 카페',
-        store_type: '카페',
-        location: 'Seoul',
-        menu_categories: ['커피', '디저트', '브런치'],
-      })
-
-      setSeasonalStory(response)
-    } catch (err: any) {
-      setError(err.message || '스토리를 불러올 수 없습니다')
-    } finally {
-      setLoading(false)
-    }
-  }
-
-  // 매장 메뉴 로드
-  const loadStoreMenus = async () => {
+  // 매장 데이터 로드 (시즈널 스토리 + 메뉴)
+  const loadStoreData = async () => {
     const id = parseInt(storeId)
 
-    // 매장 ID 0: 디폴트 샘플 메뉴
+    // 매장 ID 0: 디폴트 샘플 메뉴 + 기본 스토리
     if (id === 0) {
       setDisplayedMenus(MOCK_MENUS)
       setFilterExplanation('')
       setError(null)
+      // 기본 시즈널 스토리 로드
+      await loadSeasonalStory(1, '행복한 카페')
       return
     }
 
     // 매장 ID 1 이상: DB에서 조회
+    setLoading(true)
     setMenuLoading(true)
     setError(null)
 
     try {
+      // 메뉴 조회
       const response = await menuApi.getStoreMenus(id)
 
       if (response.data.categories.length === 0) {
@@ -255,7 +237,9 @@ export default function MenuBoardPage() {
       } else {
         // DB 메뉴를 MenuItem 형식으로 변환
         const menus: MenuItem[] = []
+        const categories: string[] = []
         response.data.categories.forEach((category: any) => {
+          categories.push(category.name)
           category.items.forEach((item: any) => {
             menus.push({
               id: item.id,
@@ -265,19 +249,44 @@ export default function MenuBoardPage() {
               description: item.description || '',
               image_url: item.image_url,
               ingredients: [],
-              nutrition: item.nutrition, // 🆕 영양소 정보 추가!
+              nutrition: item.nutrition,
             })
           })
         })
         setDisplayedMenus(menus)
         setFilterExplanation(`매장 ID ${id}번의 메뉴 ${menus.length}개`)
+
+        // 해당 매장의 시즈널 스토리 로드 (실제 매장 정보로)
+        await loadSeasonalStory(id, `매장 ${id}`, categories)
       }
     } catch (err: any) {
       setError(err.message || '메뉴 조회 중 오류가 발생했습니다.')
       setDisplayedMenus([])
       setFilterExplanation('')
     } finally {
+      setLoading(false)
       setMenuLoading(false)
+    }
+  }
+
+  const loadSeasonalStory = async (
+    id: number,
+    storeName: string,
+    categories: string[] = ['커피', '디저트', '브런치']
+  ) => {
+    try {
+      const response = await seasonalStoryApi.generate({
+        store_id: id,
+        store_name: storeName,
+        store_type: '카페',
+        location: 'Seoul',
+        menu_categories: categories,
+      })
+
+      setSeasonalStory(response)
+    } catch (err: any) {
+      console.error('시즈널 스토리 로드 실패:', err)
+      // 스토리 로드 실패해도 메뉴는 보여주기
     }
   }
 
@@ -408,44 +417,35 @@ export default function MenuBoardPage() {
     }
   }
 
-  const handleCustomerQuery = async () => {
-    if (!customerQuery.trim()) return
-
-    try {
-      setLoading(true)
-      setError(null)
-
-      // 메뉴 필터링 API 호출
-      const response = await menuApi.filterMenus({
-        query: customerQuery,
-        menus: MOCK_MENUS,
-      })
-
-      if (response.success && response.data) {
-        // 필터링된 메뉴의 ID를 기반으로 원본 메뉴 객체 찾기
-        const filteredIds = response.data.filtered_menus.map((m: any) => m.id)
-        const filteredMenus = MOCK_MENUS.filter((menu) => filteredIds.includes(menu.id))
-
-        // 화면에 필터링된 메뉴만 표시
-        setDisplayedMenus(filteredMenus)
-        setFilterExplanation(response.data.explanation)
-      }
-    } catch (err: any) {
-      setError('메뉴 필터링 중 오류가 발생했습니다.')
-      console.error('Filter error:', err)
-    } finally {
-      setLoading(false)
-    }
-  }
-
-  const handleResetFilter = () => {
-    setDisplayedMenus(MOCK_MENUS)
-    setCustomerQuery('')
-    setFilterExplanation('')
-  }
-
   return (
     <Container maxWidth="lg" sx={{ py: 4 }}>
+      {/* 매장 선택 섹션 */}
+      <Paper elevation={2} sx={{ p: 2, mb: 3 }}>
+        <Typography variant="subtitle1" fontWeight="bold" mb={2}>
+          매장 선택
+        </Typography>
+        <Box display="flex" gap={2} alignItems="center">
+          <TextField
+            label="매장 ID"
+            placeholder="0: 샘플, 1~: DB 메뉴"
+            value={storeId}
+            onChange={(e) => setStoreId(e.target.value)}
+            onKeyPress={(e) => e.key === 'Enter' && loadStoreData()}
+            variant="outlined"
+            size="small"
+            sx={{ width: 200 }}
+            type="number"
+          />
+          <Button
+            variant="contained"
+            onClick={loadStoreData}
+            disabled={loading || menuLoading}
+          >
+            {loading || menuLoading ? <CircularProgress size={24} /> : '매장 정보 불러오기'}
+          </Button>
+        </Box>
+      </Paper>
+
       {/* 시즈널 스토리 섹션 */}
       <Paper elevation={3} sx={{ p: 3, mb: 4, background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)', color: 'white' }}>
         {loading ? (
@@ -505,69 +505,6 @@ export default function MenuBoardPage() {
             )}
           </Box>
         ) : null}
-      </Paper>
-
-      {/* 매장 메뉴 로드 섹션 */}
-      <Paper elevation={2} sx={{ p: 2, mb: 3 }}>
-        <Typography variant="subtitle1" fontWeight="bold" mb={2}>
-          매장별 메뉴 조회
-        </Typography>
-        <Box display="flex" gap={2} alignItems="center">
-          <TextField
-            label="매장 ID"
-            placeholder="0: 샘플, 1~: DB 메뉴"
-            value={storeId}
-            onChange={(e) => setStoreId(e.target.value)}
-            onKeyPress={(e) => e.key === 'Enter' && loadStoreMenus()}
-            variant="outlined"
-            size="small"
-            sx={{ width: 200 }}
-            type="number"
-          />
-          <Button
-            variant="contained"
-            onClick={loadStoreMenus}
-            disabled={menuLoading}
-          >
-            {menuLoading ? <CircularProgress size={24} /> : '메뉴 불러오기'}
-          </Button>
-        </Box>
-      </Paper>
-
-      {/* 고객 요청 입력 섹션 */}
-      <Paper elevation={2} sx={{ p: 2, mb: 4 }}>
-        <Box display="flex" gap={2} alignItems="center" mb={filterExplanation ? 2 : 0}>
-          <TextField
-            fullWidth
-            placeholder="예: 칼로리 낮은 음료 추천, 달콤한 디저트 찾기..."
-            value={customerQuery}
-            onChange={(e) => setCustomerQuery(e.target.value)}
-            onKeyPress={(e) => e.key === 'Enter' && handleCustomerQuery()}
-            variant="outlined"
-            size="small"
-          />
-          <Button
-            variant="contained"
-            startIcon={<Search />}
-            onClick={handleCustomerQuery}
-            disabled={!customerQuery.trim() || loading}
-          >
-            검색
-          </Button>
-          {displayedMenus.length < MOCK_MENUS.length && (
-            <Button
-              variant="outlined"
-              onClick={handleResetFilter}
-            >
-              전체보기
-            </Button>
-          )}
-        </Box>
-        {filterExplanation && (
-          <Alert severity="info" sx={{ mt: 2 }}>
-            {filterExplanation}
-          </Alert>
-        )}
       </Paper>
 
       {/* 메뉴 그리드 */}
