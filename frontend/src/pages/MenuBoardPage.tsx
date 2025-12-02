@@ -703,84 +703,73 @@ export default function MenuBoardPage() {
 
               <Divider sx={{ my: 2 }} />
 
-              {/* 🆕 영양소 정보 + 헬스 스토리 */}
-              {selectedMenu.nutrition ? (
-                <Box>
-                  <Typography variant="h6" fontWeight="bold" gutterBottom>
-                    영양 성분
-                  </Typography>
-                  <Grid container spacing={1} sx={{ mb: 2 }}>
-                    {selectedMenu.nutrition.calories && (
-                      <Grid item xs={6} sm={4}>
-                        <Paper elevation={0} sx={{ p: 1.5, bgcolor: 'grey.50', textAlign: 'center' }}>
-                          <Typography variant="body2" color="text.secondary">칼로리</Typography>
-                          <Typography variant="h6" fontWeight="bold">{selectedMenu.nutrition.calories} kcal</Typography>
-                        </Paper>
-                      </Grid>
-                    )}
-                    {selectedMenu.nutrition.protein_g && (
-                      <Grid item xs={6} sm={4}>
-                        <Paper elevation={0} sx={{ p: 1.5, bgcolor: 'grey.50', textAlign: 'center' }}>
-                          <Typography variant="body2" color="text.secondary">단백질</Typography>
-                          <Typography variant="h6" fontWeight="bold">{selectedMenu.nutrition.protein_g}g</Typography>
-                        </Paper>
-                      </Grid>
-                    )}
-                    {selectedMenu.nutrition.carbs_g && (
-                      <Grid item xs={6} sm={4}>
-                        <Paper elevation={0} sx={{ p: 1.5, bgcolor: 'grey.50', textAlign: 'center' }}>
-                          <Typography variant="body2" color="text.secondary">탄수화물</Typography>
-                          <Typography variant="h6" fontWeight="bold">{selectedMenu.nutrition.carbs_g}g</Typography>
-                        </Paper>
-                      </Grid>
-                    )}
-                    {selectedMenu.nutrition.fat_g && (
-                      <Grid item xs={6} sm={4}>
-                        <Paper elevation={0} sx={{ p: 1.5, bgcolor: 'grey.50', textAlign: 'center' }}>
-                          <Typography variant="body2" color="text.secondary">지방</Typography>
-                          <Typography variant="h6" fontWeight="bold">{selectedMenu.nutrition.fat_g}g</Typography>
-                        </Paper>
-                      </Grid>
-                    )}
-                    {selectedMenu.nutrition.sugar_g && (
-                      <Grid item xs={6} sm={4}>
-                        <Paper elevation={0} sx={{ p: 1.5, bgcolor: 'grey.50', textAlign: 'center' }}>
-                          <Typography variant="body2" color="text.secondary">당류</Typography>
-                          <Typography variant="h6" fontWeight="bold">{selectedMenu.nutrition.sugar_g}g</Typography>
-                        </Paper>
-                      </Grid>
-                    )}
-                    {selectedMenu.nutrition.caffeine_mg && selectedMenu.nutrition.caffeine_mg > 0 && (
-                      <Grid item xs={6} sm={4}>
-                        <Paper elevation={0} sx={{ p: 1.5, bgcolor: 'grey.50', textAlign: 'center' }}>
-                          <Typography variant="body2" color="text.secondary">카페인</Typography>
-                          <Typography variant="h6" fontWeight="bold">{selectedMenu.nutrition.caffeine_mg}mg</Typography>
-                        </Paper>
-                      </Grid>
-                    )}
-                  </Grid>
+              {/* 🆕 성분 분석 + 스토리텔링 */}
+              <Box>
+                {selectedMenu.nutrition && (
+                  <>
+                    <Typography variant="h6" fontWeight="bold" gutterBottom>
+                      영양 성분
+                    </Typography>
+                    <Grid container spacing={1} sx={{ mb: 2 }}>
+                      {selectedMenu.nutrition.calories && (
+                        <Grid item xs={6} sm={4}>
+                          <Paper elevation={0} sx={{ p: 1.5, bgcolor: 'grey.50', textAlign: 'center' }}>
+                            <Typography variant="body2" color="text.secondary">칼로리</Typography>
+                            <Typography variant="h6" fontWeight="bold">{selectedMenu.nutrition.calories} kcal</Typography>
+                          </Paper>
+                        </Grid>
+                      )}
+                      {selectedMenu.nutrition.protein_g && (
+                        <Grid item xs={6} sm={4}>
+                          <Paper elevation={0} sx={{ p: 1.5, bgcolor: 'grey.50', textAlign: 'center' }}>
+                            <Typography variant="body2" color="text.secondary">단백질</Typography>
+                            <Typography variant="h6" fontWeight="bold">{selectedMenu.nutrition.protein_g}g</Typography>
+                          </Paper>
+                        </Grid>
+                      )}
+                      {selectedMenu.nutrition.carbs_g && (
+                        <Grid item xs={6} sm={4}>
+                          <Paper elevation={0} sx={{ p: 1.5, bgcolor: 'grey.50', textAlign: 'center' }}>
+                            <Typography variant="body2" color="text.secondary">탄수화물</Typography>
+                            <Typography variant="h6" fontWeight="bold">{selectedMenu.nutrition.carbs_g}g</Typography>
+                          </Paper>
+                        </Grid>
+                      )}
+                      {selectedMenu.nutrition.fat_g && (
+                        <Grid item xs={6} sm={4}>
+                          <Paper elevation={0} sx={{ p: 1.5, bgcolor: 'grey.50', textAlign: 'center' }}>
+                            <Typography variant="body2" color="text.secondary">지방</Typography>
+                            <Typography variant="h6" fontWeight="bold">{selectedMenu.nutrition.fat_g}g</Typography>
+                          </Paper>
+                        </Grid>
+                      )}
+                      {selectedMenu.nutrition.sugar_g && (
+                        <Grid item xs={6} sm={4}>
+                          <Paper elevation={0} sx={{ p: 1.5, bgcolor: 'grey.50', textAlign: 'center' }}>
+                            <Typography variant="body2" color="text.secondary">당류</Typography>
+                            <Typography variant="h6" fontWeight="bold">{selectedMenu.nutrition.sugar_g}g</Typography>
+                          </Paper>
+                        </Grid>
+                      )}
+                      {selectedMenu.nutrition.caffeine_mg && selectedMenu.nutrition.caffeine_mg > 0 && (
+                        <Grid item xs={6} sm={4}>
+                          <Paper elevation={0} sx={{ p: 1.5, bgcolor: 'grey.50', textAlign: 'center' }}>
+                            <Typography variant="body2" color="text.secondary">카페인</Typography>
+                            <Typography variant="h6" fontWeight="bold">{selectedMenu.nutrition.caffeine_mg}mg</Typography>
+                          </Paper>
+                        </Grid>
+                      )}
+                    </Grid>
+                  </>
+                )}
 
-                  <Typography variant="h6" fontWeight="bold" gutterBottom sx={{ mt: 2 }}>
-                    헬스 스토리
-                  </Typography>
-                  <Typography variant="body1" paragraph sx={{ fontStyle: 'italic', color: 'text.secondary', lineHeight: 1.7 }}>
-                    {generateHealthStory(selectedMenu)}
-                  </Typography>
-                </Box>
-              ) : storytellingLoading ? (
-                <Box display="flex" justifyContent="center" py={3}>
-                  <CircularProgress />
-                </Box>
-              ) : menuStorytelling ? (
-                <Box>
-                  <Typography variant="h6" fontWeight="bold" gutterBottom>
-                    이야기
-                  </Typography>
-                  <Typography variant="body1" paragraph sx={{ fontStyle: 'italic', color: 'text.secondary' }}>
-                    {menuStorytelling.data.storytelling}
-                  </Typography>
-                </Box>
-              ) : null}
+                <Typography variant="h6" fontWeight="bold" gutterBottom sx={{ mt: selectedMenu.nutrition ? 2 : 0 }}>
+                  스토리텔링
+                </Typography>
+                <Typography variant="body1" paragraph sx={{ fontStyle: 'italic', color: 'text.secondary', lineHeight: 1.7 }}>
+                  {generateHealthStory(selectedMenu)}
+                </Typography>
+              </Box>
 
               <Divider sx={{ my: 2 }} />
 
