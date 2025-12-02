@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
+import { QRCodeCanvas } from 'qrcode.react'
 import {
   Box,
   Container,
@@ -450,7 +451,7 @@ export default function MenuBoardPage() {
             onClick={() => navigate(`/menu-board/${inputStoreId}`)}
             disabled={loading || menuLoading}
           >
-            {loading || menuLoading ? <CircularProgress size={24} /> : '매장 정보 불러오기'}
+            {loading || menuLoading ? <CircularProgress size={24} /> : '매장 조회'}
           </Button>
         </Box>
       </Paper>
@@ -515,6 +516,53 @@ export default function MenuBoardPage() {
           </Box>
         ) : null}
       </Paper>
+
+      {/* QR 코드 섹션 - 메뉴가 1개 이상 있을 때만 표시 */}
+      {storeId && parseInt(storeId) > 0 && displayedMenus.length > 0 && (
+        <Paper elevation={3} sx={{ p: 3, mb: 4, textAlign: 'center' }}>
+          <Typography variant="h5" fontWeight="bold" gutterBottom>
+            매장 QR 코드
+          </Typography>
+          <Typography variant="body2" color="text.secondary" gutterBottom sx={{ mb: 3 }}>
+            아래 QR 코드를 스캔하여 AI 메뉴판에 접속하세요
+          </Typography>
+
+          <Box sx={{ display: 'inline-block', p: 2, bgcolor: 'white', borderRadius: 2, boxShadow: 2 }}>
+            <QRCodeCanvas
+              value={`${window.location.origin}/menu-board/${storeId}`}
+              size={200}
+              level="H"
+            />
+          </Box>
+
+          <Paper elevation={1} sx={{ p: 2, mt: 3, bgcolor: 'grey.50' }}>
+            <Typography variant="body2" color="text.secondary" gutterBottom>
+              매장 URL
+            </Typography>
+            <Typography
+              variant="body1"
+              sx={{
+                fontFamily: 'monospace',
+                wordBreak: 'break-all',
+                color: 'primary.main'
+              }}
+            >
+              {window.location.origin}/menu-board/{storeId}
+            </Typography>
+            <Button
+              variant="outlined"
+              size="small"
+              sx={{ mt: 1 }}
+              onClick={() => {
+                navigator.clipboard.writeText(`${window.location.origin}/menu-board/${storeId}`)
+                alert('URL이 복사되었습니다!')
+              }}
+            >
+              URL 복사
+            </Button>
+          </Paper>
+        </Paper>
+      )}
 
       {/* 메뉴 그리드 */}
       <Box display="flex" justifyContent="space-between" alignItems="center" mb={3}>
