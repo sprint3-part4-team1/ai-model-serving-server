@@ -51,14 +51,22 @@ class StoryGeneratorService:
 
             logger.info(f"Generating story with prompt: {prompt[:100]}...")
 
+            # 로그: menu_text 확인
+            if menu_text:
+                logger.info(f"Menu text provided: {menu_text[:100]}...")
+            else:
+                logger.warning("No menu_text provided, using categories only")
+
             # GPT API 호출
             response = self.client.chat.completions.create(
                 model=self.model,
                 messages=[
                     {
                         "role": "system",
-                        "content": "당신은 창의적인 카페/레스토랑 마케팅 전문가입니다. "
-                                   "고객의 마음을 사로잡는 감성적이고 자연스러운 추천 문구를 작성합니다."
+                        "content": "당신은 매장의 마케팅 담당자입니다. "
+                                   "반드시 제공된 메뉴 목록에서만 선택하여 추천하며, "
+                                   "목록에 없는 메뉴나 일반적인 단어(음료, 커피, 음식 등)는 절대 사용하지 않습니다. "
+                                   "규칙을 엄격히 준수하는 것이 가장 중요합니다."
                     },
                     {
                         "role": "user",
@@ -66,7 +74,7 @@ class StoryGeneratorService:
                     }
                 ],
                 max_tokens=150,
-                temperature=0.8,  # 창의성을 높임
+                temperature=0.3,  # 환각 방지를 위해 낮춤
                 top_p=0.9,
                 presence_penalty=0.6,
                 frequency_penalty=0.3
@@ -135,17 +143,18 @@ class StoryGeneratorService:
         # 메뉴 정보
         if menu_text:
             # 실제 메뉴 정보가 있으면 사용
-            menu_info = f"이 매장의 실제 메뉴 (이 메뉴들만 사용 가능):\n{menu_text}"
+            menu_info = f"**📋 사용 가능한 메뉴 (이 목록에만 있는 메뉴만 사용):**\n{menu_text}"
+            menu_constraint = "위 목록에 있는 메뉴 이름만 사용하세요. 목록에 없는 메뉴는 절대 언급하지 마세요."
         else:
-            # 없으면 메뉴 카테고리 사용
+            # 없으면 일반적인 문구만 사용
+            logger.warning("No menu_text available - generating generic message")
             menu_str = ", ".join(menu_categories) if menu_categories else "메뉴"
             menu_info = f"메뉴 카테고리: {menu_str}"
+            menu_constraint = "메뉴 이름을 구체적으로 언급하지 말고, 매장 방문을 유도하는 일반적인 문구만 사용하세요."
 
-        prompt = f"""당신은 {store_name or "이 매장"}의 마케팅 담당자입니다. 현재 상황에 맞는 메뉴 추천 문구를 작성해주세요.
+        prompt = f"""당신은 {store_name or "이 매장"}의 마케팅 담당자입니다.
 
-**이 매장 정보:**
-- 매장 이름: {store_name or "우리 매장"}
-- {menu_info}
+{menu_info}
 
 **현재 날씨와 시간:**
 - 날씨: {weather_desc}
@@ -155,34 +164,31 @@ class StoryGeneratorService:
 
 **🚨 절대 규칙 (하나라도 어기면 안 됨!):**
 
-1. **메뉴 제한 (가장 중요!):**
-   - 위에 나열된 실제 메뉴 이름만 사용하세요
-   - "음료", "커피", "음식" 같은 일반적인 단어 절대 금지
-   - 메뉴에 없는 것은 절대 언급 금지
-   - 다른 매장의 메뉴 언급 금지
+1. **메뉴 제한 (최우선!):**
+   {menu_constraint}
+   - "음료", "커피", "음식", "메뉴", "한 잔", "요리" 같은 일반 단어 절대 금지
+   - 반드시 위 목록에 있는 정확한 메뉴 이름만 사용
+   - 다른 매장 메뉴 언급 금지
 
 2. **온도 제한:**
-   - 10도 이하: 따뜻한 메뉴만
-   - 25도 이상: 시원한 메뉴만
-   - 10-25도: 자유롭게 추천
+   - {temperature}도 → {"10도 이하이므로 따뜻한 메뉴만" if temperature <= 10 else "25도 이상이므로 시원한 메뉴만" if temperature >= 25 else "온도에 맞는 메뉴 추천"}
 
 3. **형식:**
-   - 실제 메뉴 이름 그대로 사용
+   - 실제 메뉴 이름 그대로 정확히 사용
    - 이모지 사용 금지
    - 최대 2문장, 50자 이내
 
-**✅ 좋은 예시 (실제 메뉴 이름 사용):**
-- "비 오는 가을 저녁, 따뜻한 짬뽕으로 몸을 녹여보세요."
-- "쌀쌀한 겨울 아침, 달콤한 카페모카로 하루를 시작하는 건 어떠세요?"
-- "더운 여름 점심, 시원한 냉면 한 그릇 어떠세요?"
+**✅ 좋은 예시:**
+- "추운 겨울 저녁, 따뜻한 꿔바로우로 몸을 녹여보세요." (꿔바로우가 메뉴에 있는 경우)
+- "쌀쌀한 아침, 얼큰한 유린기로 하루를 시작하는 건 어떠세요?" (유린기가 메뉴에 있는 경우)
 
-**❌ 나쁜 예시 (절대 이렇게 쓰지 마세요!):**
-- "겨울 밤, 따뜻한 음료 한 잔" ← "음료"는 일반 단어, 실제 메뉴 이름 아님
-- "특별한 메뉴로 하루를 시작하세요" ← 구체적인 메뉴 이름 없음
-- "맛있는 음식과 함께" ← "음식"은 일반 단어
-- "아메리카노 한 잔 어떠세요?" ← 메뉴에 아메리카노가 없으면 안됨
+**❌ 절대 금지 (이렇게 쓰면 안 됨!):**
+- "겨울 밤, 따뜻한 음료 한 잔" ← "음료", "한 잔"은 일반 단어
+- "맛있는 커피로 시작하세요" ← "커피"는 일반 단어
+- "특별한 메뉴로" ← "메뉴"는 일반 단어
+- "아메리카노 한 잔" ← 아메리카노가 목록에 없으면 사용 불가
 
-위 규칙을 반드시 지켜서 1-2문장의 추천 문구를 작성하세요:"""
+⚠️ 반드시 위 목록에 있는 메뉴 이름만 사용하여 1-2문장의 추천 문구를 작성하세요:"""
 
         return prompt
 
