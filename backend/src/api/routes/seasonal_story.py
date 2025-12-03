@@ -74,10 +74,15 @@ async def generate_seasonal_story(request: SeasonalStoryRequest):
                 # 메뉴 텍스트 생성 (최대 30개)
                 if menu_names:
                     menu_text = ", ".join(menu_names[:30])
-                    logger.info(f"Menu text generated: {len(menu_names)} items")
+                    logger.info(f"✅ Menu text generated: {len(menu_names)} items - {menu_text[:100]}")
+                else:
+                    logger.warning(f"⚠️ No menus found for store_id={request.store_id} after filtering")
 
             finally:
                 db.close()
+
+        if not menu_text:
+            logger.error(f"❌ menu_text is None for store_id={request.store_id}!")
 
         # 2. 컨텍스트 정보 수집
         context = context_collector_service.get_full_context(

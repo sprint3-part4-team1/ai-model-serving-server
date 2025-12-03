@@ -64,9 +64,9 @@ class StoryGeneratorService:
                     {
                         "role": "system",
                         "content": "당신은 매장의 마케팅 담당자입니다. "
-                                   "반드시 제공된 메뉴 목록에서만 선택하여 추천하며, "
-                                   "목록에 없는 메뉴나 일반적인 단어(음료, 커피, 음식 등)는 절대 사용하지 않습니다. "
-                                   "규칙을 엄격히 준수하는 것이 가장 중요합니다."
+                                   "⚠️ 절대 규칙: 제공된 메뉴 목록에 있는 메뉴만 언급하세요. "
+                                   "목록에 없는 메뉴나 '음료', '커피', '음식', '한 잔', '요리' 같은 일반 단어는 절대 사용 금지입니다. "
+                                   "이 규칙을 어기면 안 됩니다. 반드시 구체적인 메뉴 이름만 사용하세요."
                     },
                     {
                         "role": "user",
@@ -74,8 +74,8 @@ class StoryGeneratorService:
                     }
                 ],
                 max_tokens=150,
-                temperature=0.3,  # 환각 방지를 위해 낮춤
-                top_p=0.9,
+                temperature=0.2,  # 더 낮춤 (0.3 → 0.2)
+                top_p=0.85,  # 더 보수적으로
                 presence_penalty=0.6,
                 frequency_penalty=0.3
             )
@@ -140,17 +140,14 @@ class StoryGeneratorService:
         # 트렌드 정보
         trend_str = ", ".join(trends[:3]) if trends else ""
 
-        # 메뉴 정보
-        if menu_text:
-            # 실제 메뉴 정보가 있으면 사용
-            menu_info = f"**📋 사용 가능한 메뉴 (이 목록에만 있는 메뉴만 사용):**\n{menu_text}"
-            menu_constraint = "위 목록에 있는 메뉴 이름만 사용하세요. 목록에 없는 메뉴는 절대 언급하지 마세요."
-        else:
-            # 없으면 일반적인 문구만 사용
-            logger.warning("No menu_text available - generating generic message")
-            menu_str = ", ".join(menu_categories) if menu_categories else "메뉴"
-            menu_info = f"메뉴 카테고리: {menu_str}"
-            menu_constraint = "메뉴 이름을 구체적으로 언급하지 말고, 매장 방문을 유도하는 일반적인 문구만 사용하세요."
+        # 메뉴 정보 - menu_text가 필수!
+        if not menu_text:
+            logger.error("❌ menu_text is required but not provided!")
+            # 메뉴가 없으면 매우 일반적인 문구만 반환
+            return f"{weather_desc} {period_kr}, {store_name or '우리 매장'}에서 특별한 시간을 보내보세요."
+
+        # 실제 메뉴 정보 사용
+        menu_info = f"**📋 반드시 이 메뉴만 사용 (절대 다른 것 언급 금지!):**\n{menu_text}"
 
         prompt = f"""당신은 {store_name or "이 매장"}의 마케팅 담당자입니다.
 
@@ -161,13 +158,15 @@ class StoryGeneratorService:
 - 시간: {period_kr}
 {f'- 트렌드: {trend_str}' if trend_str else ''}
 
-**규칙:**
-1. 위 메뉴 목록에 있는 메뉴 이름만 사용
-2. "음료", "커피", "음식" 같은 일반 단어 금지
-3. {temperature}도 → {"따뜻한 메뉴 추천" if temperature <= 10 else "시원한 메뉴 추천" if temperature >= 25 else "날씨에 맞는 메뉴 추천"}
+**⚠️ 절대 규칙 (반드시 지켜야 함!):**
+1. 위 메뉴 목록에 있는 메뉴 이름만 사용 (다른 것 절대 금지)
+2. "음료", "커피", "음식", "한 잔", "요리" 같은 일반 단어 절대 금지
+3. {temperature}도 → {"따뜻한 메뉴만 추천" if temperature <= 10 else "시원한 메뉴만 추천" if temperature >= 25 else "날씨에 맞는 메뉴 추천"}
 4. 1-2문장, 50자 이내
 
-추천 문구:"""
+⛔ 주의: 위 메뉴 목록에 없는 메뉴는 절대 언급하지 마세요!
+
+추천 문구 (메뉴 이름 반드시 포함):"""
 
         return prompt
 
