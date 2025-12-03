@@ -13,9 +13,12 @@ from typing import List, Optional, Dict
 from ...schemas.seasonal_story import (
     SeasonalStoryRequest,
     SeasonalStoryResponse,
+    MenuStorytellingRequest,
+    MenuStorytellingResponse,
     ErrorResponse
 )
 from ...services.context_collector import context_collector_service
+from ...services.story_generator import story_generator_service
 from app.models.seasonal_story import SeasonalStory
 from app.models.menu import Menu, MenuItem
 from app.core.database import get_db
@@ -410,6 +413,65 @@ async def generate_seasonal_story(
                 "error": {
                     "code": 500,
                     "message": "스토리 생성 중 오류가 발생했습니다.",
+                    "details": str(e)
+                }
+            }
+        )
+
+
+@router.post(
+    "/menu-storytelling",
+    response_model=MenuStorytellingResponse,
+    summary="메뉴 스토리텔링 생성",
+    description="메뉴 클릭 시 보여줄 스토리텔링 문구를 생성합니다.",
+    responses={
+        200: {"description": "성공", "model": MenuStorytellingResponse},
+        500: {"description": "서버 오류", "model": ErrorResponse}
+    }
+)
+async def generate_menu_storytelling(request: MenuStorytellingRequest):
+    """
+    메뉴 스토리텔링 생성
+
+    메뉴 이름, 재료, 원산지, 역사 정보를 바탕으로
+    감성적인 스토리텔링 문구를 생성합니다.
+    """
+    try:
+        logger.info(f"Menu storytelling generation requested: {request}")
+
+        # 스토리텔링 생성
+        storytelling = story_generator_service.generate_menu_storytelling(
+            menu_name=request.menu_name,
+            ingredients=request.ingredients,
+            origin=request.origin,
+            history=request.history
+        )
+
+        # 응답 생성
+        korea_tz = pytz.timezone('Asia/Seoul')
+        response_data = {
+            "storytelling": storytelling,
+            "menu_id": request.menu_id,
+            "menu_name": request.menu_name,
+            "generated_at": datetime.now(korea_tz).isoformat()
+        }
+
+        logger.info("Menu storytelling generated successfully")
+
+        return MenuStorytellingResponse(
+            success=True,
+            data=response_data
+        )
+
+    except Exception as e:
+        logger.error(f"Failed to generate menu storytelling: {e}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail={
+                "success": False,
+                "error": {
+                    "code": 500,
+                    "message": "메뉴 스토리텔링 생성 중 오류가 발생했습니다.",
                     "details": str(e)
                 }
             }
