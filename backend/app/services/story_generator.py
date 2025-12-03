@@ -601,78 +601,12 @@ class StoryGeneratorService:
             result = json.loads(response.choices[0].message.content)
             highlights = result.get("highlights", [])[:max_highlights]
 
-            # 알레르기 정보는 메뉴 UI에서 표기 (스토리 생성에는 미반영)
-            # highlights = self._add_allergen_warnings(highlights)
-
             logger.info(f"Menu highlights generated: {len(highlights)} items")
             return highlights
 
         except Exception as e:
             logger.error(f"Failed to generate menu highlights: {e}")
             return self._generate_mock_highlights(menus, max_highlights)
-
-    def _add_allergen_warnings(self, highlights: List[Dict]) -> List[Dict]:
-        """
-        메뉴 하이라이트에 알레르기 경고 추가
-
-        Args:
-            highlights: 하이라이트 리스트 [{"menu_id": 1, "name": "...", "reason": "..."}]
-
-        Returns:
-            알레르기 경고가 추가된 하이라이트 리스트
-        """
-        try:
-            # AllergenMapper import (상대 경로)
-            import sys
-            import os
-            # backend/src/nutrition 경로 추가
-            backend_src_path = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(__file__))), "src")
-            if backend_src_path not in sys.path:
-                sys.path.insert(0, backend_src_path)
-
-            from nutrition.allergen_mapper import AllergenMapper
-            from app.core.database import SessionLocal
-            from app.models.menu import MenuItem
-
-            # DB 세션
-            db = SessionLocal()
-
-            try:
-                for highlight in highlights:
-                    menu_id = highlight.get("menu_id")
-                    if not menu_id:
-                        continue
-
-                    # DB에서 메뉴 아이템 조회
-                    menu_item = db.query(MenuItem).filter(MenuItem.id == menu_id).first()
-                    if not menu_item:
-                        continue
-
-                    # 재료 정보 가져오기
-                    ingredients = [ing.ingredient_name for ing in menu_item.ingredients]
-
-                    if not ingredients:
-                        continue
-
-                    # 알레르기 감지
-                    allergens = AllergenMapper.detect_allergens(ingredients)
-
-                    if allergens:
-                        # 알레르기 경고 추가
-                        warning = AllergenMapper.get_allergen_warning(allergens)
-                        highlight["allergen_warning"] = warning
-
-                        # reason에도 경고 추가 (선택사항)
-                        # highlight["reason"] = f"{highlight['reason']} {warning}"
-
-            finally:
-                db.close()
-
-        except Exception as e:
-            logger.warning(f"Failed to add allergen warnings: {e}")
-            # 에러 발생해도 하이라이트는 반환
-
-        return highlights
 
     def _generate_mock_highlights(self, menus: List[Dict], max_highlights: int) -> List[Dict]:
         """Mock 메뉴 하이라이트 생성"""
