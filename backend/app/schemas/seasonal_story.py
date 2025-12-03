@@ -13,7 +13,7 @@ class SeasonalStoryRequest(BaseModel):
 
     store_id: Optional[int] = Field(None, description="매장 ID")
     store_name: Optional[str] = Field(None, description="매장 이름")
-    store_type: str = Field("카페", description="매장 타입 (카페, 레스토랑 등)")
+    store_type: Optional[str] = Field(None, description="매장 타입 (사용 안 함 - 하위 호환성 유지용)")
     location: str = Field("Seoul", description="위치 (도시 이름)")
     latitude: Optional[float] = Field(None, description="위도")
     longitude: Optional[float] = Field(None, description="경도")
@@ -31,7 +31,6 @@ class SeasonalStoryRequest(BaseModel):
             "example": {
                 "store_id": 1,
                 "store_name": "서울카페",
-                "store_type": "카페",
                 "location": "Seoul",
                 "menu_categories": ["커피", "디저트"]
             }

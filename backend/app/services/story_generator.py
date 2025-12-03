@@ -22,7 +22,7 @@ class StoryGeneratorService:
         self,
         context: Dict,
         store_name: Optional[str] = None,
-        store_type: Optional[str] = "카페",
+        store_type: Optional[str] = None,
         menu_categories: Optional[List[str]] = None,
         selected_trends: Optional[List[str]] = None,
         menu_text: Optional[str] = None
@@ -33,7 +33,7 @@ class StoryGeneratorService:
         Args:
             context: Context Collector에서 수집한 정보
             store_name: 매장 이름
-            store_type: 매장 타입 (카페, 레스토랑 등)
+            store_type: (사용 안 함 - 하위 호환성 유지용)
             menu_categories: 메뉴 카테고리 리스트
             selected_trends: 사용자가 선택한 트렌드 키워드 (우선적으로 반영)
             menu_text: 실제 메뉴 정보 텍스트 (예: "아메리카노(3,500원), 카페라떼(4,000원)")
@@ -43,11 +43,11 @@ class StoryGeneratorService:
         """
         if not self.client:
             logger.warning("OpenAI client not initialized, returning mock story")
-            return self._generate_mock_story(context, store_type)
+            return self._generate_mock_story(context)
 
         try:
-            # Prompt 생성
-            prompt = self._build_prompt(context, store_name, store_type, menu_categories, selected_trends, menu_text)
+            # Prompt 생성 (store_type 제거)
+            prompt = self._build_prompt(context, store_name, menu_categories, selected_trends, menu_text)
 
             logger.info(f"Generating story with prompt: {prompt[:100]}...")
 
@@ -79,24 +79,22 @@ class StoryGeneratorService:
 
         except Exception as e:
             logger.error(f"Failed to generate story with GPT: {e}")
-            return self._generate_mock_story(context, store_type)
+            return self._generate_mock_story(context)
 
     def _build_prompt(
         self,
         context: Dict,
         store_name: Optional[str],
-        store_type: str,
         menu_categories: Optional[List[str]],
         selected_trends: Optional[List[str]] = None,
         menu_text: Optional[str] = None
     ) -> str:
         """
-        GPT 프롬프트 생성
+        GPT 프롬프트 생성 (실제 메뉴 기반)
 
         Args:
             context: 컨텍스트 정보
             store_name: 매장 이름
-            store_type: 매장 타입
             menu_categories: 메뉴 카테고리
             selected_trends: 사용자가 선택한 트렌드
             menu_text: 실제 메뉴 정보
@@ -143,14 +141,10 @@ class StoryGeneratorService:
             menu_str = ", ".join(menu_categories) if menu_categories else "음료"
             menu_info = f"메뉴 카테고리: {menu_str}"
 
-        # 매장 타입별 예시 생성
-        examples = self._get_examples_by_store_type(store_type)
-
-        prompt = f"""당신은 {store_type}의 마케팅 담당자입니다. 현재 상황에 맞는 메뉴 추천 문구를 작성해주세요.
+        prompt = f"""당신은 매장의 마케팅 담당자입니다. 현재 상황에 맞는 메뉴 추천 문구를 작성해주세요.
 
 **이 매장 정보:**
-- 매장 이름: {store_name or store_type}
-- 매장 타입: {store_type}
+- 매장 이름: {store_name or "우리 매장"}
 - {menu_info}
 
 **현재 날씨와 시간:**
@@ -165,12 +159,14 @@ class StoryGeneratorService:
    - 10도 이하 추운 날씨: 따뜻한 메뉴만 (예: 국물요리, 따뜻한 음료)
    - 25도 이상 더운 날씨: 시원한 메뉴만 (예: 냉면, 아이스 음료)
    - 10-25도: 자유롭게 추천
-3. 매장 타입({store_type})에 맞는 메뉴만 추천하세요.
+3. 실제 메뉴 이름을 그대로 사용하여 구체적으로 작성하세요.
 4. 이모지 사용 금지
 5. 최대 2문장, 50자 이내
 
 **좋은 예시:**
-{examples}
+- "비 오는 가을 저녁, 따뜻한 짬뽕으로 몸을 녹여보세요."
+- "쌀쌀한 겨울 아침, 달콤한 카페모카로 하루를 시작하는 건 어떠세요?"
+- "더운 여름 점심, 시원한 아이스 아메리카노로 더위를 날려보세요."
 
 **나쁜 예시 (절대 하지 말 것):**
 - "겨울 밤, 따뜻한 음료 한 잔" ← 음료가 메뉴에 없으면 안됨
@@ -247,13 +243,12 @@ class StoryGeneratorService:
 - "쌀쌀한 겨울 점심, 따뜻한 국물 요리가 생각나는 날씨네요."
 - "더운 여름 저녁, 시원한 메뉴로 더위를 날려보세요."""
 
-    def _generate_mock_story(self, context: Dict, store_type: str = "카페") -> str:
+    def _generate_mock_story(self, context: Dict) -> str:
         """
         Mock 스토리 생성 (GPT 사용 불가 시)
 
         Args:
             context: 컨텍스트 정보
-            store_type: 매장 타입
 
         Returns:
             Mock 스토리 문구
@@ -276,9 +271,9 @@ class StoryGeneratorService:
 
         # 간단한 템플릿 기반 생성
         templates = [
-            f"{weather_desc} {season_kr} {period_kr}, 따뜻한 음료 한 잔 어떠세요?",
-            f"{temperature}도의 {season_kr} 날씨, {store_type}에서 여유를 즐겨보세요.",
-            f"{period_kr}의 특별한 순간, 맛있는 메뉴와 함께하세요."
+            f"{weather_desc} {season_kr} {period_kr}, 특별한 메뉴로 여유를 즐겨보세요.",
+            f"{temperature}도의 {season_kr} 날씨, 맛있는 한 끼 어떠세요?",
+            f"{period_kr}의 특별한 순간, 따뜻한 메뉴와 함께하세요."
         ]
 
         import random
@@ -678,12 +673,78 @@ class StoryGeneratorService:
             result = json.loads(response.choices[0].message.content)
             highlights = result.get("highlights", [])[:max_highlights]
 
+            # 알레르기 정보 추가
+            highlights = self._add_allergen_warnings(highlights)
+
             logger.info(f"Menu highlights generated: {len(highlights)} items")
             return highlights
 
         except Exception as e:
             logger.error(f"Failed to generate menu highlights: {e}")
             return self._generate_mock_highlights(menus, max_highlights)
+
+    def _add_allergen_warnings(self, highlights: List[Dict]) -> List[Dict]:
+        """
+        메뉴 하이라이트에 알레르기 경고 추가
+
+        Args:
+            highlights: 하이라이트 리스트 [{"menu_id": 1, "name": "...", "reason": "..."}]
+
+        Returns:
+            알레르기 경고가 추가된 하이라이트 리스트
+        """
+        try:
+            # AllergenMapper import (상대 경로)
+            import sys
+            import os
+            # backend/src/nutrition 경로 추가
+            backend_src_path = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(__file__))), "src")
+            if backend_src_path not in sys.path:
+                sys.path.insert(0, backend_src_path)
+
+            from nutrition.allergen_mapper import AllergenMapper
+            from app.core.database import SessionLocal
+            from app.models.menu import MenuItem
+
+            # DB 세션
+            db = SessionLocal()
+
+            try:
+                for highlight in highlights:
+                    menu_id = highlight.get("menu_id")
+                    if not menu_id:
+                        continue
+
+                    # DB에서 메뉴 아이템 조회
+                    menu_item = db.query(MenuItem).filter(MenuItem.id == menu_id).first()
+                    if not menu_item:
+                        continue
+
+                    # 재료 정보 가져오기
+                    ingredients = [ing.ingredient_name for ing in menu_item.ingredients]
+
+                    if not ingredients:
+                        continue
+
+                    # 알레르기 감지
+                    allergens = AllergenMapper.detect_allergens(ingredients)
+
+                    if allergens:
+                        # 알레르기 경고 추가
+                        warning = AllergenMapper.get_allergen_warning(allergens)
+                        highlight["allergen_warning"] = warning
+
+                        # reason에도 경고 추가 (선택사항)
+                        # highlight["reason"] = f"{highlight['reason']} {warning}"
+
+            finally:
+                db.close()
+
+        except Exception as e:
+            logger.warning(f"Failed to add allergen warnings: {e}")
+            # 에러 발생해도 하이라이트는 반환
+
+        return highlights
 
     def _generate_mock_highlights(self, menus: List[Dict], max_highlights: int) -> List[Dict]:
         """Mock 메뉴 하이라이트 생성"""
