@@ -360,6 +360,11 @@ async def generate_seasonal_story(
                 "special_day": special_day_name if is_special else None,
                 "is_weekend": is_weekend
             },
+            "store_info": {
+                "store_id": request.store_id,
+                "store_name": request.store_name,
+                "location": request.location
+            },
             "generated_at": datetime.now(korea_tz).isoformat()
         }
 
