@@ -183,16 +183,35 @@ def create_highlights(
     # 1번: 오늘의 추천 (광고 문구에 사용된 메뉴)
     featured = next((m for m in menus if m["name"] == featured_menu), None)
     if featured:
+        # 구체적인 날씨/시간 기반 추천 이유 생성
+        weather_desc = context.get("weather", {}).get("description", "맑음")
+        temperature = context.get("weather", {}).get("temperature", 15)
+        period_kr = context.get("time_info", {}).get("period_kr", "오후")
+
+        # 온도에 따른 표현
+        if temperature < 0:
+            temp_desc = "영하의 추운 날씨"
+        elif temperature < 10:
+            temp_desc = "쌀쌀한 날씨"
+        elif temperature < 20:
+            temp_desc = "선선한 날씨"
+        elif temperature < 28:
+            temp_desc = "따뜻한 날씨"
+        else:
+            temp_desc = "더운 날씨"
+
+        reason = f"{temp_desc} {period_kr}에는 {featured['name']}을(를) 추천합니다"
+
         highlights.append({
             "type": "today",
             "menu_id": featured["id"],
             "menu_name": featured["name"],
-            "reason": "날씨와 시간대에 어울리는 추천 메뉴",
+            "reason": reason,
             "context_info": {
-                "weather": context.get("weather", {}).get("description", "맑음"),
-                "temperature": context.get("weather", {}).get("temperature", 15),
+                "weather": weather_desc,
+                "temperature": temperature,
                 "season": context.get("season", ""),
-                "period": context.get("time_info", {}).get("period_kr", "오후")
+                "period": period_kr
             }
         })
 

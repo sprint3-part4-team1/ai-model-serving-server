@@ -576,18 +576,8 @@ export default function MenuBoardPage() {
                           <Typography variant="h6" fontWeight="bold" sx={{ color: 'white', mb: 0.5 }}>
                             {highlight.menu_name}
                           </Typography>
-                          {highlight.protein_g && (
-                            <Typography variant="caption" sx={{ color: 'rgba(255,255,255,0.9)' }}>
-                              단백질 {highlight.protein_g}g
-                            </Typography>
-                          )}
-                          {highlight.sugar_g && (
-                            <Typography variant="caption" sx={{ color: 'rgba(255,255,255,0.9)' }}>
-                              당류 {highlight.sugar_g}g
-                            </Typography>
-                          )}
                           {highlight.reason && (
-                            <Typography variant="body2" sx={{ color: 'rgba(255,255,255,0.8)', mt: 1 }}>
+                            <Typography variant="body2" sx={{ color: 'rgba(255,255,255,0.9)', mt: 1 }}>
                               {highlight.reason}
                             </Typography>
                           )}
