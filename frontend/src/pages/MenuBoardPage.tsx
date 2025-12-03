@@ -546,6 +546,73 @@ export default function MenuBoardPage() {
                 ))}
               </Box>
             )}
+
+            {/* 오늘의 추천 메뉴 (Highlights) */}
+            {seasonalStory.data.highlights && seasonalStory.data.highlights.length > 0 && (
+              <Box mt={3}>
+                <Typography variant="subtitle1" fontWeight="bold" mb={2} sx={{ color: 'white' }}>
+                  오늘의 추천 메뉴
+                </Typography>
+                <Grid container spacing={2}>
+                  {seasonalStory.data.highlights.map((highlight, idx) => {
+                    const getHighlightIcon = (type: string) => {
+                      if (type === 'today') return '⭐'
+                      if (type === 'high_protein') return '💪'
+                      if (type === 'sweet') return '🍯'
+                      return '✨'
+                    }
+
+                    const getHighlightTitle = (type: string) => {
+                      if (type === 'today') return '오늘의 추천'
+                      if (type === 'high_protein') return '고단백 추천'
+                      if (type === 'sweet') return '달콤 추천'
+                      return '추천'
+                    }
+
+                    if (!highlight.menu_name) return null
+
+                    return (
+                      <Grid item xs={12} sm={4} key={idx}>
+                        <Paper
+                          elevation={2}
+                          sx={{
+                            p: 2,
+                            bgcolor: 'rgba(255,255,255,0.15)',
+                            backdropFilter: 'blur(10px)',
+                            border: '1px solid rgba(255,255,255,0.3)',
+                          }}
+                        >
+                          <Box display="flex" alignItems="center" gap={1} mb={1}>
+                            <Typography variant="h6">{getHighlightIcon(highlight.type)}</Typography>
+                            <Typography variant="subtitle2" fontWeight="bold" sx={{ color: 'white' }}>
+                              {getHighlightTitle(highlight.type)}
+                            </Typography>
+                          </Box>
+                          <Typography variant="h6" fontWeight="bold" sx={{ color: 'white', mb: 0.5 }}>
+                            {highlight.menu_name}
+                          </Typography>
+                          {highlight.protein_g && (
+                            <Typography variant="caption" sx={{ color: 'rgba(255,255,255,0.9)' }}>
+                              단백질 {highlight.protein_g}g
+                            </Typography>
+                          )}
+                          {highlight.sugar_g && (
+                            <Typography variant="caption" sx={{ color: 'rgba(255,255,255,0.9)' }}>
+                              당류 {highlight.sugar_g}g
+                            </Typography>
+                          )}
+                          {highlight.reason && (
+                            <Typography variant="body2" sx={{ color: 'rgba(255,255,255,0.8)', mt: 1 }}>
+                              {highlight.reason}
+                            </Typography>
+                          )}
+                        </Paper>
+                      </Grid>
+                    )
+                  })}
+                </Grid>
+              </Box>
+            )}
           </Box>
         ) : null}
       </Paper>
