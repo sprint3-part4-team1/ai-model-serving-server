@@ -46,7 +46,40 @@ async def generate_seasonal_story(request: SeasonalStoryRequest):
     try:
         logger.info(f"Seasonal story generation requested: {request}")
 
-        # 1. 컨텍스트 정보 수집 (메뉴 카테고리 + 매장 타입 포함)
+        # 1. 실제 메뉴 이름 조회 (store_id가 있는 경우)
+        menu_text = None
+        if request.store_id:
+            from app.models.menu import Store, Menu, MenuItem
+            from app.core.database import SessionLocal
+
+            db = SessionLocal()
+            try:
+                # 사이드/음료 제외 키워드
+                exclude_keywords = ["사이드", "side", "음료", "drink", "beverage", "드링크"]
+
+                # 매장의 메뉴 아이템 조회
+                menu_items = db.query(MenuItem, Menu.name.label("category_name")).join(Menu).filter(
+                    Menu.store_id == request.store_id,
+                    MenuItem.is_available == True
+                ).all()
+
+                # 사이드/음료 제외하고 메뉴 이름만 추출
+                menu_names = []
+                for item, category_name in menu_items:
+                    # 카테고리에 제외 키워드가 있으면 스킵
+                    if any(keyword in category_name.lower() for keyword in exclude_keywords):
+                        continue
+                    menu_names.append(item.name)
+
+                # 메뉴 텍스트 생성 (최대 30개)
+                if menu_names:
+                    menu_text = ", ".join(menu_names[:30])
+                    logger.info(f"Menu text generated: {len(menu_names)} items")
+
+            finally:
+                db.close()
+
+        # 2. 컨텍스트 정보 수집
         context = context_collector_service.get_full_context(
             location=request.location,
             lat=request.latitude,
@@ -55,12 +88,13 @@ async def generate_seasonal_story(request: SeasonalStoryRequest):
             store_type=request.store_type
         )
 
-        # 2. 스토리 생성
+        # 3. 스토리 생성 (실제 메뉴 이름 전달)
         story = story_generator_service.generate_story(
             context=context,
             store_name=request.store_name,
             store_type=request.store_type,
-            menu_categories=request.menu_categories
+            menu_categories=request.menu_categories,
+            menu_text=menu_text
         )
 
         # 3. 응답 생성
