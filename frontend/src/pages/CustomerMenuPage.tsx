@@ -127,9 +127,12 @@ function MenuItemImage({ imageUrl, menuName }: { imageUrl?: string; menuName: st
 }
 
 interface MenuHighlight {
-  menu_id: number
-  name: string
-  reason: string
+  type: string
+  menu_id: number | null
+  menu_name: string | null
+  reason: string | null
+  protein_g?: number
+  sugar_g?: number
 }
 
 interface RecommendationContext {
@@ -275,34 +278,29 @@ export default function CustomerMenuPage() {
     try {
       setRecommendationsLoading(true)
 
-      // 환영 문구와 메뉴 하이라이트 동시 로드
-      const [welcomeResponse, highlightsResponse] = await Promise.all([
-        seasonalStoryApi.getWelcomeMessage(id).catch(() => null),
-        seasonalStoryApi.getMenuHighlights(id, 'Seoul', 3).catch(() => null),
-      ])
+      // 시즈널 스토리 생성 API 호출
+      const response = await seasonalStoryApi.generate({
+        store_id: id,
+        store_name: storeInfo?.name || '매장',
+        location: 'Seoul',
+      })
 
-      if (welcomeResponse?.success) {
-        setWelcomeMessage(welcomeResponse.data.message)
-        // 컨텍스트 정보 저장
-        if (welcomeResponse.data.context) {
-          setRecommendationContext({
-            weather: welcomeResponse.data.context.weather,
-            season: welcomeResponse.data.context.season,
-            time: welcomeResponse.data.context.time,
-            trends: welcomeResponse.data.context.trends || []
-          })
+      if (response?.success && response.data) {
+        // 스토리 설정
+        setWelcomeMessage(response.data.story)
+
+        // 하이라이트 설정
+        if (response.data.highlights) {
+          setHighlights(response.data.highlights)
         }
-      }
 
-      if (highlightsResponse?.success) {
-        setHighlights(highlightsResponse.data.highlights || [])
-        // 컨텍스트 정보가 아직 없으면 하이라이트 응답에서 가져오기
-        if (!recommendationContext && highlightsResponse.data.context) {
+        // 컨텍스트 정보 저장
+        if (response.data.context) {
           setRecommendationContext({
-            weather: highlightsResponse.data.context.weather,
-            season: highlightsResponse.data.context.season,
-            time: highlightsResponse.data.context.time,
-            trends: highlightsResponse.data.context.trends || []
+            weather: response.data.context.weather,
+            season: response.data.context.season,
+            time: response.data.context.time_info?.period_kr,
+            trends: response.data.context.trends || []
           })
         }
       }
@@ -522,39 +520,63 @@ export default function CustomerMenuPage() {
                     📍 기반 정보: {recommendationContext.weather?.description} {recommendationContext.weather?.temperature}도
                     {recommendationContext.season && `, ${recommendationContext.season}`}
                     {recommendationContext.time && `, ${recommendationContext.time}`}
-                    {recommendationContext.trends && recommendationContext.trends.length > 0 &&
-                      ` | 트렌드: ${recommendationContext.trends.slice(0, 3).join(', ')}`
-                    }
                   </Typography>
                 )}
               </Box>
             )}
 
             {highlights.length > 0 && (
-              <Box>
-                <Typography variant="h6" fontWeight="bold" sx={{ mb: 2, display: 'flex', alignItems: 'center', gap: 1 }}>
-                  <Star /> 오늘의 추천 메뉴
+              <Box mt={3}>
+                <Typography variant="subtitle1" fontWeight="bold" mb={2} sx={{ color: 'white' }}>
+                  오늘의 추천 메뉴
                 </Typography>
                 <Grid container spacing={2}>
-                  {highlights.map((highlight) => (
-                    <Grid item xs={12} sm={4} key={highlight.menu_id}>
-                      <Paper
-                        sx={{
-                          p: 2,
-                          bgcolor: 'rgba(255,255,255,0.95)',
-                          color: 'text.primary',
-                          borderRadius: 2,
-                        }}
-                      >
-                        <Typography variant="subtitle1" fontWeight="bold" gutterBottom>
-                          {highlight.name}
-                        </Typography>
-                        <Typography variant="body2" color="text.secondary">
-                          {highlight.reason}
-                        </Typography>
-                      </Paper>
-                    </Grid>
-                  ))}
+                  {highlights.map((highlight, idx) => {
+                    const getHighlightIcon = (type: string) => {
+                      if (type === 'today') return '⭐'
+                      if (type === 'high_protein') return '💪'
+                      if (type === 'sweet') return '🍯'
+                      return '✨'
+                    }
+
+                    const getHighlightTitle = (type: string) => {
+                      if (type === 'today') return '오늘의 추천'
+                      if (type === 'high_protein') return '고단백 추천'
+                      if (type === 'sweet') return '달콤 추천'
+                      return '추천'
+                    }
+
+                    if (!highlight.menu_name) return null
+
+                    return (
+                      <Grid item xs={12} sm={4} key={idx}>
+                        <Paper
+                          elevation={2}
+                          sx={{
+                            p: 2,
+                            bgcolor: 'rgba(255,255,255,0.15)',
+                            backdropFilter: 'blur(10px)',
+                            border: '1px solid rgba(255,255,255,0.3)',
+                          }}
+                        >
+                          <Box display="flex" alignItems="center" gap={1} mb={1}>
+                            <Typography variant="h6">{getHighlightIcon(highlight.type)}</Typography>
+                            <Typography variant="subtitle2" fontWeight="bold" sx={{ color: 'white' }}>
+                              {getHighlightTitle(highlight.type)}
+                            </Typography>
+                          </Box>
+                          <Typography variant="h6" fontWeight="bold" sx={{ color: 'white', mb: 0.5 }}>
+                            {highlight.menu_name}
+                          </Typography>
+                          {highlight.reason && (
+                            <Typography variant="body2" sx={{ color: 'rgba(255,255,255,0.9)', mt: 1 }}>
+                              {highlight.reason}
+                            </Typography>
+                          )}
+                        </Paper>
+                      </Grid>
+                    )
+                  })}
                 </Grid>
               </Box>
             )}
