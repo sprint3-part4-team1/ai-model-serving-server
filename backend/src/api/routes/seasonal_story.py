@@ -122,7 +122,7 @@ def generate_simple_story(
     # 특별한 날 정보
     special_info = f"\n- 특별한 날: {special_day}" if special_day else ""
 
-    prompt = f"""다음 메뉴 중 하나를 사용하여 광고 문구를 작성하세요.
+    prompt = f"""다음 메뉴 중 하나를 사용하여 감성적이고 풍부한 광고 문구를 작성하세요.
 
 **메뉴 목록:**
 {menu_text}
@@ -134,12 +134,17 @@ def generate_simple_story(
 
 **규칙:**
 1. 위 메뉴 중 정확히 하나만 선택
-2. 메뉴 이름 그대로 사용
-3. 1문장, 40자 이내
-4. 날씨/시간/특별한 날 반영
+2. 메뉴 이름을 그대로 정확히 사용
+3. 2-3문장으로 구성, 전체 80-120자 정도
+4. 날씨, 시간대, 특별한 날을 자연스럽게 녹여낸 감성적인 표현 사용
+5. 메뉴의 특징이나 맛을 상상력 있게 표현
+6. 고객이 그 순간 그 메뉴를 먹고 싶게 만드는 스토리텔링
+
+**좋은 예시:**
+"추운 겨울 아침, 따뜻한 국물이 생각나는 순간입니다. 뜨끈한 육개장 한 그릇으로 온몸에 활력을 불어넣어보세요. 매콤하고 진한 국물이 추위를 녹여줄 거예요."
 
 응답 형식 (JSON):
-{{"story": "광고 문구", "menu": "선택한 메뉴 이름"}}"""
+{{"story": "광고 문구 (2-3문장, 80-120자)", "menu": "선택한 메뉴 이름"}}"""
 
     try:
         response = client.chat.completions.create(
@@ -151,8 +156,8 @@ def generate_simple_story(
                 },
                 {"role": "user", "content": prompt}
             ],
-            temperature=0.4,
-            max_tokens=100,
+            temperature=0.5,
+            max_tokens=200,
             response_format={"type": "json_object"}
         )
 

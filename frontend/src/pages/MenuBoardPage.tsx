@@ -532,21 +532,6 @@ export default function MenuBoardPage() {
               {seasonalStory.data.story}
             </Typography>
 
-            {seasonalStory.data.context.trends.length > 0 && (
-              <Box display="flex" gap={1} alignItems="center" flexWrap="wrap">
-                <TrendingUp fontSize="small" />
-                <Typography variant="body2">트렌드:</Typography>
-                {seasonalStory.data.context.trends.map((trend, idx) => (
-                  <Chip
-                    key={idx}
-                    size="small"
-                    label={trend}
-                    sx={{ bgcolor: 'rgba(255,255,255,0.3)', color: 'white' }}
-                  />
-                ))}
-              </Box>
-            )}
-
             {/* 오늘의 추천 메뉴 (Highlights) */}
             {seasonalStory.data.highlights && seasonalStory.data.highlights.length > 0 && (
               <Box mt={3}>
