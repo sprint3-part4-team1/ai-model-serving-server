@@ -433,23 +433,39 @@ function MenuGenerationPage() {
                     <Typography variant="body2" color="text.secondary" gutterBottom>
                       AI 메뉴판 URL
                     </Typography>
-                    <Typography
-                      variant="body2"
+                    <Box
+                      component="a"
+                      href={`/menu-board/${viewStoreId}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
                       sx={{
+                        display: 'block',
                         fontFamily: 'monospace',
                         wordBreak: 'break-all',
                         color: 'primary.main',
-                        mb: 1
+                        mb: 1,
+                        p: 1.5,
+                        bgcolor: 'grey.50',
+                        borderRadius: 1,
+                        textDecoration: 'none',
+                        '&:hover': {
+                          bgcolor: 'primary.50',
+                          textDecoration: 'underline'
+                        }
                       }}
                     >
                       {window.location.origin}/menu-board/{viewStoreId}
-                    </Typography>
+                    </Box>
                     <Button
                       variant="outlined"
                       size="small"
-                      onClick={() => {
-                        navigator.clipboard.writeText(`${window.location.origin}/menu-board/${viewStoreId}`)
-                        alert('URL이 복사되었습니다!')
+                      onClick={async () => {
+                        try {
+                          await navigator.clipboard.writeText(`${window.location.origin}/menu-board/${viewStoreId}`)
+                          alert('URL이 복사되었습니다!')
+                        } catch (err) {
+                          alert('URL 복사에 실패했습니다. URL을 직접 복사해주세요.')
+                        }
                       }}
                     >
                       URL 복사
@@ -475,24 +491,40 @@ function MenuGenerationPage() {
                     <Typography variant="body2" color="text.secondary" gutterBottom>
                       고객 메뉴판 URL
                     </Typography>
-                    <Typography
-                      variant="body2"
+                    <Box
+                      component="a"
+                      href={`/menu/${viewStoreId}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
                       sx={{
+                        display: 'block',
                         fontFamily: 'monospace',
                         wordBreak: 'break-all',
                         color: 'secondary.main',
-                        mb: 1
+                        mb: 1,
+                        p: 1.5,
+                        bgcolor: 'grey.50',
+                        borderRadius: 1,
+                        textDecoration: 'none',
+                        '&:hover': {
+                          bgcolor: 'secondary.50',
+                          textDecoration: 'underline'
+                        }
                       }}
                     >
                       {window.location.origin}/menu/{viewStoreId}
-                    </Typography>
+                    </Box>
                     <Button
                       variant="outlined"
                       size="small"
                       color="secondary"
-                      onClick={() => {
-                        navigator.clipboard.writeText(`${window.location.origin}/menu/${viewStoreId}`)
-                        alert('URL이 복사되었습니다!')
+                      onClick={async () => {
+                        try {
+                          await navigator.clipboard.writeText(`${window.location.origin}/menu/${viewStoreId}`)
+                          alert('URL이 복사되었습니다!')
+                        } catch (err) {
+                          alert('URL 복사에 실패했습니다. URL을 직접 복사해주세요.')
+                        }
                       }}
                     >
                       URL 복사
@@ -843,27 +875,40 @@ function MenuGenerationPage() {
                       <Typography variant="body2" color="text.secondary" gutterBottom>
                         AI 메뉴판 URL
                       </Typography>
-                      <Typography
-                        variant="body2"
+                      <Box
+                        component="a"
+                        href={`/menu-board/${generatedStoreId}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
                         sx={{
+                          display: 'block',
                           mt: 1,
                           p: 1.5,
                           bgcolor: 'white',
                           borderRadius: 1,
                           fontFamily: 'monospace',
                           wordBreak: 'break-all',
-                          color: 'primary.main'
+                          color: 'primary.main',
+                          textDecoration: 'none',
+                          '&:hover': {
+                            bgcolor: 'primary.50',
+                            textDecoration: 'underline'
+                          }
                         }}
                       >
                         {window.location.origin}/menu-board/{generatedStoreId}
-                      </Typography>
+                      </Box>
                       <Button
                         variant="outlined"
                         size="small"
                         sx={{ mt: 2 }}
-                        onClick={() => {
-                          navigator.clipboard.writeText(`${window.location.origin}/menu-board/${generatedStoreId}`)
-                          alert('URL이 복사되었습니다!')
+                        onClick={async () => {
+                          try {
+                            await navigator.clipboard.writeText(`${window.location.origin}/menu-board/${generatedStoreId}`)
+                            alert('URL이 복사되었습니다!')
+                          } catch (err) {
+                            alert('URL 복사에 실패했습니다. URL을 직접 복사해주세요.')
+                          }
                         }}
                       >
                         URL 복사
@@ -893,28 +938,41 @@ function MenuGenerationPage() {
                       <Typography variant="body2" color="text.secondary" gutterBottom>
                         고객 메뉴판 URL
                       </Typography>
-                      <Typography
-                        variant="body2"
+                      <Box
+                        component="a"
+                        href={`/menu/${generatedStoreId}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
                         sx={{
+                          display: 'block',
                           mt: 1,
                           p: 1.5,
                           bgcolor: 'white',
                           borderRadius: 1,
                           fontFamily: 'monospace',
                           wordBreak: 'break-all',
-                          color: 'secondary.main'
+                          color: 'secondary.main',
+                          textDecoration: 'none',
+                          '&:hover': {
+                            bgcolor: 'secondary.50',
+                            textDecoration: 'underline'
+                          }
                         }}
                       >
                         {window.location.origin}/menu/{generatedStoreId}
-                      </Typography>
+                      </Box>
                       <Button
                         variant="outlined"
                         size="small"
                         color="secondary"
                         sx={{ mt: 2 }}
-                        onClick={() => {
-                          navigator.clipboard.writeText(`${window.location.origin}/menu/${generatedStoreId}`)
-                          alert('URL이 복사되었습니다!')
+                        onClick={async () => {
+                          try {
+                            await navigator.clipboard.writeText(`${window.location.origin}/menu/${generatedStoreId}`)
+                            alert('URL이 복사되었습니다!')
+                          } catch (err) {
+                            alert('URL 복사에 실패했습니다. URL을 직접 복사해주세요.')
+                          }
                         }}
                       >
                         URL 복사
