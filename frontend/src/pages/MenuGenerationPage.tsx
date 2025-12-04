@@ -406,49 +406,101 @@ function MenuGenerationPage() {
       {parseInt(viewStoreId) > 0 && displayMenus && displayMenus.categories && displayMenus.categories.length > 0 && (
         <Card sx={{ mb: 2, bgcolor: 'success.50' }}>
           <CardContent>
-            <Box sx={{ textAlign: 'center' }}>
+            <Box sx={{ textAlign: 'center', mb: 3 }}>
               <Typography variant="h6" fontWeight="bold" gutterBottom>
                 매장 QR 코드
               </Typography>
-              <Typography variant="body2" color="text.secondary" gutterBottom sx={{ mb: 2 }}>
+              <Typography variant="body2" color="text.secondary" gutterBottom>
                 고객이 스캔할 수 있도록 QR 코드를 제공하세요
               </Typography>
-
-              <Box sx={{ display: 'inline-block', p: 2, bgcolor: 'white', borderRadius: 2, boxShadow: 2 }}>
-                <QRCodeCanvas
-                  value={`${window.location.origin}/menu-board/${viewStoreId}`}
-                  size={180}
-                  level="H"
-                />
-              </Box>
-
-              <Paper elevation={1} sx={{ p: 2, mt: 2, bgcolor: 'white' }}>
-                <Typography variant="body2" color="text.secondary" gutterBottom>
-                  AI 메뉴판 URL
-                </Typography>
-                <Typography
-                  variant="body2"
-                  sx={{
-                    fontFamily: 'monospace',
-                    wordBreak: 'break-all',
-                    color: 'primary.main',
-                    mb: 1
-                  }}
-                >
-                  {window.location.origin}/menu-board/{viewStoreId}
-                </Typography>
-                <Button
-                  variant="outlined"
-                  size="small"
-                  onClick={() => {
-                    navigator.clipboard.writeText(`${window.location.origin}/menu-board/${viewStoreId}`)
-                    alert('URL이 복사되었습니다!')
-                  }}
-                >
-                  URL 복사
-                </Button>
-              </Paper>
             </Box>
+
+            <Grid container spacing={3}>
+              {/* AI 메뉴판 QR 코드 */}
+              <Grid item xs={12} md={6}>
+                <Box sx={{ textAlign: 'center' }}>
+                  <Typography variant="subtitle1" fontWeight="bold" gutterBottom color="primary">
+                    AI 메뉴판
+                  </Typography>
+                  <Box sx={{ display: 'inline-block', p: 2, bgcolor: 'white', borderRadius: 2, boxShadow: 2 }}>
+                    <QRCodeCanvas
+                      value={`${window.location.origin}/menu-board/${viewStoreId}`}
+                      size={180}
+                      level="H"
+                    />
+                  </Box>
+                  <Paper elevation={1} sx={{ p: 2, mt: 2, bgcolor: 'white' }}>
+                    <Typography variant="body2" color="text.secondary" gutterBottom>
+                      AI 메뉴판 URL
+                    </Typography>
+                    <Typography
+                      variant="body2"
+                      sx={{
+                        fontFamily: 'monospace',
+                        wordBreak: 'break-all',
+                        color: 'primary.main',
+                        mb: 1
+                      }}
+                    >
+                      {window.location.origin}/menu-board/{viewStoreId}
+                    </Typography>
+                    <Button
+                      variant="outlined"
+                      size="small"
+                      onClick={() => {
+                        navigator.clipboard.writeText(`${window.location.origin}/menu-board/${viewStoreId}`)
+                        alert('URL이 복사되었습니다!')
+                      }}
+                    >
+                      URL 복사
+                    </Button>
+                  </Paper>
+                </Box>
+              </Grid>
+
+              {/* 고객 메뉴판 QR 코드 */}
+              <Grid item xs={12} md={6}>
+                <Box sx={{ textAlign: 'center' }}>
+                  <Typography variant="subtitle1" fontWeight="bold" gutterBottom color="secondary">
+                    고객 메뉴판
+                  </Typography>
+                  <Box sx={{ display: 'inline-block', p: 2, bgcolor: 'white', borderRadius: 2, boxShadow: 2 }}>
+                    <QRCodeCanvas
+                      value={`${window.location.origin}/menu/${viewStoreId}`}
+                      size={180}
+                      level="H"
+                    />
+                  </Box>
+                  <Paper elevation={1} sx={{ p: 2, mt: 2, bgcolor: 'white' }}>
+                    <Typography variant="body2" color="text.secondary" gutterBottom>
+                      고객 메뉴판 URL
+                    </Typography>
+                    <Typography
+                      variant="body2"
+                      sx={{
+                        fontFamily: 'monospace',
+                        wordBreak: 'break-all',
+                        color: 'secondary.main',
+                        mb: 1
+                      }}
+                    >
+                      {window.location.origin}/menu/{viewStoreId}
+                    </Typography>
+                    <Button
+                      variant="outlined"
+                      size="small"
+                      color="secondary"
+                      onClick={() => {
+                        navigator.clipboard.writeText(`${window.location.origin}/menu/${viewStoreId}`)
+                        alert('URL이 복사되었습니다!')
+                      }}
+                    >
+                      URL 복사
+                    </Button>
+                  </Paper>
+                </Box>
+              </Grid>
+            </Grid>
           </CardContent>
         </Card>
       )}
@@ -764,57 +816,113 @@ function MenuGenerationPage() {
             <Divider sx={{ my: 3 }} />
 
             {/* URL 및 QR 코드 섹션 */}
-            <Box sx={{ textAlign: 'center' }}>
-              <Typography variant="h5" fontWeight="bold" gutterBottom sx={{ mb: 3 }}>
-                AI 메뉴판 관리 페이지
+            <Box>
+              <Typography variant="h5" fontWeight="bold" gutterBottom sx={{ mb: 3, textAlign: 'center' }}>
+                메뉴판 QR 코드
               </Typography>
 
-              {/* URL 표시 */}
-              <Paper elevation={3} sx={{ p: 3, mb: 4, bgcolor: 'grey.50' }}>
-                <Typography variant="body2" color="text.secondary" gutterBottom>
-                  아래 URL로 접속하여 메뉴를 관리하세요
-                </Typography>
-                <Typography
-                  variant="h6"
-                  sx={{
-                    mt: 1,
-                    p: 2,
-                    bgcolor: 'white',
-                    borderRadius: 1,
-                    fontFamily: 'monospace',
-                    wordBreak: 'break-all'
-                  }}
-                >
-                  {window.location.origin}/menu-board/{generatedStoreId}
-                </Typography>
-                <Button
-                  variant="contained"
-                  sx={{ mt: 2 }}
-                  onClick={() => {
-                    navigator.clipboard.writeText(`${window.location.origin}/menu-board/${generatedStoreId}`)
-                    alert('URL이 복사되었습니다!')
-                  }}
-                >
-                  URL 복사
-                </Button>
-              </Paper>
+              <Grid container spacing={3}>
+                {/* AI 메뉴판 */}
+                <Grid item xs={12} md={6}>
+                  <Box sx={{ textAlign: 'center' }}>
+                    <Typography variant="h6" fontWeight="bold" gutterBottom color="primary">
+                      AI 메뉴판
+                    </Typography>
 
-              {/* QR 코드 */}
-              <Box sx={{ display: 'inline-block', p: 3, bgcolor: 'white', borderRadius: 2, boxShadow: 3 }}>
-                <Typography variant="h6" gutterBottom>
-                  QR 코드로 빠른 접속
-                </Typography>
-                <Box sx={{ mt: 2 }}>
-                  <QRCodeCanvas
-                    value={`${window.location.origin}/menu-board/${generatedStoreId}`}
-                    size={256}
-                    level="H"
-                  />
-                </Box>
-                <Typography variant="body2" color="text.secondary" sx={{ mt: 2 }}>
-                  QR 코드를 스캔하여 메뉴판에 바로 접속하세요
-                </Typography>
-              </Box>
+                    {/* QR 코드 */}
+                    <Box sx={{ display: 'inline-block', p: 3, bgcolor: 'white', borderRadius: 2, boxShadow: 3, mb: 2 }}>
+                      <QRCodeCanvas
+                        value={`${window.location.origin}/menu-board/${generatedStoreId}`}
+                        size={200}
+                        level="H"
+                      />
+                    </Box>
+
+                    {/* URL 표시 */}
+                    <Paper elevation={2} sx={{ p: 2, bgcolor: 'grey.50' }}>
+                      <Typography variant="body2" color="text.secondary" gutterBottom>
+                        AI 메뉴판 URL
+                      </Typography>
+                      <Typography
+                        variant="body2"
+                        sx={{
+                          mt: 1,
+                          p: 1.5,
+                          bgcolor: 'white',
+                          borderRadius: 1,
+                          fontFamily: 'monospace',
+                          wordBreak: 'break-all',
+                          color: 'primary.main'
+                        }}
+                      >
+                        {window.location.origin}/menu-board/{generatedStoreId}
+                      </Typography>
+                      <Button
+                        variant="outlined"
+                        size="small"
+                        sx={{ mt: 2 }}
+                        onClick={() => {
+                          navigator.clipboard.writeText(`${window.location.origin}/menu-board/${generatedStoreId}`)
+                          alert('URL이 복사되었습니다!')
+                        }}
+                      >
+                        URL 복사
+                      </Button>
+                    </Paper>
+                  </Box>
+                </Grid>
+
+                {/* 고객 메뉴판 */}
+                <Grid item xs={12} md={6}>
+                  <Box sx={{ textAlign: 'center' }}>
+                    <Typography variant="h6" fontWeight="bold" gutterBottom color="secondary">
+                      고객 메뉴판
+                    </Typography>
+
+                    {/* QR 코드 */}
+                    <Box sx={{ display: 'inline-block', p: 3, bgcolor: 'white', borderRadius: 2, boxShadow: 3, mb: 2 }}>
+                      <QRCodeCanvas
+                        value={`${window.location.origin}/menu/${generatedStoreId}`}
+                        size={200}
+                        level="H"
+                      />
+                    </Box>
+
+                    {/* URL 표시 */}
+                    <Paper elevation={2} sx={{ p: 2, bgcolor: 'grey.50' }}>
+                      <Typography variant="body2" color="text.secondary" gutterBottom>
+                        고객 메뉴판 URL
+                      </Typography>
+                      <Typography
+                        variant="body2"
+                        sx={{
+                          mt: 1,
+                          p: 1.5,
+                          bgcolor: 'white',
+                          borderRadius: 1,
+                          fontFamily: 'monospace',
+                          wordBreak: 'break-all',
+                          color: 'secondary.main'
+                        }}
+                      >
+                        {window.location.origin}/menu/{generatedStoreId}
+                      </Typography>
+                      <Button
+                        variant="outlined"
+                        size="small"
+                        color="secondary"
+                        sx={{ mt: 2 }}
+                        onClick={() => {
+                          navigator.clipboard.writeText(`${window.location.origin}/menu/${generatedStoreId}`)
+                          alert('URL이 복사되었습니다!')
+                        }}
+                      >
+                        URL 복사
+                      </Button>
+                    </Paper>
+                  </Box>
+                </Grid>
+              </Grid>
             </Box>
           </CardContent>
         </Card>
