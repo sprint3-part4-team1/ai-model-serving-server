@@ -46,7 +46,6 @@ const menuItems: MenuItem[] = [
   { path: '/menu-generation', label: '메뉴판 생성', icon: <AddBoxIcon /> },
   { path: '/menu-board', label: 'AI 메뉴판', icon: <RestaurantIcon /> },
   { path: '/customer-menu', label: '고객 메뉴판', icon: <MenuBookIcon /> },
-  { path: '/nutrition-storytelling', label: '영양소 스토리텔링', icon: <ScienceIcon /> },
 ]
 
 // 보류/미사용 메뉴 (필요 시 아래 주석 해제)
