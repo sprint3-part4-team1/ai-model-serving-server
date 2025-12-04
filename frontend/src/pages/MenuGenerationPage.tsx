@@ -171,6 +171,30 @@ function MenuGenerationPage() {
   const [displayMenus, setDisplayMenus] = useState<any>(null)
   const [generatedStoreId, setGeneratedStoreId] = useState<number | null>(null)
 
+  // URL 복사 함수 (Fallback 포함)
+  const copyToClipboard = async (text: string) => {
+    try {
+      // 먼저 Clipboard API 시도
+      await navigator.clipboard.writeText(text)
+      alert('URL이 복사되었습니다!')
+    } catch (err) {
+      // Fallback: 전통적인 방법 사용
+      try {
+        const textarea = document.createElement('textarea')
+        textarea.value = text
+        textarea.style.position = 'fixed'
+        textarea.style.opacity = '0'
+        document.body.appendChild(textarea)
+        textarea.select()
+        document.execCommand('copy')
+        document.body.removeChild(textarea)
+        alert('URL이 복사되었습니다!')
+      } catch (fallbackErr) {
+        alert('URL 복사에 실패했습니다. URL을 직접 선택해서 복사해주세요.')
+      }
+    }
+  }
+
   // 카테고리 추가
   const handleAddCategory = () => {
     setCategories([
@@ -459,14 +483,7 @@ function MenuGenerationPage() {
                     <Button
                       variant="outlined"
                       size="small"
-                      onClick={async () => {
-                        try {
-                          await navigator.clipboard.writeText(`${window.location.origin}/menu-board/${viewStoreId}`)
-                          alert('URL이 복사되었습니다!')
-                        } catch (err) {
-                          alert('URL 복사에 실패했습니다. URL을 직접 복사해주세요.')
-                        }
-                      }}
+                      onClick={() => copyToClipboard(`${window.location.origin}/menu-board/${viewStoreId}`)}
                     >
                       URL 복사
                     </Button>
@@ -518,14 +535,7 @@ function MenuGenerationPage() {
                       variant="outlined"
                       size="small"
                       color="secondary"
-                      onClick={async () => {
-                        try {
-                          await navigator.clipboard.writeText(`${window.location.origin}/menu/${viewStoreId}`)
-                          alert('URL이 복사되었습니다!')
-                        } catch (err) {
-                          alert('URL 복사에 실패했습니다. URL을 직접 복사해주세요.')
-                        }
-                      }}
+                      onClick={() => copyToClipboard(`${window.location.origin}/menu/${viewStoreId}`)}
                     >
                       URL 복사
                     </Button>
@@ -902,14 +912,7 @@ function MenuGenerationPage() {
                         variant="outlined"
                         size="small"
                         sx={{ mt: 2 }}
-                        onClick={async () => {
-                          try {
-                            await navigator.clipboard.writeText(`${window.location.origin}/menu-board/${generatedStoreId}`)
-                            alert('URL이 복사되었습니다!')
-                          } catch (err) {
-                            alert('URL 복사에 실패했습니다. URL을 직접 복사해주세요.')
-                          }
-                        }}
+                        onClick={() => copyToClipboard(`${window.location.origin}/menu-board/${generatedStoreId}`)}
                       >
                         URL 복사
                       </Button>
@@ -966,14 +969,7 @@ function MenuGenerationPage() {
                         size="small"
                         color="secondary"
                         sx={{ mt: 2 }}
-                        onClick={async () => {
-                          try {
-                            await navigator.clipboard.writeText(`${window.location.origin}/menu/${generatedStoreId}`)
-                            alert('URL이 복사되었습니다!')
-                          } catch (err) {
-                            alert('URL 복사에 실패했습니다. URL을 직접 복사해주세요.')
-                          }
-                        }}
+                        onClick={() => copyToClipboard(`${window.location.origin}/menu/${generatedStoreId}`)}
                       >
                         URL 복사
                       </Button>
