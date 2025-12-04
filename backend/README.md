@@ -28,17 +28,17 @@ pip install -r requirements.txt
 
 ```bash
 # 개발 모드 (자동 리로드)
-python -m uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
+python -m uvicorn app.main:app --reload --host 0.0.0.0 --port 9090
 
 # 프로덕션 모드
-python -m uvicorn app.main:app --host 0.0.0.0 --port 8000 --workers 4
+python -m uvicorn app.main:app --host 0.0.0.0 --port 9090 --workers 4
 ```
 
 ### 5. API 문서 확인
 
 서버 실행 후 브라우저에서:
-- Swagger UI: http://localhost:8000/api/docs
-- ReDoc: http://localhost:8000/api/redoc
+- Swagger UI: http://localhost:9090/api/docs
+- ReDoc: http://localhost:9090/api/redoc
 
 ---
 
@@ -267,10 +267,8 @@ tail -f logs/app_error.log
 
 ## 📚 더 많은 정보
 
-- API 문서: http://localhost:8000/api/docs
+- API 문서: http://localhost:9090/api/docs
 - 프로젝트 README: ../README.md
 - 개발 과정: ../진행과정_기록.md
 
 ---
-
-**Made with ❤️ for Small Business Owners**
