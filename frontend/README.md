@@ -71,7 +71,7 @@ npm install
 `.env` 파일이 이미 생성되어 있습니다:
 
 ```env
-VITE_API_URL=http://localhost:8000
+VITE_API_URL=http://localhost:9090
 ```
 
 ### 3. 개발 서버 실행
@@ -81,8 +81,8 @@ npm run dev
 ```
 
 서버가 실행되면:
-- 프론트엔드: http://localhost:3000
-- API 프록시: http://localhost:3000/api → http://localhost:8000/api
+- 프론트엔드: http://localhost:8005
+- API 프록시: http://localhost:8005/api → http://localhost:8005/api
 
 ### 4. 빌드
 
@@ -315,6 +315,4 @@ rm -rf node_modules
 npm install
 ```
 
----
-
-**Made with ❤️ for Small Business Owners**
+--
