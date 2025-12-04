@@ -8,11 +8,11 @@ import requests
 from datetime import datetime
 from typing import Dict, Optional, List
 import pytz
-import sys
-sys.path.append(os.path.dirname(os.path.dirname(__file__)))
-from logger import app_logger as logger
-from config import settings
-from services.trend_collector import trend_collector_service
+
+# 상대 경로로 import
+from ..logger import app_logger as logger
+from ..config import settings
+from .trend_collector import trend_collector_service
 
 
 class ContextCollectorService:

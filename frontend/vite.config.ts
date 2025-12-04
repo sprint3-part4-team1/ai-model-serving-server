@@ -17,9 +17,14 @@ export default defineConfig({
     },
   },
   server: {
-    port: 8030,
+    host: '0.0.0.0', // 외부 접근 허용
+    port: 8005,
     proxy: {
       '/api': {
+        target: 'http://34.28.223.101:9090',
+        changeOrigin: true,
+      },
+      '/data': {
         target: 'http://34.28.223.101:9090',
         changeOrigin: true,
       },

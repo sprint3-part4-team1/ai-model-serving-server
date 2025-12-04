@@ -6,10 +6,10 @@ Story Generator Service
 import os
 from typing import Dict, List, Optional
 from openai import OpenAI
-import sys
-sys.path.append(os.path.dirname(os.path.dirname(__file__)))
-from logger import app_logger as logger
-from config import settings
+
+# 상대 경로로 import
+from ..logger import app_logger as logger
+from ..config import settings
 
 
 class StoryGeneratorService:
@@ -445,6 +445,263 @@ class StoryGeneratorService:
         except Exception as e:
             logger.error(f"Failed to generate menu storytelling: {e}")
             return f"{menu_name}은(는) 신선한 재료로 만들어진 특별한 메뉴입니다."
+
+    def generate_welcome_message(
+        self,
+        context: Dict,
+        store_name: str,
+        store_type: str = "카페"
+    ) -> str:
+        """
+        메뉴판 최상단 환영 문구 생성
+
+        날씨, 계절, 시간, 트렌드를 반영하여 고객을 환영하는 매력적인 문구 생성
+
+        Args:
+            context: Context Collector에서 수집한 정보
+            store_name: 매장 이름
+            store_type: 매장 타입
+
+        Returns:
+            환영 문구 (1-2문장)
+        """
+        if not self.client:
+            logger.warning("OpenAI client not initialized, returning mock welcome message")
+            return self._generate_mock_welcome(context, store_name, store_type)
+
+        try:
+            import pytz
+            weather = context.get("weather", {})
+            time_info = context.get("time_info", {})
+            season = context.get("season", "")
+            trends = context.get("trends", [])
+
+            # 날씨 정보
+            weather_desc = weather.get("description", "맑음")
+            temperature = weather.get("temperature", 15)
+
+            # 시간대 정보
+            period_kr = time_info.get("period_kr", "오후")
+            weekday_kr = time_info.get("weekday_kr", "")
+
+            # 계절 정보
+            season_map = {
+                "spring": "봄",
+                "summer": "여름",
+                "autumn": "가을",
+                "winter": "겨울"
+            }
+            season_kr = season_map.get(season, "")
+
+            # 트렌드 정보 (상위 3개)
+            trend_str = ", ".join(trends[:3]) if trends else ""
+
+            prompt = f"""다음 상황에 맞는 매력적인 환영 문구를 작성해주세요.
+
+**매장 정보:**
+- 이름: {store_name}
+- 타입: {store_type}
+
+**현재 상황:**
+- 날씨: {weather_desc}, 온도 {temperature}도
+- 계절: {season_kr}
+- 시간대: {period_kr}, {weekday_kr}
+{f'- 인기 트렌드: {trend_str}' if trend_str else ''}
+
+**작성 가이드:**
+1. 현재 날씨와 시간대를 자연스럽게 반영
+2. 고객에게 따뜻하고 친근하게 다가가기
+3. 매장 방문을 유도하는 감성적인 표현
+4. 1-2문장으로 간결하게 (최대 60자)
+5. 이모지는 사용하지 말 것
+6. 매장 타입({store_type})에 맞는 분위기로 작성
+
+좋은 예시:
+- "비 오는 월요일 오후, 따뜻한 커피 한 잔으로 힐링하는 건 어떠세요?"
+- "쌀쌀한 가을 아침, {store_name}에서 특별한 하루를 시작해보세요."
+- "주말 저녁, 맛있는 음식과 함께 여유로운 시간을 즐겨보세요."
+
+환영 문구:"""
+
+            response = self.client.chat.completions.create(
+                model=self.model,
+                messages=[
+                    {
+                        "role": "system",
+                        "content": "당신은 감성적인 환대 전문가입니다. 고객이 매장을 방문하고 싶게 만드는 따뜻한 문구를 작성합니다."
+                    },
+                    {
+                        "role": "user",
+                        "content": prompt
+                    }
+                ],
+                max_tokens=100,
+                temperature=0.8
+            )
+
+            message = response.choices[0].message.content.strip()
+            # 따옴표 제거
+            message = message.strip('"').strip("'")
+
+            logger.info(f"Welcome message generated: {message}")
+            return message
+
+        except Exception as e:
+            logger.error(f"Failed to generate welcome message: {e}")
+            return self._generate_mock_welcome(context, store_name, store_type)
+
+    def _generate_mock_welcome(self, context: Dict, store_name: str, store_type: str) -> str:
+        """Mock 환영 문구 생성"""
+        weather = context.get("weather", {})
+        time_info = context.get("time_info", {})
+
+        weather_desc = weather.get("description", "맑음")
+        period_kr = time_info.get("period_kr", "오후")
+
+        templates = [
+            f"{weather_desc} {period_kr}, {store_name}에 오신 것을 환영합니다.",
+            f"{period_kr}의 여유로운 시간, {store_name}에서 특별한 순간을 만들어보세요.",
+            f"오늘도 좋은 하루 되세요. {store_name}이 함께합니다."
+        ]
+
+        import random
+        return random.choice(templates)
+
+    def generate_menu_highlights(
+        self,
+        context: Dict,
+        menus: List[Dict],
+        store_type: str = "카페",
+        max_highlights: int = 3
+    ) -> List[Dict]:
+        """
+        시즌/날씨에 맞는 메뉴 하이라이트 생성
+
+        현재 컨텍스트에 가장 적합한 메뉴를 선택하고 추천 이유를 생성
+
+        Args:
+            context: 컨텍스트 정보
+            menus: 메뉴 리스트 [{"id": 1, "name": "아메리카노", "category": "커피", ...}]
+            store_type: 매장 타입
+            max_highlights: 최대 하이라이트 개수
+
+        Returns:
+            하이라이트 메뉴 리스트 [{"menu_id": 1, "name": "아메리카노", "reason": "..."}]
+        """
+        if not menus:
+            logger.warning("No menus provided for highlights")
+            return []
+
+        if not self.client:
+            logger.warning("OpenAI client not initialized, returning random highlights")
+            return self._generate_mock_highlights(menus, max_highlights)
+
+        try:
+            import json
+
+            weather = context.get("weather", {})
+            time_info = context.get("time_info", {})
+            season = context.get("season", "")
+            trends = context.get("trends", [])
+
+            # 날씨 정보
+            weather_desc = weather.get("description", "맑음")
+            temperature = weather.get("temperature", 15)
+
+            # 시간대
+            period_kr = time_info.get("period_kr", "오후")
+
+            # 계절
+            season_map = {"spring": "봄", "summer": "여름", "autumn": "가을", "winter": "겨울"}
+            season_kr = season_map.get(season, "")
+
+            # 메뉴 정보 정리
+            menu_info = []
+            for menu in menus[:20]:  # 최대 20개만 전송 (토큰 절약)
+                menu_info.append({
+                    "id": menu.get("id"),
+                    "name": menu.get("name"),
+                    "category": menu.get("category", ""),
+                    "description": menu.get("description", "")[:50]  # 50자로 제한
+                })
+
+            prompt = f"""다음 상황에 가장 잘 어울리는 메뉴 {max_highlights}개를 선택하고 추천 이유를 작성해주세요.
+
+**현재 상황:**
+- 날씨: {weather_desc}, {temperature}도
+- 계절: {season_kr}
+- 시간대: {period_kr}
+- 인기 트렌드: {', '.join(trends[:5]) if trends else '없음'}
+
+**메뉴 목록 (메인 메뉴만, 사이드/음료 제외됨):**
+{json.dumps(menu_info, ensure_ascii=False, indent=2)}
+
+**작성 가이드:**
+1. 날씨/계절/시간대에 가장 잘 맞는 메뉴 선택
+2. 트렌드와 관련된 메뉴 우선 선택
+3. 추천 이유는 간결하고 설득력 있게 (20자 내외)
+4. 현재 날씨와 트렌드를 자연스럽게 반영한 이유 작성
+5. JSON 형식으로 응답
+
+**응답 형식:**
+{{
+  "highlights": [
+    {{"menu_id": 1, "name": "아메리카노", "reason": "비 오는 날엔 따뜻한 커피가 제격"}},
+    {{"menu_id": 3, "name": "호떡", "reason": "인스타그램 핫트렌드 1위"}}
+  ]
+}}
+
+응답:"""
+
+            response = self.client.chat.completions.create(
+                model=self.model,
+                messages=[
+                    {
+                        "role": "system",
+                        "content": "당신은 메뉴 큐레이션 전문가입니다. 현재 상황에 가장 적합한 메뉴를 선택하고 설득력 있는 이유를 제시합니다."
+                    },
+                    {
+                        "role": "user",
+                        "content": prompt
+                    }
+                ],
+                max_tokens=500,
+                temperature=0.7,
+                response_format={"type": "json_object"}
+            )
+
+            result = json.loads(response.choices[0].message.content)
+            highlights = result.get("highlights", [])[:max_highlights]
+
+            logger.info(f"Menu highlights generated: {len(highlights)} items")
+            return highlights
+
+        except Exception as e:
+            logger.error(f"Failed to generate menu highlights: {e}")
+            return self._generate_mock_highlights(menus, max_highlights)
+
+    def _generate_mock_highlights(self, menus: List[Dict], max_highlights: int) -> List[Dict]:
+        """Mock 메뉴 하이라이트 생성"""
+        import random
+
+        selected = random.sample(menus, min(max_highlights, len(menus)))
+
+        reasons = [
+            "오늘의 추천 메뉴입니다",
+            "인기 메뉴입니다",
+            "시즌 한정 메뉴입니다",
+            "베스트셀러입니다"
+        ]
+
+        highlights = []
+        for menu in selected:
+            highlights.append({
+                "menu_id": menu.get("id"),
+                "name": menu.get("name"),
+                "reason": random.choice(reasons)
+            })
+
+        return highlights
 
 
 # 싱글톤 인스턴스

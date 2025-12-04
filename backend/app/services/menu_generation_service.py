@@ -8,6 +8,7 @@ from typing import List, Dict, Optional, Tuple
 import time
 import asyncio
 import os
+import sys
 from pathlib import Path
 from openai import OpenAI
 import json
@@ -26,6 +27,12 @@ from app.schemas.menu_generation import (
 )
 from app.services.sd_service import sd_service
 from app.schemas.image import TextToImageRequest, ImageStyle, AspectRatio
+
+# Add backend/src to Python path for nutrition module
+backend_path = Path(__file__).parent.parent.parent
+sys.path.insert(0, str(backend_path))
+
+from src.nutrition.nutrition_analyzer import NutritionAnalyzer
 
 
 class MenuGenerationService:
@@ -117,6 +124,16 @@ class MenuGenerationService:
 
             # 변경사항 커밋
             db.commit()
+
+            # 🆕 영양소 분석 자동 실행
+            try:
+                logger.info(f"🔬 영양소 분석 시작 - Store ID: {request.store_id}")
+                analyzer = NutritionAnalyzer(batch_size=10)
+                analyzer.analyze_store(request.store_id)
+                logger.info(f"✅ 영양소 분석 완료")
+            except Exception as e:
+                logger.error(f"⚠️ 영양소 분석 실패 (메뉴 생성은 완료됨): {e}")
+                # 영양소 분석 실패해도 메뉴 생성은 성공으로 처리
 
             generation_time = time.time() - start_time
             logger.info(f"메뉴판 생성 완료 - {len(generated_categories)}개 카테고리, {generation_time:.2f}초")
@@ -245,7 +262,9 @@ class MenuGenerationService:
             description=description,
             price=price,
             image_url=image_url,
-            is_available=True
+            is_available=True,
+            is_ai_generated_image=is_ai_generated_image,
+            is_ai_generated_description=is_ai_generated_description
         )
         db.add(menu_item)
         db.flush()  # ID 생성을 위해 flush
@@ -402,8 +421,9 @@ JSON 형식으로 응답하세요:
             image = images[0]
             filename = self._save_image(image, menu_name)
 
-            # URL 생성
-            image_url = f"/static/uploads/{filename}"
+            # URL 생성 (Static 마운트 경로와 일치시킴)
+            # filename은 "menu_images/xxx.jpg" 형식으로 반환됨
+            image_url = f"/data/uploads/{filename}"
 
             logger.info(f"메뉴 이미지 생성 완료: {image_url} ({generation_time:.2f}초)")
             return image_url
@@ -422,22 +442,22 @@ JSON 형식으로 응답하세요:
             menu_name: 메뉴 이름
 
         Returns:
-            저장된 파일명
+            저장된 파일 경로 (menu_images/xxx.jpg)
         """
         # 파일명 생성 (특수문자 제거)
         safe_name = "".join(c for c in menu_name if c.isalnum() or c in (' ', '-', '_')).strip()
         filename = f"menu_{safe_name}_{int(time.time())}.jpg"
 
-        # 저장 경로
-        upload_dir = Path(settings.UPLOAD_DIR)
+        # 저장 경로 (menu_images 폴더에 저장)
+        upload_dir = Path(settings.UPLOAD_DIR) / "menu_images"
         upload_dir.mkdir(parents=True, exist_ok=True)
         file_path = upload_dir / filename
 
         # PIL Image를 JPEG로 저장
         image.save(file_path, format='JPEG', quality=95, optimize=True)
 
-        logger.info(f"이미지 저장 완료: {filename}")
-        return filename
+        logger.info(f"이미지 저장 완료: menu_images/{filename}")
+        return f"menu_images/{filename}"
 
 
 # 싱글톤 인스턴스

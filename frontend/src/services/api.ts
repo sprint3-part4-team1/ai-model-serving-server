@@ -20,6 +20,11 @@ import type {
   MenuFilterResponse,
   MenuGenerationRequest,
   MenuGenerationResponse,
+  NutritionAnalyzeRequest,
+  NutritionAnalyzeResponse,
+  NutritionStorytellingRequest,
+  NutritionStorytellingResponse,
+  MenuItemWithNutrition,
 } from '@types/index'
 
 // Axios 인스턴스 생성
@@ -105,7 +110,7 @@ export const textToImageApi = {
     )
 
     // 상대 경로 이미지 URL을 절대 경로로 변환
-    const baseURL = import.meta.env.VITE_API_URL || 'http://34.28.223.101:9091'
+    const baseURL = import.meta.env.VITE_API_URL || 'http://34.28.223.101:9090'
     if (data.images) {
       data.images = data.images.map(url => {
         if (url.startsWith('/')) {
@@ -278,6 +283,51 @@ export const seasonalStoryApi = {
   },
 
   /**
+   * 환영 문구 생성 (날씨/트렌드 반영)
+   */
+  async getWelcomeMessage(storeId: number, location: string = 'Seoul'): Promise<{
+    success: boolean
+    data: {
+      message: string
+      store_id: number
+      store_name: string
+      context: any
+      generated_at: string
+    }
+  }> {
+    const { data } = await api.get(`/api/v1/seasonal-story/welcome-message/${storeId}`, {
+      params: { location }
+    })
+    return data
+  },
+
+  /**
+   * 메뉴 하이라이트 (시즌/날씨 기반 추천)
+   */
+  async getMenuHighlights(
+    storeId: number,
+    location: string = 'Seoul',
+    maxHighlights: number = 3
+  ): Promise<{
+    success: boolean
+    data: {
+      highlights: Array<{
+        menu_id: number
+        name: string
+        reason: string
+      }>
+      total_menus: number
+      context: any
+      generated_at: string
+    }
+  }> {
+    const { data } = await api.get(`/api/v1/seasonal-story/menu-highlights/${storeId}`, {
+      params: { location, max_highlights: maxHighlights }
+    })
+    return data
+  },
+
+  /**
    * 헬스 체크
    */
   async health(): Promise<{ success: boolean; data: { status: string } }> {
@@ -317,11 +367,144 @@ export const menuApi = {
           price?: number
           image_url?: string
           is_available: boolean
+          nutrition?: {
+            calories?: number
+            sugar_g?: number
+            caffeine_mg?: number
+            protein_g?: number
+            fat_g?: number
+            carbs_g?: number
+            confidence?: number
+          }
         }>
       }>
     }
   }> {
     const { data } = await api.get(`/api/v1/menu/store/${storeId}`)
+
+    // 상대 경로 이미지 URL을 절대 경로로 변환
+    const baseURL = import.meta.env.VITE_API_URL || 'http://34.28.223.101:9090'
+    if (data.data?.categories) {
+      data.data.categories.forEach(category => {
+        category.items?.forEach(item => {
+          if (item.image_url && item.image_url.startsWith('/')) {
+            item.image_url = `${baseURL}${item.image_url}`
+          }
+        })
+      })
+    }
+
+    return data
+  },
+}
+
+// ============ 매장 관리 API ============
+export const storeApi = {
+  /**
+   * 매장 생성
+   */
+  async createStore(request: {
+    name: string
+    address?: string
+    phone?: string
+    open_time?: string
+    close_time?: string
+  }): Promise<{
+    success: boolean
+    data: {
+      id: number
+      name: string
+      address?: string
+      phone?: string
+      open_time?: string
+      close_time?: string
+      created_at: string
+      updated_at: string
+    }
+  }> {
+    const { data } = await api.post('/api/v1/menu/store', request)
+    return data
+  },
+
+  /**
+   * 전체 매장 목록 조회
+   */
+  async getStores(): Promise<{
+    success: boolean
+    data: {
+      stores: Array<{
+        id: number
+        name: string
+        address?: string
+        phone?: string
+        open_time?: string
+        close_time?: string
+        created_at: string
+        updated_at: string
+      }>
+      total: number
+    }
+  }> {
+    const { data } = await api.get('/api/v1/menu/stores')
+    return data
+  },
+
+  /**
+   * 특정 매장 조회
+   */
+  async getStore(storeId: number): Promise<{
+    success: boolean
+    data: {
+      id: number
+      name: string
+      address?: string
+      phone?: string
+      open_time?: string
+      close_time?: string
+      created_at: string
+      updated_at: string
+    }
+  }> {
+    const { data } = await api.get(`/api/v1/menu/store/${storeId}`)
+    return data
+  },
+
+  /**
+   * 매장 정보 수정
+   */
+  async updateStore(storeId: number, request: {
+    name?: string
+    address?: string
+    phone?: string
+    open_time?: string
+    close_time?: string
+  }): Promise<{
+    success: boolean
+    data: {
+      id: number
+      name: string
+      address?: string
+      phone?: string
+      open_time?: string
+      close_time?: string
+      created_at: string
+      updated_at: string
+    }
+  }> {
+    const { data } = await api.put(`/api/v1/menu/store/${storeId}`, request)
+    return data
+  },
+
+  /**
+   * 매장 삭제
+   */
+  async deleteStore(storeId: number): Promise<{
+    success: boolean
+    data: {
+      message: string
+    }
+  }> {
+    const { data } = await api.delete(`/api/v1/menu/store/${storeId}`)
     return data
   },
 }
@@ -336,6 +519,19 @@ export const menuGenerationApi = {
       '/api/v1/menu-generation/generate',
       request
     )
+
+    // 상대 경로 이미지 URL을 절대 경로로 변환
+    const baseURL = import.meta.env.VITE_API_URL || 'http://34.28.223.101:9090'
+    if (data.data?.categories) {
+      data.data.categories.forEach(category => {
+        category.items?.forEach(item => {
+          if (item.image_url && item.image_url.startsWith('/')) {
+            item.image_url = `${baseURL}${item.image_url}`
+          }
+        })
+      })
+    }
+
     return data
   },
 
@@ -372,6 +568,76 @@ export const menuGenerationApi = {
         'Content-Type': 'multipart/form-data',
       },
     })
+    return data
+  },
+}
+
+// ============ 영양소 분석 API ============
+export const nutritionApi = {
+  /**
+   * 매장 메뉴 영양소 분석 (비동기, 권장)
+   */
+  async analyzeStore(storeId: number, batchSize: number = 10): Promise<NutritionAnalyzeResponse> {
+    const { data } = await api.post<NutritionAnalyzeResponse>(
+      `/api/v1/nutrition/analyze/${storeId}/async`,
+      null,
+      {
+        params: { batch_size: batchSize }
+      }
+    )
+    return data
+  },
+
+  /**
+   * 매장 메뉴 영양소 분석 (동기)
+   */
+  async analyzeStoreSync(storeId: number, batchSize: number = 10): Promise<NutritionAnalyzeResponse> {
+    const { data } = await api.post<NutritionAnalyzeResponse>(
+      `/api/v1/nutrition/analyze/${storeId}`,
+      null,
+      {
+        params: { batch_size: batchSize }
+      }
+    )
+    return data
+  },
+
+  /**
+   * 낮은 신뢰도 메뉴 재분석
+   */
+  async reanalyze(storeId: number, minConfidence: number = 0.7, batchSize: number = 10): Promise<NutritionAnalyzeResponse> {
+    const { data } = await api.post<NutritionAnalyzeResponse>(
+      `/api/v1/nutrition/reanalyze/${storeId}`,
+      null,
+      {
+        params: {
+          min_confidence: minConfidence,
+          batch_size: batchSize
+        }
+      }
+    )
+    return data
+  },
+
+  /**
+   * 영양소 분석 상태 조회
+   */
+  async getStatus(storeId: number): Promise<{ status: string; progress?: number; message?: string }> {
+    const { data } = await api.get(`/api/v1/nutrition/analyze/${storeId}/status`)
+    return data
+  },
+
+  /**
+   * 매장의 메뉴별 영양소 정보 조회
+   */
+  async getStoreNutrition(storeId: number): Promise<{
+    success: boolean
+    data: {
+      store_id: number
+      menus: MenuItemWithNutrition[]
+    }
+  }> {
+    const { data } = await api.get(`/api/v1/menu/store/${storeId}`)
     return data
   },
 }

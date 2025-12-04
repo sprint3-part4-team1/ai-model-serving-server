@@ -1,38 +1,265 @@
 """
-Seasonal Story API Endpoints
-시즈널 스토리 생성 API 엔드포인트
+Seasonal Story API Endpoints (New Structure)
+완전히 새로운 구조로 재작성
 """
 
 from fastapi import APIRouter, HTTPException, status, Depends
 from sqlalchemy.orm import Session
+from sqlalchemy import func, and_
 from datetime import datetime
 import pytz
-import time
+from typing import List, Optional, Dict
 
 from app.schemas.seasonal_story import (
     SeasonalStoryRequest,
     SeasonalStoryResponse,
-    MenuStorytellingRequest,
-    MenuStorytellingResponse,
-    ContextInfo,
     ErrorResponse
 )
 from app.services.context_collector import context_collector_service
-from app.services.story_generator import story_generator_service
-from app.services.menu_service import menu_service
 from app.models.seasonal_story import SeasonalStory
+from app.models.menu import Menu, MenuItem
 from app.core.database import get_db
 from app.core.logging import app_logger as logger
+from openai import OpenAI
+from app.core.config import settings
 
 
 router = APIRouter()
 
 
+def check_special_day() -> tuple[bool, str]:
+    """특별한 날 체크"""
+    today = datetime.now()
+    month, day = today.month, today.day
+
+    special_days = {
+        (1, 1): "신년",
+        (2, 14): "발렌타인데이",
+        (3, 14): "화이트데이",
+        (11, 11): "빼빼로데이",
+        (12, 25): "크리스마스"
+    }
+
+    if (month, day) in special_days:
+        return True, special_days[(month, day)]
+
+    # 크리스마스 시즌 (12월)
+    if month == 12:
+        return True, "크리스마스 시즌"
+
+    return False, ""
+
+
+def get_menu_with_nutrition(db: Session, store_id: int) -> List[Dict]:
+    """매장의 메뉴 + 영양 정보 조회"""
+    from app.models.menu import NutritionEstimate
+
+    # 사이드/음료 제외 키워드
+    exclude_keywords = ["사이드", "side", "음료", "drink", "beverage", "드링크"]
+
+    # 메뉴 + 영양 정보 조회
+    results = db.query(
+        MenuItem,
+        Menu.name.label("category_name"),
+        NutritionEstimate.protein_g,
+        NutritionEstimate.sugar_g,
+        NutritionEstimate.calories
+    ).join(
+        Menu, MenuItem.menu_id == Menu.id
+    ).outerjoin(
+        NutritionEstimate, MenuItem.id == NutritionEstimate.item_id
+    ).filter(
+        Menu.store_id == store_id,
+        MenuItem.is_available == True
+    ).all()
+
+    # 변환
+    menus = []
+    for item, category_name, protein_g, sugar_g, calories in results:
+        # 사이드/음료 제외
+        if any(keyword in category_name.lower() for keyword in exclude_keywords):
+            continue
+
+        menus.append({
+            "id": item.id,
+            "name": item.name,
+            "category": category_name,
+            "protein_g": float(protein_g) if protein_g else 0,
+            "sugar_g": float(sugar_g) if sugar_g else 0,
+            "calories": float(calories) if calories else 0
+        })
+
+    return menus
+
+
+def generate_simple_story(
+    menu_names: List[str],
+    weather: Dict,
+    time_info: Dict,
+    trends: List[str],
+    special_day: str = ""
+) -> tuple[str, str]:
+    """간단한 광고 문구 생성 (GPT)"""
+
+    client = OpenAI(api_key=settings.OPENAI_API_KEY)
+
+    # 메뉴 텍스트
+    menu_text = ", ".join(menu_names[:15])
+
+    # 트렌드 텍스트
+    trend_text = ", ".join(trends[:3]) if trends else ""
+
+    # 날씨 정보
+    weather_desc = weather.get("description", "맑음")
+    temperature = weather.get("temperature", 15)
+
+    # 시간 정보
+    period_kr = time_info.get("period_kr", "오후")
+
+    # 특별한 날 정보
+    special_info = f"\n- 특별한 날: {special_day}" if special_day else ""
+
+    prompt = f"""다음 메뉴 중 하나를 사용하여 광고 문구를 작성하세요.
+
+**메뉴 목록:**
+{menu_text}
+
+**현재 상황:**
+- 날씨: {weather_desc}, {temperature}도
+- 시간: {period_kr}{special_info}
+{f'- 트렌드: {trend_text}' if trend_text else ''}
+
+**규칙:**
+1. 위 메뉴 중 정확히 하나만 선택
+2. 메뉴 이름 그대로 사용
+3. 1문장, 40자 이내
+4. 날씨/시간/특별한 날 반영
+
+응답 형식 (JSON):
+{{"story": "광고 문구", "menu": "선택한 메뉴 이름"}}"""
+
+    try:
+        response = client.chat.completions.create(
+            model="gpt-4o",
+            messages=[
+                {
+                    "role": "system",
+                    "content": "당신은 광고 문구 전문가입니다. 제공된 메뉴 이름만 정확히 사용하세요."
+                },
+                {"role": "user", "content": prompt}
+            ],
+            temperature=0.4,
+            max_tokens=100,
+            response_format={"type": "json_object"}
+        )
+
+        import json
+        result = json.loads(response.choices[0].message.content)
+        return result["story"], result["menu"]
+
+    except Exception as e:
+        logger.error(f"Failed to generate story: {e}")
+        # 폴백: 첫 번째 메뉴 사용
+        return f"{weather_desc} {period_kr}, {menu_names[0]}으로 특별한 시간을 보내보세요.", menu_names[0]
+
+
+def create_highlights(
+    menus: List[Dict],
+    featured_menu: str,
+    context: Dict
+) -> List[Dict]:
+    """3개 슬롯 생성"""
+
+    highlights = []
+
+    # 1번: 오늘의 추천 (광고 문구에 사용된 메뉴)
+    featured = next((m for m in menus if m["name"] == featured_menu), None)
+    if featured:
+        highlights.append({
+            "type": "today",
+            "menu_id": featured["id"],
+            "menu_name": featured["name"],
+            "reason": "날씨와 시간대에 어울리는 추천 메뉴",
+            "context_info": {
+                "weather": context.get("weather", {}).get("description", "맑음"),
+                "temperature": context.get("weather", {}).get("temperature", 15),
+                "season": context.get("season", ""),
+                "period": context.get("time_info", {}).get("period_kr", "오후")
+            }
+        })
+
+    # 2번: 고단백 추천 (단백질 10g 초과)
+    high_protein_menus = [m for m in menus if m["protein_g"] > 10]
+    if high_protein_menus:
+        best_protein = max(high_protein_menus, key=lambda x: x["protein_g"])
+        highlights.append({
+            "type": "high_protein",
+            "menu_id": best_protein["id"],
+            "menu_name": best_protein["name"],
+            "protein_g": round(best_protein["protein_g"], 1),
+            "reason": f"단백질 {round(best_protein['protein_g'], 1)}g 함유로 근육 건강에 좋습니다"
+        })
+    else:
+        highlights.append({
+            "type": "high_protein",
+            "menu_id": None,
+            "menu_name": None,
+            "protein_g": None,
+            "reason": None
+        })
+
+    # 3번: 달콤 추천 (당류 10g 초과)
+    sweet_menus = [m for m in menus if m["sugar_g"] > 10]
+    if sweet_menus:
+        best_sweet = max(sweet_menus, key=lambda x: x["sugar_g"])
+        highlights.append({
+            "type": "sweet",
+            "menu_id": best_sweet["id"],
+            "menu_name": best_sweet["name"],
+            "sugar_g": round(best_sweet["sugar_g"], 1),
+            "reason": f"당류 {round(best_sweet['sugar_g'], 1)}g으로 달콤한 맛을 즐기실 수 있습니다"
+        })
+    else:
+        highlights.append({
+            "type": "sweet",
+            "menu_id": None,
+            "menu_name": None,
+            "sugar_g": None,
+            "reason": None
+        })
+
+    return highlights
+
+
+def find_similar_story(
+    db: Session,
+    store_id: int,
+    temperature: float,
+    is_weekend: bool,
+    is_special_day: bool
+) -> Optional[SeasonalStory]:
+    """유사한 조건의 저장된 스토리 찾기 (GPT 폴백)"""
+
+    # 온도 범위: ±5도
+    temp_min = temperature - 5
+    temp_max = temperature + 5
+
+    similar = db.query(SeasonalStory).filter(
+        SeasonalStory.store_id == store_id,
+        SeasonalStory.temperature.between(temp_min, temp_max),
+        SeasonalStory.is_weekend == (1 if is_weekend else 0),
+        SeasonalStory.is_special_day == (1 if is_special_day else 0)
+    ).order_by(
+        func.abs(SeasonalStory.temperature - temperature)
+    ).first()
+
+    return similar
+
+
 @router.post(
     "/generate",
     response_model=SeasonalStoryResponse,
-    summary="시즈널 스토리 생성",
-    description="날씨, 계절, 시간대, 트렌드를 반영한 감성적인 추천 문구를 생성합니다.",
+    summary="시즈널 스토리 생성 (신규 구조)",
     responses={
         200: {"description": "성공", "model": SeasonalStoryResponse},
         500: {"description": "서버 오류", "model": ErrorResponse}
@@ -43,107 +270,134 @@ async def generate_seasonal_story(
     db: Session = Depends(get_db)
 ):
     """
-    시즈널 스토리 생성
+    시즈널 스토리 생성 (완전히 새로운 구조)
 
-    현재 날씨, 계절, 시간대, 트렌드 정보를 수집하여
-    LLM 기반으로 감성적인 추천 문구를 생성합니다.
+    1. 매장 메뉴 + 영양 정보 조회
+    2. 광고 문구 생성 (메뉴 이름 포함)
+    3. 3개 슬롯 생성 (오늘의 추천, 고단백, 달콤)
+    4. 중복 방지 저장
     """
-    start_time = time.time()
 
     try:
-        logger.info(f"Seasonal story generation requested: {request}")
+        logger.info(f"[NEW] Seasonal story requested for store_id={request.store_id}")
 
-        # 1. 컨텍스트 정보 수집 (매장 타입 기반)
+        # 1. 매장 메뉴 + 영양 정보 조회
+        menus = get_menu_with_nutrition(db, request.store_id)
+
+        if not menus:
+            raise HTTPException(
+                status_code=400,
+                detail="매장에 조회 가능한 메뉴가 없습니다."
+            )
+
+        menu_names = [m["name"] for m in menus]
+        logger.info(f"✅ Found {len(menus)} menus: {', '.join(menu_names[:5])}...")
+
+        # 2. 컨텍스트 수집
         context = context_collector_service.get_full_context(
             location=request.location,
             lat=request.latitude,
-            lon=request.longitude,
-            include_all_trends=True,
-            store_type=request.store_type
+            lon=request.longitude
         )
 
-        # 2. 메뉴 정보 조회 (store_id가 있는 경우)
-        menu_items = []
-        menu_text = None
-        if request.store_id:
-            try:
-                menu_items = menu_service.get_popular_menus(db, request.store_id, limit=5)
-                if menu_items:
-                    menu_text = menu_service.format_menus_for_story(menu_items)
-                    logger.info(f"Retrieved {len(menu_items)} menus for store {request.store_id}")
-            except Exception as e:
-                logger.warning(f"Failed to get menus for store {request.store_id}: {e}")
+        # 특별한 날 체크
+        is_special, special_day_name = check_special_day()
+        is_weekend = datetime.now().weekday() >= 5
 
-        # 3. 스토리 생성
-        story = story_generator_service.generate_story(
-            context=context,
-            store_name=request.store_name,
-            store_type=request.store_type,
-            menu_categories=request.menu_categories,
-            selected_trends=request.selected_trends,
-            menu_text=menu_text  # 메뉴 정보 전달
+        # 3. 광고 문구 생성
+        story, featured_menu = generate_simple_story(
+            menu_names=menu_names,
+            weather=context.get("weather", {}),
+            time_info=context.get("time_info", {}),
+            trends=context.get("trends", []),
+            special_day=special_day_name if is_special else ""
         )
 
-        # 4. DB에 저장
-        try:
-            seasonal_story = SeasonalStory(
+        logger.info(f"📝 Story: {story} (Featured: {featured_menu})")
+
+        # 4. 3개 슬롯 생성
+        highlights = create_highlights(menus, featured_menu, context)
+
+        # 5. 중복 방지 저장
+        existing = db.query(SeasonalStory).filter(
+            and_(
+                SeasonalStory.store_id == request.store_id,
+                SeasonalStory.featured_menu_name == featured_menu,
+                SeasonalStory.story_content == story
+            )
+        ).first()
+
+        if not existing:
+            new_story = SeasonalStory(
                 store_id=request.store_id,
                 store_name=request.store_name,
-                store_type=request.store_type,
+                featured_menu_name=featured_menu,
                 story_content=story,
                 weather_condition=context.get("weather", {}).get("condition"),
                 temperature=context.get("weather", {}).get("temperature"),
                 season=context.get("season"),
                 time_period=context.get("time_info", {}).get("period"),
-                google_trends=context.get("google_trends", []),
-                instagram_trends=context.get("instagram_trends", []),
-                selected_trends=request.selected_trends,
-                menu_items=[{"id": m["id"], "name": m["name"], "price": m["price"]} for m in menu_items] if menu_items else None
+                is_special_day=1 if is_special else 0,
+                is_weekend=1 if is_weekend else 0,
+                trend_keywords=context.get("trends", [])[:5]
             )
-            db.add(seasonal_story)
+            db.add(new_story)
             db.commit()
-            db.refresh(seasonal_story)
-            logger.info(f"Seasonal story saved to DB with ID: {seasonal_story.id}")
-        except Exception as e:
-            logger.error(f"Failed to save story to DB: {e}")
-            db.rollback()
+            logger.info(f"💾 Story saved to DB (ID: {new_story.id})")
+        else:
+            logger.info(f"⚠️ Duplicate story not saved")
 
-        # 5. 응답 생성
+        # 6. 응답 생성
         korea_tz = pytz.timezone('Asia/Seoul')
-        generation_time = time.time() - start_time
-
         response_data = {
             "story": story,
+            "highlights": highlights,
             "context": {
                 "weather": context.get("weather"),
                 "season": context.get("season"),
                 "time_info": context.get("time_info"),
-                "trends": context.get("trends", []),
-                "google_trends": context.get("google_trends", []),
-                "instagram_trends": context.get("instagram_trends", []),
-                "google_trends_status": context.get("google_trends_status"),
-                "instagram_trends_status": context.get("instagram_trends_status")
+                "trends": context.get("trends", [])[:5],
+                "special_day": special_day_name if is_special else None,
+                "is_weekend": is_weekend
             },
-            "store_info": {
-                "store_id": request.store_id,
-                "store_name": request.store_name,
-                "store_type": request.store_type,
-                "location": request.location
-            },
-            "menu_items": menu_items if menu_items else [],
-            "generated_at": datetime.now(korea_tz).isoformat(),
-            "generation_time": round(generation_time, 2)
+            "generated_at": datetime.now(korea_tz).isoformat()
         }
-
-        logger.info("Seasonal story generated successfully")
 
         return SeasonalStoryResponse(
             success=True,
             data=response_data
         )
 
+    except HTTPException:
+        raise
     except Exception as e:
-        logger.error(f"Failed to generate seasonal story: {e}")
+        logger.error(f"Failed to generate story: {e}")
+        import traceback
+        traceback.print_exc()
+
+        # GPT 실패 시 폴백: DB에서 유사한 스토리 찾기
+        try:
+            similar = find_similar_story(
+                db=db,
+                store_id=request.store_id,
+                temperature=context.get("weather", {}).get("temperature", 15),
+                is_weekend=is_weekend,
+                is_special_day=is_special
+            )
+
+            if similar:
+                logger.info(f"🔄 Using similar story from DB (ID: {similar.id})")
+                response_data = {
+                    "story": similar.story_content,
+                    "highlights": [],  # 하이라이트는 생략
+                    "context": context,
+                    "generated_at": datetime.now(pytz.timezone('Asia/Seoul')).isoformat(),
+                    "fallback": True
+                }
+                return SeasonalStoryResponse(success=True, data=response_data)
+        except Exception as fallback_error:
+            logger.error(f"Fallback also failed: {fallback_error}")
+
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail={
@@ -155,342 +409,3 @@ async def generate_seasonal_story(
                 }
             }
         )
-
-
-@router.post(
-    "/menu-storytelling",
-    response_model=MenuStorytellingResponse,
-    summary="메뉴 스토리텔링 생성",
-    description="메뉴 클릭 시 보여줄 스토리텔링 문구를 생성합니다.",
-    responses={
-        200: {"description": "성공", "model": MenuStorytellingResponse},
-        500: {"description": "서버 오류", "model": ErrorResponse}
-    }
-)
-async def generate_menu_storytelling(request: MenuStorytellingRequest):
-    """
-    메뉴 스토리텔링 생성
-
-    메뉴 이름, 재료, 원산지, 역사 정보를 바탕으로
-    감성적인 스토리텔링 문구를 생성합니다.
-    """
-    try:
-        logger.info(f"Menu storytelling generation requested: {request}")
-
-        # 스토리텔링 생성
-        storytelling = story_generator_service.generate_menu_storytelling(
-            menu_name=request.menu_name,
-            ingredients=request.ingredients,
-            origin=request.origin,
-            history=request.history
-        )
-
-        # 응답 생성
-        korea_tz = pytz.timezone('Asia/Seoul')
-        response_data = {
-            "storytelling": storytelling,
-            "menu_id": request.menu_id,
-            "menu_name": request.menu_name,
-            "generated_at": datetime.now(korea_tz).isoformat()
-        }
-
-        logger.info("Menu storytelling generated successfully")
-
-        return MenuStorytellingResponse(
-            success=True,
-            data=response_data
-        )
-
-    except Exception as e:
-        logger.error(f"Failed to generate menu storytelling: {e}")
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail={
-                "success": False,
-                "error": {
-                    "code": 500,
-                    "message": "메뉴 스토리텔링 생성 중 오류가 발생했습니다.",
-                    "details": str(e)
-                }
-            }
-        )
-
-
-@router.get(
-    "/context",
-    response_model=dict,
-    summary="현재 컨텍스트 정보 조회",
-    description="현재 날씨, 계절, 시간대, 트렌드 정보를 조회합니다.",
-    responses={
-        200: {"description": "성공"},
-        500: {"description": "서버 오류"}
-    }
-)
-async def get_current_context(
-    location: str = "Seoul",
-    lat: float = None,
-    lon: float = None
-):
-    """
-    현재 컨텍스트 정보 조회
-
-    스토리 생성 없이 현재 컨텍스트 정보만 조회합니다.
-    테스트 및 디버깅 용도로 사용할 수 있습니다.
-    """
-    try:
-        logger.info(f"Context info requested for location: {location}")
-
-        # 컨텍스트 정보 수집
-        context = context_collector_service.get_full_context(
-            location=location,
-            lat=lat,
-            lon=lon,
-            include_all_trends=True
-        )
-
-        logger.info("Context info retrieved successfully")
-
-        return {
-            "success": True,
-            "data": context
-        }
-
-    except Exception as e:
-        logger.error(f"Failed to get context info: {e}")
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail={
-                "success": False,
-                "error": {
-                    "code": 500,
-                    "message": "컨텍스트 정보 조회 중 오류가 발생했습니다.",
-                    "details": str(e)
-                }
-            }
-        )
-
-
-@router.get(
-    "/welcome-message/{store_id}",
-    response_model=dict,
-    summary="환영 문구 생성",
-    description="매장의 환영 문구를 생성합니다. 날씨, 계절, 시간대, 트렌드를 반영합니다.",
-    responses={
-        200: {"description": "성공"},
-        500: {"description": "서버 오류"}
-    }
-)
-async def get_welcome_message(
-    store_id: int,
-    location: str = "Seoul"
-):
-    """
-    메뉴판 상단 환영 문구 생성
-
-    날씨, 계절, 시간대, 트렌드를 반영하여 매력적인 환영 문구를 생성합니다.
-    """
-    try:
-        from app.models.menu import Store
-        from app.core.database import SessionLocal
-
-        logger.info(f"Welcome message requested for store_id={store_id}")
-
-        # DB에서 매장 정보 조회
-        db = SessionLocal()
-        try:
-            store = db.query(Store).filter(Store.id == store_id).first()
-
-            if not store:
-                raise HTTPException(
-                    status_code=status.HTTP_404_NOT_FOUND,
-                    detail=f"Store with id {store_id} not found"
-                )
-
-            store_name = store.name
-            # 매장 타입 추론 (이름이나 설명에서)
-            store_type = "카페"  # 기본값
-
-        finally:
-            db.close()
-
-        # 컨텍스트 수집
-        context = context_collector_service.get_full_context(
-            location=location,
-            include_all_trends=True,
-            store_type=store_type
-        )
-
-        # 환영 문구 생성
-        welcome_message = story_generator_service.generate_welcome_message(
-            context=context,
-            store_name=store_name,
-            store_type=store_type
-        )
-
-        logger.info(f"Welcome message generated: {welcome_message}")
-
-        return {
-            "success": True,
-            "data": {
-                "message": welcome_message,
-                "store_id": store_id,
-                "store_name": store_name,
-                "context": {
-                    "weather": context.get("weather"),
-                    "season": context.get("season"),
-                    "time": context.get("time_info", {}).get("period_kr"),
-                    "trends": context.get("instagram_trends", [])[:5]
-                },
-                "generated_at": datetime.now(pytz.timezone('Asia/Seoul')).isoformat()
-            }
-        }
-
-    except HTTPException:
-        raise
-    except Exception as e:
-        logger.error(f"Failed to generate welcome message: {e}")
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail={
-                "success": False,
-                "error": {
-                    "code": 500,
-                    "message": "환영 문구 생성 중 오류가 발생했습니다.",
-                    "details": str(e)
-                }
-            }
-        )
-
-
-@router.get(
-    "/menu-highlights/{store_id}",
-    response_model=dict,
-    summary="메뉴 하이라이트",
-    description="시즌/날씨에 맞는 추천 메뉴를 하이라이트합니다.",
-    responses={
-        200: {"description": "성공"},
-        500: {"description": "서버 오류"}
-    }
-)
-async def get_menu_highlights(
-    store_id: int,
-    location: str = "Seoul",
-    max_highlights: int = 3
-):
-    """
-    시즌/날씨에 맞는 메뉴 하이라이트
-
-    현재 날씨, 계절, 트렌드에 가장 잘 맞는 메뉴를 선택하여 추천 이유와 함께 반환합니다.
-    """
-    try:
-        from app.models.menu import Store, Menu, MenuItem
-        from app.core.database import SessionLocal
-
-        logger.info(f"Menu highlights requested for store_id={store_id}")
-
-        # DB에서 매장 및 메뉴 정보 조회
-        db = SessionLocal()
-        try:
-            store = db.query(Store).filter(Store.id == store_id).first()
-
-            if not store:
-                raise HTTPException(
-                    status_code=status.HTTP_404_NOT_FOUND,
-                    detail=f"Store with id {store_id} not found"
-                )
-
-            # 매장의 메뉴 아이템 조회 (사용 가능한 메뉴만)
-            menu_items = db.query(MenuItem).join(Menu).filter(
-                Menu.store_id == store_id,
-                MenuItem.is_available == True
-            ).all()
-
-            if not menu_items:
-                return {
-                    "success": True,
-                    "data": {
-                        "highlights": [],
-                        "message": "조회 가능한 메뉴가 없습니다."
-                    }
-                }
-
-            # 메뉴 정보를 dict로 변환
-            menus = []
-            for item in menu_items:
-                menus.append({
-                    "id": item.id,
-                    "name": item.name,
-                    "description": item.description or "",
-                    "price": float(item.price) if item.price else 0,
-                    "category": ""  # 카테고리 정보가 있다면 추가
-                })
-
-            store_type = "카페"  # 기본값
-
-        finally:
-            db.close()
-
-        # 컨텍스트 수집
-        context = context_collector_service.get_full_context(
-            location=location,
-            include_all_trends=True,
-            store_type=store_type
-        )
-
-        # 메뉴 하이라이트 생성
-        highlights = story_generator_service.generate_menu_highlights(
-            context=context,
-            menus=menus,
-            store_type=store_type,
-            max_highlights=max_highlights
-        )
-
-        logger.info(f"{len(highlights)} menu highlights generated")
-
-        return {
-            "success": True,
-            "data": {
-                "highlights": highlights,
-                "total_menus": len(menus),
-                "context": {
-                    "weather": context.get("weather"),
-                    "season": context.get("season"),
-                    "time": context.get("time_info", {}).get("period_kr"),
-                    "trends": context.get("instagram_trends", [])[:5]
-                },
-                "generated_at": datetime.now(pytz.timezone('Asia/Seoul')).isoformat()
-            }
-        }
-
-    except HTTPException:
-        raise
-    except Exception as e:
-        logger.error(f"Failed to generate menu highlights: {e}")
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail={
-                "success": False,
-                "error": {
-                    "code": 500,
-                    "message": "메뉴 하이라이트 생성 중 오류가 발생했습니다.",
-                    "details": str(e)
-                }
-            }
-        )
-
-
-@router.get(
-    "/health",
-    summary="헬스 체크",
-    description="시즈널 스토리 API 서비스 상태를 확인합니다."
-)
-async def health_check():
-    """헬스 체크 엔드포인트"""
-    return {
-        "success": True,
-        "data": {
-            "status": "healthy",
-            "service": "Seasonal Story API",
-            "version": "1.0.0"
-        }
-    }
