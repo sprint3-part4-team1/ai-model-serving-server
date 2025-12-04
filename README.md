@@ -1,3 +1,7 @@
+# 협업일지 노션
+https://www.notion.so/Codeit-AI-3-_-Part4_1-_-2a18c9c2de228088b8e8c541353e42f2****
+
+
 # AI Model Serving Server - ValueUp
 
 AI 기반 메뉴판 자동 생성 및 편집, 시즈널 스토리 생성, 메뉴 추천 통합 시스템
